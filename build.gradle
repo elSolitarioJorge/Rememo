@@ -1,0 +1,14 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// 在现代 Android 项目中，根 build.gradle 文件变得非常简洁
+// 它的核心作用是声明整个项目构建体系所依赖的 Gradle 插件及其版本，
+// 为所有子模块提供一个统一的插件环境
+
+// 插件声明 (plugins)
+plugins {
+    // alias(...) 是新版 Gradle 的写法，引用了 libs.versions.toml 中定义的别名
+    // 这两行代码声明了本项目会用到 "Android Application" 和 "Android Library" 这两种类型的插件
+    // apply false 意味着这个根文件自身并不“应用”这些插件，只是声明它们的存在，
+    // 以便各个子模块（如 app, libBase）可以去应用它们
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+}

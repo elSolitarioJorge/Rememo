@@ -1,0 +1,61 @@
+//  settings.gradle 的主要职责就是管理项目的模块构成和统一的依赖仓库。
+//  当您新建一个模块或者删除一个模块时，都需要在这里进行同步修改。
+
+// 插件管理 (pluginManagement)
+pluginManagement {
+
+    repositories {// 声明了去哪里寻找构建过程中需要的“插件”（例如安卓构建工具插件）
+        google {// Google 的官方仓库
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()// Maven 中央仓库
+        gradlePluginPortal()// Gradle 官方的插件门户
+    }
+}
+
+// 依赖解析管理 (dependencyResolutionManagement)
+dependencyResolutionManagement {
+    // FAIL_ON_PROJECT_REPOS 意味着禁止在子模块的 build.gradle 中单独添加仓库地址，
+    // 强制所有模块统一使用这里声明的仓库，保证了依赖来源的一致性和安全性。
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
+    repositories {// 声明了去哪里寻找项目代码需要的“库”或“依赖”（例如 appcompat、retrofit）
+        google()      // Google 官方仓库
+        mavenCentral()// Maven 中央仓库
+    }
+}
+
+// 项目根名称定义
+rootProject.name = "Rememo"
+
+// 包含的模块声明 (最核心的部分)
+// 每一行 `include` 都代表着一个模块被纳入到项目中。
+// 如果没有在这里声明，就算文件夹存在，Gradle 也不会把它当成项目的一部分来编译。
+
+include ':app'
+
+include ':core:base'
+include ':core:common'
+include ':core:network'
+include ':core:media'
+include ':core:map'
+include ':core:ui'
+include ':core:storage'
+
+include ':feature:here'
+include ':feature:explore'
+include ':feature:publish'
+include ':feature:profile'
+include ':feature:timeline'
+
+// 决定是否启用调试模块
+def enableDebugModules = providers.gradleProperty("enableDebugModules")
+        .orElse("true").get().toBoolean()
+
+if (enableDebugModules) {
+    include ':shell:hub'
+}

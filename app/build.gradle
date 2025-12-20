@@ -1,0 +1,69 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    // 命名空间：模块的唯一标识符，用于生成 R 类和 Manifest，必须在库模块中指定
+    namespace 'com.ggg.rememo'
+
+    // 编译版本，决定可以在代码中使用哪些 API
+    compileSdk {
+        version = release(libs.versions.compileSdk.get().toInteger())
+    }
+
+    // 默认配置
+    defaultConfig {
+        // App 在设备和应用商店中的唯一标识，一旦发布后不应更改
+        applicationId "com.ggg.rememo"
+        // App 可以安装和运行的最低 Android 系统版本，低于此版本无法安装和运行
+        minSdk libs.versions.minSdk.get().toInteger()
+        // 告诉系统我的 App 已经适配到这个版本，请按这个版本的规则来限制我。
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        // App 的版本号，用于区分不同版本的 App
+        versionCode VERSION_CODE.toInteger()
+        // 展示给用户的版本名称
+        versionName VERSION_NAME
+
+        // 测试 Runner
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [AROUTER_MODULE_NAME: project.getName()]
+            }
+        }
+    }
+
+    // 不同的构建场景定义不同的打包策略
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // 功能开关
+    buildFeatures {
+        viewBinding true
+    }
+
+    // 配置 Java 编译器的行为
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+
+    implementation libs.arouter.api
+    annotationProcessor libs.arouter.compiler
+
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.activity
+    implementation libs.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}

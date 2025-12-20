@@ -1,0 +1,81 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace 'com.ggg.rememo.shell.hub'
+    compileSdk {
+        version = release(libs.versions.compileSdk.get().toInteger())
+    }
+
+    defaultConfig {
+        applicationId "com.ggg.rememo.shell.hub"
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        versionCode SHELL_VERSION_CODE.toInteger()
+        versionName SHELL_VERSION_NAME
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [AROUTER_MODULE_NAME: project.getName()]
+            }
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    buildTypes {
+        debug {
+            // 在包名后加 .debug
+            applicationIdSuffix ".debug"
+            // 在版本名称后加 -debug
+            versionNameSuffix "-debug"
+            // 允许调试
+            debuggable true
+        }
+
+        release {
+            minifyEnabled false
+        }
+    }
+
+    // 让 shell 只保留 debug，避免增加 release 构建负担
+    variantFilter { variant ->
+        // ===================================================================
+        // 注意：此配置会禁用 release 构建，以提高日常开发速度。
+        // 如果需要打包 release 版本，请务T务必将此段代码注释掉！
+        // ===================================================================
+        if (variant.buildType.name == "release") {
+            variant.ignore = true
+        }
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation project(":core:common")
+    implementation(libs.arouter.api)
+
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.activity
+    implementation libs.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+
+    debugImplementation project(":feature:here")
+    debugImplementation project(":feature:explore")
+    debugImplementation project(":feature:publish")
+    debugImplementation project(":feature:profile")
+    debugImplementation project(":feature:timeline")
+}
