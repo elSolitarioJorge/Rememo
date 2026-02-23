@@ -16,5 +16,4 @@
 
 ## 依赖规则
 - 允许依赖：Java/Kotlin 标准库、AndroidX 基础（少量）
-- 禁止依赖：任何 featu
-- re 模块
+- 禁止依赖：任何 feature 模块
