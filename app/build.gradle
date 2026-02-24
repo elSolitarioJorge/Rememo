@@ -56,6 +56,13 @@ android {
 
 dependencies {
 
+    implementation project(":core:common")
+    implementation project(":feature:here")
+    implementation project(":feature:explore")
+    implementation project(":feature:timeline")
+    implementation project(":feature:profile")
+    implementation project(":feature:publish")
+
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
 
