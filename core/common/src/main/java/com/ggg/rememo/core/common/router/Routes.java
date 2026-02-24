@@ -34,10 +34,8 @@ public final class Routes {
     public static final class Here {
         private Here() { throw new AssertionError("No instances."); }
 
-        /** 在此首页：地图入口页（Activity/Fragment 入口） */
         public static final String HOME = "/here/home";
-
-        /** 地点详情页（示例：如果你后续加 place 模块可以改成 /place/detail） */
+        public static final String HOME_FRAGMENT = "/here/home_fragment";
         public static final String DETAIL = "/here/detail";
     }
 
@@ -46,6 +44,7 @@ public final class Routes {
         private Explore() { throw new AssertionError("No instances."); }
 
         public static final String HOME = "/explore/home";
+        public static final String HOME_FRAGMENT = "/explore/home_fragment";
     }
 
     /** 时序（时间线）相关路由 */
@@ -53,6 +52,7 @@ public final class Routes {
         private Timeline() { throw new AssertionError("No instances."); }
 
         public static final String HOME = "/timeline/home";
+        public static final String HOME_FRAGMENT = "/timeline/home_fragment";
     }
 
     /** 发布相关路由 */
@@ -67,5 +67,6 @@ public final class Routes {
         private Profile() { throw new AssertionError("No instances."); }
 
         public static final String HOME = "/profile/home";
+        public static final String HOME_FRAGMENT = "/profile/home_fragment";
     }
 }
