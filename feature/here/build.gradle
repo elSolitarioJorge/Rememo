@@ -27,6 +27,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        viewBinding true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -35,6 +39,7 @@ android {
 
 dependencies {
     implementation project(":core:common")
+    implementation project(":core:map")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
 

@@ -14,6 +14,7 @@ activity = "1.12.2"
 constraintlayout = "2.2.1"
 
 arouter = "1.5.2"
+amap3d = "10.1.600_loc6.5.1_sea9.7.4"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
@@ -26,6 +27,7 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 arouter-api = { module = "com.alibaba:arouter-api", version.ref = "arouter" }
 arouter-compiler = { module = "com.alibaba:arouter-compiler", version.ref = "arouter" }
+amap3d = { module = "com.amap.api:3dmap-location-search", version.ref = "amap3d" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

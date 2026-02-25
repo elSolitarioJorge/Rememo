@@ -28,6 +28,8 @@ android {
 }
 
 dependencies {
+    api libs.amap3d
+
     implementation libs.appcompat
     implementation libs.material
     testImplementation libs.junit
