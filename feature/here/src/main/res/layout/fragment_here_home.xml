@@ -8,4 +8,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ImageButton
+        android:id="@+id/btn_my_location"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_location_btn"
+        android:contentDescription="@null"
+        android:elevation="4dp"
+        android:padding="12dp"
+        android:src="@drawable/ic_my_location" />
+
 </FrameLayout>
