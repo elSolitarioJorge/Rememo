@@ -19,6 +19,7 @@
         android:contentDescription="@null"
         android:elevation="4dp"
         android:padding="12dp"
-        android:src="@drawable/ic_my_location" />
+        android:src="@drawable/ic_location_follow"
+        android:scaleType="centerInside"/>
 
 </FrameLayout>

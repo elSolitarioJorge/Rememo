@@ -169,11 +169,9 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         aMap.setLocationSource(this);
 
         // ========== 地图触摸监听 ==========
-        // 只有真正拖动（ACTION_MOVE）才退出跟随模式，避免点击误触
         aMap.setOnMapTouchListener(event -> {
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                isFollowing = false;
-            }
+            isFollowing = false;
+            binding.btnMyLocation.setImageResource(R.drawable.ic_location_unfollow);
         });
     }
 
@@ -181,6 +179,8 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         binding.btnMyLocation.setOnClickListener(v -> {
             // 点击定位按钮：恢复跟随模式
             isFollowing = true;
+            binding.btnMyLocation.setImageResource(R.drawable.ic_location_follow);
+
             // 重置标记，让下次定位时立即移动视角（无动画）
             hasMovedToCurrentLocation = false;
 
@@ -352,7 +352,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
      * 保存监听器并启动定位，后续通过 mLocationChangedListener 喂数据给蓝点。
      */
     @Override
-    public void activate(LocationSource.OnLocationChangedListener listener) {
+    public void activate(OnLocationChangedListener listener) {
         mLocationChangedListener = listener;
         if (locationClient != null) {
             locationClient.startLocation();
