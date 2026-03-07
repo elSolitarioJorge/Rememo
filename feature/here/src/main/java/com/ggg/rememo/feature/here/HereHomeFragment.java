@@ -29,7 +29,6 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
-import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.model.LatLng;
@@ -54,8 +53,6 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     private static final String MMKV_ID = "here_location";  // MMKV 实例 ID
     private static final String PREF_LAST_LAT = "last_lat";
     private static final String PREF_LAST_LNG = "last_lng";
-    // 防抖阈值：位移小于 2 米时不触发相机动画
-    private static final float MIN_MOVE_DISTANCE_METERS = 2.0f;
     // 默认缩放级别
     private static final float DEFAULT_ZOOM_LEVEL = 17f;
 
@@ -73,8 +70,6 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     private boolean isLocationInitialized = false;
     // 权限是否被永久拒绝（用户选择了"不再询问"）
     private boolean isPermissionPermanentlyDenied = false;
-    // 上一次成功定位的坐标（防抖对比用）
-    private LatLng lastLatLng;
     // 最新定位坐标（内存缓存，减少 MMKV 写频率）
     private LatLng latestLocation;
 
@@ -174,20 +169,35 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
         // ========== 地图触摸监听 ==========
         aMap.setOnMapTouchListener(event -> {
-            if (isFollowing) {  // 避免高频重复调用UI更新
-                isFollowing = false;
-                binding.btnMyLocation.setImageResource(R.drawable.ic_location_unfollow);
+            if (event.getAction() == MotionEvent.ACTION_DOWN && isFollowing) {  // 避免高频重复调用UI更新
+                setFollowingMode(false);
             }
         });
     }
 
+    /**
+     * 切换跟随模式
+     * @param follow true=开启跟随（SDK内置平滑移动），false=关闭跟随（蓝点旋转但不移动视角）
+     */
+    private void setFollowingMode(boolean follow) {
+        isFollowing = follow;
+        // 异步回调中需要判空，防止 onDestroyView 后回调到达
+        if (binding != null) {
+            binding.btnMyLocation.setImageResource(follow ? R.drawable.ic_location_follow : R.drawable.ic_location_unfollow);
+        }
+        if (aMap != null && aMap.getMyLocationStyle() != null) {
+            aMap.getMyLocationStyle().myLocationType(
+                    follow ? MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE
+                           : MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
+        }
+    }
+
     private void initLocationButton() {
         binding.btnMyLocation.setOnClickListener(v -> {
-            // 点击定位按钮：恢复跟随模式
-            isFollowing = true;
-            binding.btnMyLocation.setImageResource(R.drawable.ic_location_follow);
+            // 点击定位按钮：开启跟随模式（SDK 内置平滑移动）
+            setFollowingMode(true);
 
-            // 强制移动到当前位置（即使位置没变也移动，确保缩放倍数正确）
+            // 立即跳转一次到当前位置，确保缩放倍数正确
             if (latestLocation != null) {
                 aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latestLocation, DEFAULT_ZOOM_LEVEL));
             }
@@ -284,11 +294,16 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
             locationClient.setLocationListener(this);
 
             AMapLocationClientOption option = new AMapLocationClientOption();
-            option.setLocationMode(hasFineLocationPermission()
-                    ? AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
-                    : AMapLocationClientOption.AMapLocationMode.Battery_Saving);
+            option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
             option.setNeedAddress(false);
-            option.setInterval(2000);
+            if (hasFineLocationPermission()) {
+                // 拥有精确定位：开启 2 秒连续定位（实现平滑的实时跟随）
+                option.setOnceLocation(false);
+                option.setInterval(2000);
+            } else {
+                // 只有模糊定位时，强制设为单次定位
+                option.setOnceLocation(true);
+            }
             locationClient.setLocationOption(option);
 
             // 开启蓝点图层 → 触发 LocationSource.activate() → 启动定位
@@ -313,37 +328,19 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     public void onLocationChanged(AMapLocation aMapLocation) {
         if (!isAdded() || aMap == null) return;
 
-        if (aMapLocation.getErrorCode() == AMapLocation.LOCATION_SUCCESS) {
-
-            // 将位置数据喂给地图，驱动蓝点渲染（核心步骤，缺少此步蓝点不会出现）
-            if (mLocationChangedListener != null) {
-                android.location.Location loc = new android.location.Location("AMap");
-                loc.setLatitude(aMapLocation.getLatitude());
-                loc.setLongitude(aMapLocation.getLongitude());
-                loc.setAccuracy(aMapLocation.getAccuracy());
-                loc.setBearing(aMapLocation.getBearing());
-                loc.setSpeed(aMapLocation.getSpeed());
-                loc.setTime(aMapLocation.getTime());
-                mLocationChangedListener.onLocationChanged(loc);
-            }
-
-            // 内存缓存最新坐标（减少 MMKV 写频率，只在 onPause/onDestroyView 写入）
-            latestLocation = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
-
-            // 跟随模式下移动镜头（防抖：位移 < 2m 不触发动画）
-            if (isFollowing) {
-                LatLng latLng = latestLocation;
-                boolean shouldMove = lastLatLng == null
-                        || AMapUtils.calculateLineDistance(lastLatLng, latLng) > MIN_MOVE_DISTANCE_METERS;
-
-                if (shouldMove) {
-                    lastLatLng = latLng;
-                    aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL));
-                }
-            }
-        } else {
+        if (aMapLocation.getErrorCode() != AMapLocation.LOCATION_SUCCESS) {
             Log.w(TAG, "定位失败: " + aMapLocation.getErrorCode() + ", " + aMapLocation.getErrorInfo());
+            return;
         }
+
+        // 将位置数据喂给地图，驱动蓝点渲染（核心步骤，缺少此步蓝点不会出现）
+        // AMapLocation 继承自 android.location.Location，可直接传递
+        if (mLocationChangedListener != null) {
+            mLocationChangedListener.onLocationChanged(aMapLocation);
+        }
+
+        // 内存缓存最新坐标（减少 MMKV 写频率，只在 onPause/onDestroyView 写入）
+        latestLocation = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
     }
 
     // ==================== LocationSource 接口 ====================
@@ -431,6 +428,8 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         }
 
         if (locationClient != null) {
+            locationClient.stopLocation();
+            locationClient.unRegisterLocationListener(this);
             locationClient.onDestroy();
             locationClient = null;
         }
