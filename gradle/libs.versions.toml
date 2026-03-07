@@ -15,6 +15,7 @@ constraintlayout = "2.2.1"
 
 arouter = "1.5.2"
 amap3d = "10.1.600_loc6.5.1_sea9.7.4"
+mmkv = "1.3.9"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
@@ -28,6 +29,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 arouter-api = { module = "com.alibaba:arouter-api", version.ref = "arouter" }
 arouter-compiler = { module = "com.alibaba:arouter-compiler", version.ref = "arouter" }
 amap3d = { module = "com.amap.api:3dmap-location-search", version.ref = "amap3d" }
+mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

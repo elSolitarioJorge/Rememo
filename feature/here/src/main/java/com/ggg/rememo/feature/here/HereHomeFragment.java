@@ -3,7 +3,6 @@ package com.ggg.rememo.feature.here;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -38,6 +37,7 @@ import com.amap.api.maps.model.MyLocationStyle;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.map.MapLifecycleHelper;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
+import com.tencent.mmkv.MMKV;
 
 /**
  * 地图首页 Fragment
@@ -51,7 +51,7 @@ import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
 public class HereHomeFragment extends Fragment implements AMapLocationListener, LocationSource {
     private static final String TAG = "HereHomeFragment";
     // ========== 常量配置 ==========
-    private static final String PREFS_NAME = "here_location_prefs";
+    private static final String MMKV_ID = "here_location";  // MMKV 实例 ID
     private static final String PREF_LAST_LAT = "last_lat";
     private static final String PREF_LAST_LNG = "last_lng";
     // 防抖阈值：位移小于 2 米时不触发相机动画
@@ -59,6 +59,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     // 默认缩放级别
     private static final float DEFAULT_ZOOM_LEVEL = 17f;
 
+    private MMKV mmkv;
     private FragmentHereHomeBinding binding;
     private AMap aMap;
     private AMapLocationClient locationClient;
@@ -70,21 +71,18 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     private boolean isFollowing = true;
     // 定位是否已初始化
     private boolean isLocationInitialized = false;
-    // 是否已经移动过视角到当前位置（用于区分首次定位和后续定位）
-    private boolean hasMovedToCurrentLocation = false;
-    // Fragment 是否已销毁
-    private boolean isFragmentDestroyed = false;
     // 权限是否被永久拒绝（用户选择了"不再询问"）
     private boolean isPermissionPermanentlyDenied = false;
     // 上一次成功定位的坐标（防抖对比用）
     private LatLng lastLatLng;
-    // 最新定位坐标（内存缓存，减少 SharedPreferences 写频率）
+    // 最新定位坐标（内存缓存，减少 MMKV 写频率）
     private LatLng latestLocation;
 
     // 权限请求Launcher
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                if (isFragmentDestroyed) return;
+                // 使用 isAdded() 检查 Fragment 是否仍然附加到 Activity
+                if (!isAdded()) return;
 
                 Boolean fineLocation = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
                 Boolean coarseLocation = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
@@ -119,9 +117,6 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // 重置 Fragment 销毁状态（Navigation/ViewPager 回退栈复用时需要）
-        isFragmentDestroyed = false;
-
         binding = FragmentHereHomeBinding.inflate(inflater, container, false);
         MapLifecycleHelper.bindTo(this, binding.mapView, savedInstanceState);
 
@@ -138,6 +133,14 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         checkLocationPermissionAndInit();
     }
 
+    // 获取 MMKV 实例（懒加载）
+    private MMKV getMMKV() {
+        if (mmkv == null) {
+            mmkv = MMKV.mmkvWithID(MMKV_ID);
+        }
+        return mmkv;
+    }
+
     private void initMap() {
         aMap = binding.mapView.getMap();
 
@@ -149,11 +152,12 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         aMap.getUiSettings().setTiltGesturesEnabled(false);
 
         // ========== 读取缓存坐标，消除首次加载的"北京闪烁" ==========
-        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        if (prefs.contains(PREF_LAST_LAT) && prefs.contains(PREF_LAST_LNG)) {
-            float cachedLat = prefs.getFloat(PREF_LAST_LAT, 0f);
-            float cachedLng = prefs.getFloat(PREF_LAST_LNG, 0f);
-            aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(cachedLat, cachedLng), DEFAULT_ZOOM_LEVEL));
+        if (getMMKV().containsKey(PREF_LAST_LAT) && getMMKV().containsKey(PREF_LAST_LNG)) {
+            float cachedLat = getMMKV().decodeFloat(PREF_LAST_LAT, 0f);
+            float cachedLng = getMMKV().decodeFloat(PREF_LAST_LNG, 0f);
+            if (cachedLat != 0f && cachedLng != 0f) {
+                aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(cachedLat, cachedLng), DEFAULT_ZOOM_LEVEL));
+            }
         }
 
         // ========== 蓝点样式配置 ==========
@@ -170,8 +174,10 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
         // ========== 地图触摸监听 ==========
         aMap.setOnMapTouchListener(event -> {
-            isFollowing = false;
-            binding.btnMyLocation.setImageResource(R.drawable.ic_location_unfollow);
+            if (isFollowing) {  // 避免高频重复调用UI更新
+                isFollowing = false;
+                binding.btnMyLocation.setImageResource(R.drawable.ic_location_unfollow);
+            }
         });
     }
 
@@ -181,8 +187,10 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
             isFollowing = true;
             binding.btnMyLocation.setImageResource(R.drawable.ic_location_follow);
 
-            // 重置标记，让下次定位时立即移动视角（无动画）
-            hasMovedToCurrentLocation = false;
+            // 强制移动到当前位置（即使位置没变也移动，确保缩放倍数正确）
+            if (latestLocation != null) {
+                aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latestLocation, DEFAULT_ZOOM_LEVEL));
+            }
 
             if (!isLocationInitialized) {
                 // 定位未初始化（权限被拒绝过），点击按钮重新触发权限请求
@@ -303,7 +311,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
-        if (isFragmentDestroyed || aMap == null) return;
+        if (!isAdded() || aMap == null) return;
 
         if (aMapLocation.getErrorCode() == AMapLocation.LOCATION_SUCCESS) {
 
@@ -319,7 +327,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
                 mLocationChangedListener.onLocationChanged(loc);
             }
 
-            // 内存缓存最新坐标（减少 SharedPreferences 写频率，只在 onPause/onDestroyView 写入）
+            // 内存缓存最新坐标（减少 MMKV 写频率，只在 onPause/onDestroyView 写入）
             latestLocation = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
 
             // 跟随模式下移动镜头（防抖：位移 < 2m 不触发动画）
@@ -330,14 +338,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
                 if (shouldMove) {
                     lastLatLng = latLng;
-                    if (!hasMovedToCurrentLocation) {
-                        // 首次定位：立即跳转（无动画）
-                        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL));
-                        hasMovedToCurrentLocation = true;
-                    } else {
-                        // 后续定位：平滑动画
-                        aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL));
-                    }
+                    aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL));
                 }
             }
         } else {
@@ -360,15 +361,12 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     }
 
     /**
-     * 地图调用 setMyLocationEnabled(false) 后触发，清理监听器并停止定位。
+     * 地图调用 setMyLocationEnabled(false) 后触发。
+     * 只解绑监听器，定位的停止由 Fragment 生命周期（onPause）管控。
      */
     @Override
     public void deactivate() {
         mLocationChangedListener = null;
-        // 停止定位，防止图层关闭后定位还在后台运行
-        if (locationClient != null) {
-            locationClient.stopLocation();
-        }
     }
 
     // ==================== Fragment 生命周期 ====================
@@ -392,21 +390,18 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     @Override
     public void onPause() {
         super.onPause();
-        // 将内存中的最新坐标写入 SharedPreferences（只写一次，避免高频 IO）
+        // 将内存中的最新坐标写入 MMKV（只写一次，避免高频 IO）
         saveLocationToPrefs();
         pauseLocation();
     }
 
     /**
-     * 将缓存的坐标写入 SharedPreferences
+     * 将缓存的坐标写入 MMKV
      */
     private void saveLocationToPrefs() {
         if (latestLocation != null) {
-            requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    .edit()
-                    .putFloat(PREF_LAST_LAT, (float) latestLocation.latitude)
-                    .putFloat(PREF_LAST_LNG, (float) latestLocation.longitude)
-                    .apply();
+            getMMKV().encode(PREF_LAST_LAT, (float) latestLocation.latitude);
+            getMMKV().encode(PREF_LAST_LNG, (float) latestLocation.longitude);
         }
     }
 
@@ -428,8 +423,6 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
     @Override
     public void onDestroyView() {
-        isFragmentDestroyed = true;
-
         // 解除所有地图监听器，防止内存泄漏
         if (aMap != null) {
             aMap.setMyLocationEnabled(false);
