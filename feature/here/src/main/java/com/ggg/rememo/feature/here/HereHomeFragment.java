@@ -148,9 +148,9 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
         // ========== 读取缓存坐标，消除首次加载的"北京闪烁" ==========
         if (getMMKV().containsKey(PREF_LAST_LAT) && getMMKV().containsKey(PREF_LAST_LNG)) {
-            float cachedLat = getMMKV().decodeFloat(PREF_LAST_LAT, 0f);
-            float cachedLng = getMMKV().decodeFloat(PREF_LAST_LNG, 0f);
-            if (cachedLat != 0f && cachedLng != 0f) {
+            double cachedLat = getMMKV().decodeDouble(PREF_LAST_LAT, 0.0);
+            double cachedLng = getMMKV().decodeDouble(PREF_LAST_LNG, 0.0);
+            if (cachedLat != 0.0 && cachedLng != 0.0) {
                 aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(cachedLat, cachedLng), DEFAULT_ZOOM_LEVEL));
             }
         }
@@ -189,6 +189,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
             aMap.getMyLocationStyle().myLocationType(
                     follow ? MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE
                            : MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
+            aMap.setMyLocationEnabled(follow);
         }
     }
 
@@ -283,6 +284,8 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
      * activate() 内部启动 locationClient，形成完整的数据流。
      */
     private void initLocationAndStart() {
+        Log.d(TAG, "initLocationAndStart: hasFineLocation=" + hasFineLocationPermission() + ", locationClient=" + (locationClient != null));
+
         if (locationClient != null) {
             // 已初始化，重新开启蓝点即可（触发 activate 重启定位）
             aMap.setMyLocationEnabled(true);
@@ -290,6 +293,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         }
         try {
             Context appContext = requireContext().getApplicationContext();
+            Log.d(TAG, "Creating AMapLocationClient...");
             locationClient = new AMapLocationClient(appContext);
             locationClient.setLocationListener(this);
 
@@ -308,17 +312,10 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
             // 开启蓝点图层 → 触发 LocationSource.activate() → 启动定位
             aMap.setMyLocationEnabled(true);
-            Log.d(TAG, "定位已初始化");
+            Log.d(TAG, "定位已初始化, hasFineLocation=" + hasFineLocationPermission());
         } catch (Exception e) {
-            Log.e(TAG, "初始化定位失败", e);
-            Toast.makeText(requireContext(), "定位初始化失败", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void pauseLocation() {
-        if (locationClient != null) {
-            locationClient.stopLocation();
-            Log.d(TAG, "定位已暂停");
+            Log.e(TAG, "初始化定位失败: " + e.getMessage(), e);
+            Toast.makeText(requireContext(), "定位初始化失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -389,7 +386,9 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         super.onPause();
         // 将内存中的最新坐标写入 MMKV（只写一次，避免高频 IO）
         saveLocationToPrefs();
-        pauseLocation();
+        if (locationClient != null) {
+            locationClient.stopLocation();
+        }
     }
 
     /**
@@ -397,8 +396,8 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
      */
     private void saveLocationToPrefs() {
         if (latestLocation != null) {
-            getMMKV().encode(PREF_LAST_LAT, (float) latestLocation.latitude);
-            getMMKV().encode(PREF_LAST_LNG, (float) latestLocation.longitude);
+            getMMKV().encode(PREF_LAST_LAT, latestLocation.latitude);
+            getMMKV().encode(PREF_LAST_LNG, latestLocation.longitude);
         }
     }
 
@@ -424,17 +423,24 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         if (aMap != null) {
             aMap.setMyLocationEnabled(false);
             aMap.setLocationSource(null);
-            aMap.setOnMapTouchListener(null);  // 新增：解除触摸监听器
+            aMap.setOnMapTouchListener(null);  // 解除触摸监听器
         }
 
         if (locationClient != null) {
             locationClient.stopLocation();
             locationClient.unRegisterLocationListener(this);
-            locationClient.onDestroy();
-            locationClient = null;
         }
 
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (locationClient != null) {
+            locationClient.onDestroy();
+            locationClient = null;
+        }
     }
 }
