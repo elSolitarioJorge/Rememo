@@ -54,7 +54,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     private static final String PREF_LAST_LAT = "last_lat";
     private static final String PREF_LAST_LNG = "last_lng";
     // 默认缩放级别
-    private static final float DEFAULT_ZOOM_LEVEL = 17f;
+    private static final float DEFAULT_ZOOM_LEVEL = 15f;
 
     private MMKV mmkv;
     private FragmentHereHomeBinding binding;
@@ -186,10 +186,11 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
             binding.btnMyLocation.setImageResource(follow ? R.drawable.ic_location_follow : R.drawable.ic_location_unfollow);
         }
         if (aMap != null && aMap.getMyLocationStyle() != null) {
-            aMap.getMyLocationStyle().myLocationType(
+            MyLocationStyle style = aMap.getMyLocationStyle();
+            style.myLocationType(
                     follow ? MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE
                            : MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
-            aMap.setMyLocationEnabled(follow);
+            aMap.setMyLocationStyle(style);
         }
     }
 
@@ -323,7 +324,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
-        if (!isAdded() || aMap == null) return;
+        if (!isAdded() || aMap == null || aMapLocation == null) return;
 
         if (aMapLocation.getErrorCode() != AMapLocation.LOCATION_SUCCESS) {
             Log.w(TAG, "定位失败: " + aMapLocation.getErrorCode() + ", " + aMapLocation.getErrorInfo());
