@@ -23,6 +23,11 @@
             android:name="com.amap.api.v2.apikey"
             android:value="${AMAP_API_KEY}" />
 
+        <!-- 高德地图定位服务（必须配置） -->
+        <service
+            android:name="com.amap.api.location.APSService"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
