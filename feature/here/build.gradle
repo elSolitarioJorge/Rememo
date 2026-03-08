@@ -14,6 +14,11 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
+        // 只保留主流架构，减少 APK 体积
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = [AROUTER_MODULE_NAME: project.getName()]
@@ -41,6 +46,7 @@ dependencies {
     implementation project(":core:common")
     implementation project(":core:map")
     implementation libs.arouter.api
+    implementation libs.mmkv
     annotationProcessor libs.arouter.compiler
 
     implementation libs.appcompat

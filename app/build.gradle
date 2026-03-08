@@ -2,9 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// 创建一个 Properties 对象
 def localProps = new Properties()
+// 获取项目根目录的 local.properties 文件
 def localPropsFile = rootProject.file('local.properties')
+// 检查文件是否存在
 if (localPropsFile.exists()) {
+    // 读取文件内容到 localProps 对象
     localProps.load(localPropsFile.newDataInputStream())
 }
 
@@ -78,6 +82,7 @@ dependencies {
 
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
+    implementation libs.mmkv
 
     implementation libs.appcompat
     implementation libs.material
