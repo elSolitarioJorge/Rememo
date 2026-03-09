@@ -31,6 +31,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.ggg.rememo.core.common.router.Routes;
@@ -157,9 +158,10 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
         // ========== 蓝点样式配置 ==========
         MyLocationStyle myLocationStyle = new MyLocationStyle();
+        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_icon));
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
         myLocationStyle.strokeColor(Color.TRANSPARENT);
-        myLocationStyle.radiusFillColor(Color.argb(50, 0, 122, 255));
+        myLocationStyle.radiusFillColor(Color.TRANSPARENT);
         myLocationStyle.strokeWidth(0f);
         aMap.setMyLocationStyle(myLocationStyle);
 
