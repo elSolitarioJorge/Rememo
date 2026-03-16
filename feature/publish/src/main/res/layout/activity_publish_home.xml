@@ -1,21 +1,515 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PublishHomeActivity">
+    android:background="#FFFFFF"
+    android:id="@+id/main">
+
+    <ImageView
+        android:id="@+id/btn_back"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:padding="14dp"
+        android:src="@drawable/ic_cancel"
+        app:layout_constraintBottom_toBottomOf="@id/tv_top_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_top_title"
+        app:tint="#9CA3AF" />
 
     <TextView
+        android:id="@+id/tv_top_title"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="发布"
-        android:textSize="28sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="56dp"
+        android:gravity="center"
+        android:text="发布记忆"
+        android:textColor="#1F2937"
+        android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divider_top"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#F3F4F6"
+        app:layout_constraintTop_toBottomOf="@id/tv_top_title" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_top">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <TextView
+                android:id="@+id/tv_upload_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="照片上传"
+                android:textColor="#1F2937"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/badge_ai_lab"
+                android:layout_width="80dp"
+                android:layout_height="36dp"
+                android:backgroundTint="#FFFBEB"
+                android:clickable="false"
+                android:padding="0dp"
+                android:text="AI实验室"
+                android:textColor="#D97706"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_ai_polish"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="12dp"
+                app:iconTint="#D97706"
+                app:layout_constraintBottom_toBottomOf="@+id/tv_upload_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_upload_title"
+                app:strokeColor="#FEF3C7"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_repair_container"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="#F9FAFB"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_upload_title"
+                app:strokeColor="#E5E7EB"
+                app:strokeWidth="2dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:id="@+id/layout_upload_placeholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:src="@drawable/ic_add_pic"
+                            android:scaleType="centerCrop"
+                            app:tint="#F59E0B" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="点击上传黑白老照片"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="支持 JPG / PNG，最多9张"
+                            android:textColor="#D1D5DB"
+                            android:textSize="10sp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_demo_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+
+                    <View
+                        android:id="@+id/view_scan_line"
+                        android:layout_width="4dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"
+                        android:elevation="4dp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="4dp"
+                        android:backgroundTint="#B3000000"
+                        android:padding="0dp"
+                        android:text="看修复图"
+                        android:textColor="#F59E0B"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/ic_switch"
+                        app:iconPadding="4dp"
+                        app:iconSize="14dp"
+                        app:iconGravity="textStart"
+                        app:iconTint="#F59E0B"
+                        app:strokeColor="#80F59E0B"
+                        app:strokeWidth="1dp" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_photo_thumbnails"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_repair_container" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_run_ai_repair"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#111827"
+                android:text="启动 AI 修复与上色"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_ai_polish"
+                app:iconSize="24dp"
+                app:iconGravity="textStart"
+                app:iconTint="#F59E0B"
+                app:layout_constraintEnd_toEndOf="@+id/rv_photo_thumbnails"
+                app:layout_constraintStart_toStartOf="@+id/rv_photo_thumbnails"
+                app:layout_constraintTop_toBottomOf="@id/rv_photo_thumbnails" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="card_repair_container, rv_photo_thumbnails, btn_run_ai_repair"/>
+
+            <TextView
+                android:id="@+id/tv_location_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="记忆锚点"
+                android:textColor="#1F2937"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/barrier_1" />
+
+            <TextView
+                android:id="@+id/tv_location_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="请为回忆之地命名"
+                android:textColor="#9CA3AF"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="@id/tv_location_title"
+                app:layout_constraintStart_toEndOf="@id/tv_location_title"
+                app:layout_constraintTop_toTopOf="@id/tv_location_title" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_anchor_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#F9FAFB"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_location_title"
+                app:strokeColor="#E5E7EB"
+                app:strokeWidth="1dp">
+
+                <EditText
+                    android:id="@+id/et_anchor_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:hint="例如: 老火车站、古城钟楼"
+                    android:padding="16dp"
+                    android:singleLine="true"
+                    android:textColor="#1F2937"
+                    android:textColorHint="#9CA3AF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/layout_physical_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/card_anchor_name">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#F9FAFB"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E5E7EB"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="12dp">
+
+                        <ImageView
+                            android:id="@+id/iv_physical_icon"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_my_location"
+                            android:layout_gravity="center_vertical"
+                            app:tint="#F59E0B" />
+
+                        <TextView
+                            android:id="@+id/tv_physical_location_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="正在获取当前坐标..."
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp"
+                            android:layout_gravity="center_vertical"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_select_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:padding="0dp"
+                    android:layout_gravity="center_vertical"
+                    android:backgroundTint="#FEF3C7"
+                    android:text="选点"
+                    android:textColor="#B45309"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:iconPadding="4dp"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_select_location"
+                    app:iconTint="#B45309"
+                    app:iconSize="20dp"
+                    android:elevation="0dp"
+                    app:strokeWidth="0dp"
+                    android:stateListAnimator="@null"/>
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="card_anchor_name, layout_physical_location"/>
+
+            <TextView
+                android:id="@+id/tv_time_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="发生时间"
+                android:textColor="#1F2937"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/barrier_2" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_time"
+                android:layout_width="200dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                app:cardBackgroundColor="#F9FAFB"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_time_title"
+                app:strokeColor="#E5E7EB"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="12dp"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:id="@+id/iv_time_icon"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_calendar"
+                        android:layout_gravity="center_vertical"
+                        app:tint="#F59E0B" />
+                    <TextView
+                        android:id="@+id/tv_time_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="选择这段记忆的发生时间..."
+                        android:textColor="#9CA3AF"
+                        android:textSize="12sp"
+                        android:layout_gravity="center_vertical"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tv_title_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="记忆标题"
+                android:textColor="#1F2937"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_time" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_title_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#F9FAFB"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_title_title"
+                app:strokeColor="#E5E7EB"
+                app:strokeWidth="1dp">
+
+                <EditText
+                    android:id="@+id/et_memory_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:hint="给这段记忆起个名字 (如: 绿皮车上的离别)"
+                    android:padding="16dp"
+                    android:singleLine="true"
+                    android:textColor="#374151"
+                    android:textColorHint="#9CA3AF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tv_story_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="背后的故事"
+                android:textColor="#1F2937"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_title_container" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_story_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#F9FAFB"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_story_title"
+                app:strokeColor="#E5E7EB"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/et_memory_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:background="@null"
+                        android:gravity="top|start"
+                        android:hint="写下这张照片背后的故事... (AI 智能助手随时为您效劳)"
+                        android:padding="16dp"
+                        android:textColor="#374151"
+                        android:textColorHint="#9CA3AF"
+                        android:textSize="14sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/btn_ai_polish"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_ai_polish"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:tint="#9CA3AF" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_publish"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="#F59E0B"
+                android:text="发布记忆"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_story_container" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
