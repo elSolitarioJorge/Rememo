@@ -45,6 +45,7 @@ include ':core:media'
 include ':core:map'
 include ':core:ui'
 include ':core:storage'
+include ':core:model'
 
 include ':feature:here'
 include ':feature:explore'
