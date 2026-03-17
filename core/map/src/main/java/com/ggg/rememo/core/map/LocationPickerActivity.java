@@ -2,6 +2,7 @@ package com.ggg.rememo.core.map;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -121,14 +122,10 @@ public class LocationPickerActivity extends AppCompatActivity implements AMap.On
     @Override
     public void onRegeocodeSearched(RegeocodeResult result, int rCode) {
         if (rCode == 1000 && result != null && result.getRegeocodeAddress() != null) {
-            // 查询成功
-            // 可以获取交叉路口、POI名称等，这里拼接一个友好的显示名称
             String poiName = result.getRegeocodeAddress().getFormatAddress();
-            if (result.getRegeocodeAddress().getPois().size() > 0) {
-                // 优先使用附近的兴趣点(POI)名字，比如"大雁塔"而不是"长安南路"
+            if (!result.getRegeocodeAddress().getPois().isEmpty()) {
                 poiName = result.getRegeocodeAddress().getPois().get(0).getTitle();
             }
-
             selectedAddress = poiName;
             binding.tvSelectedAddress.setText(selectedAddress);
         }
