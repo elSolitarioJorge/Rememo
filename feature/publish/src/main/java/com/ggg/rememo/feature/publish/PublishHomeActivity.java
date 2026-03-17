@@ -1,12 +1,16 @@
 package com.ggg.rememo.feature.publish;
 
-import android.content.Context;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -25,29 +29,17 @@ import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.model.MemoryPhoto;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
+import com.ggg.rememo.feature.publish.databinding.DialogTimeSelectionBinding;
 import com.ggg.rememo.feature.publish.presenter.PublishPresenter;
-
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URLEncoder;
 import java.util.List;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 @Route(path = Routes.Publish.HOME)
 public class PublishHomeActivity extends AppCompatActivity implements PublishContract.View {
     private ActivityPublishHomeBinding binding;
     private PublishPresenter presenter;
     private PhotoThumbnailAdapter photoAdapter;
-    private MemoryPhoto currentSelectedPhoto;
+    private MemoryPhoto currentSelectedPhoto;    // 记录当前选中的照片
+    private String currentSelectedSeason = "冬"; // 记录当前选中的季节
 
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
@@ -182,6 +174,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
         // 退出按钮
         binding.btnBack.setOnClickListener(v -> finish());
+
+        // 选择时间
+        binding.layoutSelectTime.setOnClickListener(v -> showTimeSelectionDialog());
     }
 
     private void launchPhotoPicker() {
@@ -211,6 +206,102 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             binding.btnSwitch.setText("看原图");
         } else {
             binding.btnSwitch.setText("看修复图");
+        }
+    }
+
+    private void showTimeSelectionDialog() {
+        Dialog dialog = new Dialog(this);
+
+        DialogTimeSelectionBinding dialogBinding = DialogTimeSelectionBinding.inflate(getLayoutInflater());
+        dialog.setContentView(dialogBinding.getRoot());
+
+        // 设置圆角透明背景和宽度
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout((int) (getResources().getDisplayMetrics().widthPixels * 0.85), ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        dialogBinding.btnYearUp.setOnClickListener(v -> {
+            try {
+                int year = Integer.parseInt(dialogBinding.etYear.getText().toString());
+                if (year < 2026) { // 简单限制最大值
+                    dialogBinding.etYear.setText(String.valueOf(year + 1));
+                    dialogBinding.etYear.setSelection(dialogBinding.etYear.getText().length());
+                }
+            } catch (NumberFormatException e) {
+                dialogBinding.etYear.setText("1998");
+            }
+        });
+
+        dialogBinding.btnYearDown.setOnClickListener(v -> {
+            try {
+                int year = Integer.parseInt(dialogBinding.etYear.getText().toString());
+                if (year > 1900) { // 简单限制最小值
+                    dialogBinding.etYear.setText(String.valueOf(year - 1));
+                    dialogBinding.etYear.setSelection(dialogBinding.etYear.getText().length());
+                }
+            } catch (NumberFormatException e) {
+                dialogBinding.etYear.setText("1998");
+            }
+        });
+
+        TextView[] seasonViews = new TextView[]{
+                dialogBinding.tvSpring,
+                dialogBinding.tvSummer,
+                dialogBinding.tvAutumn,
+                dialogBinding.tvWinter
+        };
+
+        // 初始化渲染选中状态
+        updateSeasonUI(seasonViews, currentSelectedSeason);
+
+        // 遍历绑定点击事件
+        for (TextView seasonView : seasonViews) {
+            seasonView.setOnClickListener(v -> {
+                currentSelectedSeason = seasonView.getText().toString();
+                updateSeasonUI(seasonViews, currentSelectedSeason);
+            });
+        }
+
+        dialogBinding.btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialogBinding.btnConfirm.setOnClickListener(v -> {
+            String yearInput = dialogBinding.etYear.getText().toString().trim();
+            if (yearInput.isEmpty()) {
+                Toast.makeText(this, "请输入发生年份", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (Integer.parseInt(yearInput) < 1900 || Integer.parseInt(yearInput) > 2026) {
+                Toast.makeText(this, "请输入有效年份（1900 - 2026）", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+
+            // 组装结果并更新外部 Activity UI
+            String finalTime = yearInput + " · " + currentSelectedSeason;
+            binding.tvTimeText.setText(finalTime);
+            binding.tvTimeText.setTextColor(Color.parseColor("#1F2937"));
+            binding.tvTimeText.setTypeface(null, Typeface.BOLD);
+            binding.tvTimeText.setTextSize(14f);
+
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    // 根据选中的文本，刷新 4 个按钮的背景和字体颜色
+    private void updateSeasonUI(TextView[] seasonViews, String selected) {
+        for (TextView view : seasonViews) {
+            if (view.getText().toString().equals(selected)) {
+                // 选中状态：套用黄色圆角背景，字体变深琥珀色并加粗
+                view.setBackgroundResource(R.drawable.bg_season_selected);
+                view.setTextColor(Color.parseColor("#D97706"));
+                view.setTypeface(null, Typeface.BOLD);
+            } else {
+                // 未选中状态：套用灰色圆角背景，字体变浅灰色恢复正常
+                view.setBackgroundResource(R.drawable.bg_season_normal);
+                view.setTextColor(Color.parseColor("#6B7280"));
+                view.setTypeface(null, Typeface.NORMAL);
+            }
         }
     }
 

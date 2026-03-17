@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_rounded"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:text="选择记忆时间"
+            android:textColor="#374151"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:padding="16dp"
+            android:src="@drawable/ic_cancel"
+            app:tint="#9CA3AF" />
+    </RelativeLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F3F4F6"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发生年份"
+            android:textColor="#6B7280"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_input_focused_yellow"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/et_year"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:inputType="number"
+                android:maxLength="4"
+                android:paddingHorizontal="12dp"
+                android:text="1998"
+                android:textColor="#1F2937"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="28dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingVertical="4dp"
+                android:paddingEnd="4dp">
+
+                <ImageView
+                    android:id="@+id/btn_year_up"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_up_arrows"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF"
+                    android:paddingTop="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"/>
+                <ImageView
+                    android:id="@+id/btn_year_down"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_down_arrows"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF"
+                    android:paddingBottom="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="季节记忆 (可选)"
+            android:textColor="#6B7280"
+            android:textSize="13sp"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/tv_spring" style="@style/SeasonButtonStyle" android:text="春" />
+            <TextView android:id="@+id/tv_summer" style="@style/SeasonButtonStyle" android:text="夏" android:layout_marginStart="8dp"/>
+            <TextView android:id="@+id/tv_autumn" style="@style/SeasonButtonStyle" android:text="秋" android:layout_marginStart="8dp"/>
+            <TextView android:id="@+id/tv_winter" style="@style/SeasonButtonStyle" android:text="冬" android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#F59E0B"
+            android:text="确认时间"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+</LinearLayout>
