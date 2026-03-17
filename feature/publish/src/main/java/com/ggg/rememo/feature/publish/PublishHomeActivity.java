@@ -1,9 +1,11 @@
 package com.ggg.rememo.feature.publish;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Toast;
 
@@ -25,7 +27,20 @@ import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
 import com.ggg.rememo.feature.publish.presenter.PublishPresenter;
 
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.List;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 @Route(path = Routes.Publish.HOME)
 public class PublishHomeActivity extends AppCompatActivity implements PublishContract.View {
@@ -109,29 +124,47 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             binding.btnRunAiRepair.setText("AI 引擎处理中...");
             binding.btnRunAiRepair.setEnabled(false);
 
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                // 模拟拿到修复后的 URL
-                String mockRestoredUrl = currentSelectedPhoto.getOriginalUrl();
-                currentSelectedPhoto.setRestoredUrl(mockRestoredUrl);
+            // 开启子线程进行网络请求
+            new Thread(() -> {
+                try {
+                    // 调用百度 API 获取上色后的本地文件路径
+                    Uri originalUri = Uri.parse(currentSelectedPhoto.getOriginalUrl());
+                    String restoredFilePath = BaiduAiUtils.colourize(PublishHomeActivity.this, originalUri);
 
-                if (currentSelectedPhoto.getCurrentState() == MemoryPhoto.PhotoState.ORIGINAL) {
-                    currentSelectedPhoto.toggleState();
+                    // 切回主线程更新 UI
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        // 更新 Model 状态
+                        currentSelectedPhoto.setRestoredUrl(restoredFilePath);
+                        if (currentSelectedPhoto.getCurrentState() == MemoryPhoto.PhotoState.ORIGINAL) {
+                            currentSelectedPhoto.toggleState();
+                        }
+
+                        // 更新 UI
+                        binding.btnRunAiRepair.setText("启动 AI 修复与上色");
+                        binding.btnRunAiRepair.setEnabled(true);
+                        binding.btnRunAiRepair.setVisibility(View.GONE);
+
+                        binding.btnSwitch.setVisibility(View.VISIBLE);
+                        updateSwitchButtonUI();
+
+                        // Glide 能够直接加载本地的 File 路径
+                        Glide.with(PublishHomeActivity.this)
+                                .load(currentSelectedPhoto.getDisplayUrl())
+                                .into(binding.ivDemoImage);
+
+                        Toast.makeText(PublishHomeActivity.this, "记忆重绘完成！", Toast.LENGTH_SHORT).show();
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // 发生错误时，也要切回主线程恢复按钮状态并提示用户
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        binding.btnRunAiRepair.setText("启动 AI 修复与上色");
+                        binding.btnRunAiRepair.setEnabled(true);
+                        Toast.makeText(PublishHomeActivity.this, "修复失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
                 }
-
-                binding.btnRunAiRepair.setText("启动 AI 修复与上色");
-                binding.btnRunAiRepair.setEnabled(true);
-                binding.btnRunAiRepair.setVisibility(View.GONE);
-
-                binding.btnSwitch.setVisibility(View.VISIBLE);
-                updateSwitchButtonUI();
-
-                Glide.with(PublishHomeActivity.this)
-                        .load(currentSelectedPhoto.getDisplayUrl())
-                        .into(binding.ivDemoImage);
-
-                Toast.makeText(this, "记忆重绘完成", Toast.LENGTH_SHORT).show();
-
-            }, 2500);
+            }).start();
         });
 
         // 切换视图按钮
