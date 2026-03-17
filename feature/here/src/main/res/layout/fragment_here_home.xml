@@ -6,20 +6,21 @@
     <com.amap.api.maps.TextureMapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
 
-    <ImageButton
-        android:id="@+id/btn_my_location"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/bg_location_btn"
-        android:contentDescription="@null"
-        android:elevation="4dp"
-        android:padding="12dp"
-        android:src="@drawable/ic_location_follow"
-        android:scaleType="centerInside"/>
+        <ImageButton
+            android:id="@+id/btn_my_location"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="100dp"
+            android:background="@drawable/bg_location_btn"
+            android:contentDescription="@null"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_location_follow" />
+    </com.amap.api.maps.TextureMapView>
 
 </FrameLayout>

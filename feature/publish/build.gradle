@@ -41,6 +41,7 @@ dependencies {
     implementation project(":core:base")
     implementation project(":core:common")
     implementation project(":core:model")
+    implementation project(":core:map")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
 

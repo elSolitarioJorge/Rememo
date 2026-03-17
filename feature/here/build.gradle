@@ -43,8 +43,11 @@ android {
 }
 
 dependencies {
+    implementation project(":core:base")
     implementation project(":core:common")
     implementation project(":core:map")
+    implementation project(":core:ui")
+    implementation project(":core:model")
     implementation libs.arouter.api
     implementation libs.mmkv
     annotationProcessor libs.arouter.compiler

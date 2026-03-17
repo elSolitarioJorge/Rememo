@@ -69,4 +69,11 @@ public final class Routes {
         public static final String HOME = "/profile/home";
         public static final String HOME_FRAGMENT = "/profile/home_fragment";
     }
+
+    /** 地图相关路由 */
+    public static final class Map {
+        private Map() { throw new AssertionError("No instances."); }
+
+        public static final String LOCATION_PICKER = "/map/location_picker";
+    }
 }

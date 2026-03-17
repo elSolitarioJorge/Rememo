@@ -1,6 +1,9 @@
 package com.ggg.rememo.feature.publish;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -8,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,14 +22,20 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.amap.api.location.AMapLocation;
+import com.amap.api.location.AMapLocationClient;
+import com.amap.api.location.AMapLocationClientOption;
+import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.map.LocationPickerActivity;
 import com.ggg.rememo.core.model.MemoryPhoto;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
@@ -35,12 +45,43 @@ import java.util.List;
 
 @Route(path = Routes.Publish.HOME)
 public class PublishHomeActivity extends AppCompatActivity implements PublishContract.View {
+    private static final String TAG = "PublishHomeActivity1";
+
     private ActivityPublishHomeBinding binding;
     private PublishPresenter presenter;
     private PhotoThumbnailAdapter photoAdapter;
     private MemoryPhoto currentSelectedPhoto;    // 记录当前选中的照片
     private String currentSelectedSeason = "冬"; // 记录当前选中的季节
 
+    // 位置相关
+    private AMapLocationClient locationClient;
+    private double currentLat = 0.0;
+    private double currentLng = 0.0;
+    private String currentAddress = "";
+    // 超时时间 10 秒
+    private static final long LOCATION_TIMEOUT_MS = 10000;
+    private long locationStartTime = 0;
+
+
+    // 定义选点结果接收器
+    private final ActivityResultLauncher<Intent> mapSelectLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    // 接收从选点页面传回来的数据
+                    String selectedAddress = result.getData().getStringExtra("address");
+                    currentLat = result.getData().getDoubleExtra("lat", 0.0);
+                    currentLng = result.getData().getDoubleExtra("lng", 0.0);
+
+                    // 更新 UI
+                    binding.tvPhysicalLocationText.setText(selectedAddress);
+                    binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706")); // 变高亮
+
+                    // 如果用户还没填记忆锚点名称，填充地址信息
+                    if (binding.etAnchorName.getText().toString().trim().isEmpty()) {
+                        binding.etAnchorName.setText(selectedAddress);
+                    }
+                }
+            });
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
             registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(9), uris -> {
@@ -66,6 +107,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         presenter.attachView(this);
         setupRecyclerView();
         setupListeners();
+
+        // 启动定位，获取当前位置信息
+        initLocationAndStart();
     }
 
     private void setupRecyclerView() {
@@ -177,6 +221,16 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
         // 选择时间
         binding.layoutSelectTime.setOnClickListener(v -> showTimeSelectionDialog());
+
+        // 选择位置按钮
+        binding.btnSelectLocation.setOnClickListener(v -> {
+            // 跳转到选点页面，传入当前已选位置作为初始位置
+            Intent intent = new Intent(PublishHomeActivity.this, LocationPickerActivity.class);
+            // 可以把当前的经纬度传过去，让地图打开时中心点就是当前位置
+            intent.putExtra("lat", currentLat);
+            intent.putExtra("lng", currentLng);
+            mapSelectLauncher.launch(intent);
+        });
     }
 
     private void launchPhotoPicker() {
@@ -302,6 +356,69 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                 view.setTextColor(Color.parseColor("#6B7280"));
                 view.setTypeface(null, Typeface.NORMAL);
             }
+        }
+    }
+
+    // ========== 位置相关方法 ==========
+    private void initLocationAndStart() {
+        try {
+            locationClient = new AMapLocationClient(getApplicationContext());
+            locationClient.setLocationListener(new AMapLocationListener() {
+                @Override
+                public void onLocationChanged(AMapLocation aMapLocation) {
+                    if (aMapLocation != null && aMapLocation.getErrorCode() == AMapLocation.LOCATION_SUCCESS) {
+                        // 获取位置成功
+                        currentLat = aMapLocation.getLatitude();
+                        currentLng = aMapLocation.getLongitude();
+                        currentAddress = aMapLocation.getPoiName();
+                        if (currentAddress == null || currentAddress.isEmpty()) {
+                            currentAddress = aMapLocation.getStreet() + aMapLocation.getStreetNum();
+                        }
+                        // 更新UI
+                        if (currentAddress != null && !currentAddress.isEmpty()) {
+                            Log.d(TAG, "onLocationChanged: " + currentAddress);
+                            // 有地址，直接显示
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                binding.tvPhysicalLocationText.setText(currentAddress);
+                                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#1F2937"));
+                            });
+                            // 停止定位
+                            locationClient.stopLocation();
+                        } else {
+                            // 没有地址，检查是否超时
+                            if (System.currentTimeMillis() - locationStartTime < LOCATION_TIMEOUT_MS) {
+                                // 还在超时时间内，尝试重新定位
+                                Log.d(TAG, "地址为空，继续尝试定位...");
+                                locationClient.startLocation();
+                            } else {
+                                // 超时了，停止定位
+                                locationClient.stopLocation();
+                                new Handler(Looper.getMainLooper()).post(() -> {
+                                    binding.tvPhysicalLocationText.setText("地址获取失败，请手动选点");
+                                    binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#EF4444"));
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+
+            AMapLocationClientOption option = new AMapLocationClientOption();
+            option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            option.setOnceLocation(true);
+            option.setNeedAddress(true);
+            locationClient.setLocationOption(option);
+
+            // 记录开始时间
+            locationStartTime = System.currentTimeMillis();
+
+            locationClient.startLocation();
+
+            // 更新UI显示
+            binding.tvPhysicalLocationText.setText("正在获取当前位置...");
+        } catch (Exception e) {
+            e.printStackTrace();
+            binding.tvPhysicalLocationText.setText("定位失败");
         }
     }
 
