@@ -75,11 +75,6 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                     // 更新 UI
                     binding.tvPhysicalLocationText.setText(selectedAddress);
                     binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706")); // 变高亮
-
-                    // 如果用户还没填记忆锚点名称，填充地址信息
-                    if (binding.etAnchorName.getText().toString().trim().isEmpty()) {
-                        binding.etAnchorName.setText(selectedAddress);
-                    }
                 }
             });
 

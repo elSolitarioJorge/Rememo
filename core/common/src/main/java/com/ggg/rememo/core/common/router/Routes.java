@@ -55,6 +55,14 @@ public final class Routes {
         public static final String HOME_FRAGMENT = "/timeline/home_fragment";
     }
 
+    /** 消息(Message)相关路由 */
+    public static final class Message {
+        private Message() { throw new AssertionError("No instances."); }
+
+        public static final String HOME = "/message/home";
+        public static final String HOME_FRAGMENT = "/message/home_fragment";
+    }
+
     /** 发布相关路由 */
     public static final class Publish {
         private Publish() { throw new AssertionError("No instances."); }

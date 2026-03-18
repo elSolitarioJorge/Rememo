@@ -147,7 +147,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         aMap.getUiSettings().setZoomGesturesEnabled(true);
         aMap.getUiSettings().setTiltGesturesEnabled(false);
 
-        // ========== 读取缓存坐标，消除首次加载的"北京闪烁" ==========
+        // ========== 读取缓存坐标 ==========
         if (getMMKV().containsKey(PREF_LAST_LAT) && getMMKV().containsKey(PREF_LAST_LNG)) {
             double cachedLat = getMMKV().decodeDouble(PREF_LAST_LAT, 0.0);
             double cachedLng = getMMKV().decodeDouble(PREF_LAST_LNG, 0.0);
@@ -159,7 +159,7 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         // ========== 蓝点样式配置 ==========
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_icon));
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
+        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);
         myLocationStyle.strokeColor(Color.TRANSPARENT);
         myLocationStyle.radiusFillColor(Color.TRANSPARENT);
         myLocationStyle.strokeWidth(0f);
