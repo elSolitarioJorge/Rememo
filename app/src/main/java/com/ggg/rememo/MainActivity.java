@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Fragment hereFragment;
     private Fragment exploreFragment;
-    private Fragment timelineFragment;
+    private Fragment messageFragment;
     private Fragment profileFragment;
     private Fragment activeFragment;
 
@@ -53,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
                 .build(Routes.Here.HOME_FRAGMENT).navigation();
         exploreFragment = (Fragment) ARouter.getInstance()
                 .build(Routes.Explore.HOME_FRAGMENT).navigation();
-        timelineFragment = (Fragment) ARouter.getInstance()
-                .build(Routes.Timeline.HOME_FRAGMENT).navigation();
+        messageFragment = (Fragment) ARouter.getInstance()
+                .build(Routes.Message.HOME_FRAGMENT).navigation();
         profileFragment = (Fragment) ARouter.getInstance()
                 .build(Routes.Profile.HOME_FRAGMENT).navigation();
 
@@ -64,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fcv_navigation, profileFragment, Routes.Profile.HOME_FRAGMENT)
                 .hide(profileFragment)
-                .add(R.id.fcv_navigation, timelineFragment, Routes.Timeline.HOME_FRAGMENT)
-                .hide(timelineFragment)
+                .add(R.id.fcv_navigation, messageFragment, Routes.Message.HOME_FRAGMENT)
+                .hide(messageFragment)
                 .add(R.id.fcv_navigation, exploreFragment, Routes.Explore.HOME_FRAGMENT)
                 .hide(exploreFragment)
                 .add(R.id.fcv_navigation, hereFragment, Routes.Here.HOME_FRAGMENT)
@@ -76,14 +76,14 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fm = getSupportFragmentManager();
         hereFragment = fm.findFragmentByTag(Routes.Here.HOME_FRAGMENT);
         exploreFragment = fm.findFragmentByTag(Routes.Explore.HOME_FRAGMENT);
-        timelineFragment = fm.findFragmentByTag(Routes.Timeline.HOME_FRAGMENT);
+        messageFragment = fm.findFragmentByTag(Routes.Message.HOME_FRAGMENT);
         profileFragment = fm.findFragmentByTag(Routes.Profile.HOME_FRAGMENT);
 
         int selectedId = binding.bnvNavigation.getSelectedItemId();
         if (selectedId == R.id.menu_discover) {
             activeFragment = exploreFragment;
         } else if (selectedId == R.id.menu_message) {
-            activeFragment = timelineFragment;
+            activeFragment = messageFragment;
         } else if (selectedId == R.id.menu_me) {
             activeFragment = profileFragment;
         } else {
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 switchFragment(exploreFragment);
                 return true;
             } else if (id == R.id.menu_message) {
-                switchFragment(timelineFragment);
+                switchFragment(messageFragment);
                 return true;
             } else if (id == R.id.menu_me) {
                 switchFragment(profileFragment);
