@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="@dimen/MsgRecyCardCornerRadius"
+    app:cardElevation="@dimen/MsgRecyCardElevation"
+    app:strokeColor="#FEEEB4"
+    app:strokeWidth="1dp"
+    android:id="@+id/main"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_yellow"
+        >
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="0dp"
+            android:background="@drawable/left_line_bg"
+            android:layout_marginStart="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/system_avatar"
+            android:layout_width="@dimen/MsgAvatarSize"
+            android:layout_height="@dimen/MsgAvatarSize"
+            android:src="@drawable/pic_my_avatar"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="@dimen/MsgPadding"
+            android:layout_marginStart="@dimen/MsgAvatarToStart"
+            />
+
+
+        <TextView
+            android:id="@+id/system_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/system_avatar"
+            app:layout_constraintTop_toTopOf="@id/system_avatar"
+            android:text="时光修理铺(AI)"
+            android:textColor="#B66535"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginStart="8dp"
+            />
+
+        <TextView
+            android:id="@+id/system_msg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/system_title"
+            app:layout_constraintStart_toStartOf="@id/system_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="您提交的老照片#892已经通过云端算法深度修复上色成功，快去看看吧!"
+            android:textSize="12sp"
+            android:textColor="#935D3C"
+            android:maxLines="4"
+            android:ellipsize="end"
+            android:lineSpacingMultiplier="1.2"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="@dimen/MsgPadding"
+            android:layout_marginEnd="@dimen/MsgPadding"
+            />
+
+        <TextView
+            android:id="@+id/system_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/system_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/system_title"
+            android:text="10分钟前"
+            android:textSize="12sp"
+            android:layout_marginEnd="20dp"
+            />
+
+        <ImageView
+            android:id="@+id/system_ribbon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_ribbon"
+            android:alpha="0.1"
+            android:rotation="135"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="-30dp"
+            android:layout_marginEnd="-25dp"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
+
+
+

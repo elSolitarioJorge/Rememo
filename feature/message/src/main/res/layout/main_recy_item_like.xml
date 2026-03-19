@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="@dimen/MsgRecyCardCornerRadius"
+    app:cardElevation="@dimen/MsgRecyCardElevation"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/msg_like_avatar"
+            android:layout_width="@dimen/MsgAvatarSize"
+            android:layout_height="@dimen/MsgAvatarSize"
+            android:src="@drawable/pic_my_avatar"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="@dimen/MsgAvatarToStart"
+            />
+
+        <ImageView
+            android:id="@+id/msg_like_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_type_like"
+            app:layout_constraintBottom_toBottomOf="@id/msg_like_avatar"
+            app:layout_constraintEnd_toEndOf="@id/msg_like_avatar"
+            android:layout_marginBottom="-6dp"
+            android:layout_marginEnd="-6dp"
+            />
+
+        <TextView
+            android:id="@+id/msg_like_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/msg_like_avatar"
+            app:layout_constraintTop_toTopOf="@id/msg_like_avatar"
+            android:text="建国叔"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginStart="14dp"
+            />
+
+        <TextView
+            android:id="@+id/like_msg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
+            android:maxLines="4"
+            android:text="对这段时光产生了深深的共鸣，点亮了红心"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/msg_like_name"
+            app:layout_constraintTop_toBottomOf="@id/msg_like_name" />
+
+        <TextView
+            android:id="@+id/msg_like_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/msg_like_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/msg_like_name"
+            android:text="昨天16:30"
+            android:textSize="12sp"
+            android:layout_marginEnd="20dp"
+            />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/like_post_card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/like_msg"
+            app:layout_constraintTop_toBottomOf="@id/like_msg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/MsgPadding"
+            android:layout_marginBottom="14dp"
+            >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#FFFEF2"
+                >
+
+                <TextView
+                    android:id="@+id/like_post_card_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/like_post_card_double_quotes"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="消失的糖葫芦消失的糖葫芦消失的糖葫芦"
+                    android:textColor="@color/black"
+                    android:textSize="13sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    />
+
+                <TextView
+                    android:id="@+id/like_post_card_content"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/like_post_card_title"
+                    app:layout_constraintStart_toStartOf="@id/like_post_card_title"
+                    app:layout_constraintEnd_toEndOf="@id/like_post_card_title"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginTop="6dp"
+                    android:text="小时候钟楼旁边的那个糖葫芦摊，是我小时候钟楼旁边的那个糖葫芦摊，是我"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    />
+
+                <ImageView
+                    android:id="@+id/like_post_card_double_quotes"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:alpha="0.1"
+                    android:src="@drawable/ic__double_quotes"
+                    app:layout_constraintTop_toTopOf="@id/like_post_card_title"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginEnd="8dp"
+                    />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
