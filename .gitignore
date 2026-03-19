@@ -1,0 +1,48 @@
+# ===== Gradle =====
+.gradle/
+**/build/
+
+# ===== Local config =====
+local.properties
+
+# ===== IDE (Android Studio / IntelliJ) =====
+.idea/
+*.iml
+
+# ===== Native build =====
+.externalNativeBuild/
+.cxx/
+
+# ===== Logs =====
+*.log
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Keystore =====
+*.jks
+*.keystore
+
+# ===== Android captures =====
+captures/
+
+# ===== Build Outputs & Metadata =====
+**/release/*.apk
+*.apk
+*.aab
+output-metadata.json
+
+# ===== Android System & Compiler Files =====
+# .dm 文件通常是编译器（如 ART）生成的诊断或元数据文件
+*.dm
+# 过滤 dex 相关产物
+*.dex
+
+# ===== Database & Debugging (针对之前的 db 疑问) =====
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+.vscode
