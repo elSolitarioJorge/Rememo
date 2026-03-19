@@ -1,0 +1,12 @@
+<!-- res/drawable/left_line_bg.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <gradient
+        android:startColor="#F6B800"
+        android:endColor="#FFD54F"
+        android:angle="90"/> <!-- 垂直渐变 -->
+
+    <corners
+        android:topLeftRadius="@dimen/MsgRecyCardCornerRadius"
+        android:bottomLeftRadius="@dimen/MsgRecyCardCornerRadius"/>
+</shape>

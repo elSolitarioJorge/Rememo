@@ -27,6 +27,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildFeatures {
+        viewBinding true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -35,12 +40,15 @@ android {
 
 dependencies {
     implementation project(":core:common")
+    implementation project(":core:ui")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
 
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
+    implementation libs.glide
+
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

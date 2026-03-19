@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="MsgMainCardCornerRadius">22dp</dimen>
+    <dimen name="MsgRecyCardCornerRadius">15dp</dimen>
+    <dimen name="MsgMainCardElevation">2dp</dimen>
+    <dimen name="MsgRecyCardElevation">2dp</dimen>
+    <dimen name="MsgMainCardHeight">100dp</dimen>
+    <dimen name="MsgMainCardViewLength">45dp</dimen>
+    <dimen name="MsgMainCardIconSize">20dp</dimen>
+    <dimen name="MsgMainCardTransparentIconSize">50dp</dimen>
+    <dimen name="MsgMainCardRedDotMargin">3dp</dimen>
+    <dimen name="MsgPadding">16dp</dimen>
+    <dimen name="MsgAvatarSize">40dp</dimen>
+    <dimen name="MsgAvatarToStart">12dp</dimen>
+</resources>
