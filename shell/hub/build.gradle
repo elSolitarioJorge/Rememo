@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localProps.load(localPropsFile.newDataInputStream())
+}
+
 android {
     namespace 'com.ggg.rememo.shell.hub'
     compileSdk {
@@ -16,6 +22,8 @@ android {
         versionName SHELL_VERSION_NAME
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders = [AMAP_API_KEY: localProps.getProperty('AMAP_API_KEY', '')]
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -63,7 +71,10 @@ android {
 
 dependencies {
     implementation project(":core:common")
-    implementation(libs.arouter.api)
+    implementation project(":core:map")
+
+    implementation libs.arouter.api
+    implementation libs.mmkv
 
     implementation libs.appcompat
     implementation libs.material
