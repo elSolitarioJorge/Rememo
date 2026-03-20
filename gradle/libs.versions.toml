@@ -19,6 +19,7 @@ mmkv = "2.3.0"
 glide = "5.0.5"
 gson = "2.13.2"
 okhttp = "5.3.2"
+room = "2.8.4"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
@@ -36,6 +37,8 @@ mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+room = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

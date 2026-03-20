@@ -3,22 +3,16 @@ plugins {
 }
 
 android {
-    namespace 'com.ggg.rememo.feature.publish'
+    namespace 'com.ggg.rememo.core.data'
     compileSdk {
-        version = release(libs.versions.compileSdk.get().toInteger())
+        version = release(36)
     }
 
     defaultConfig {
-        minSdk libs.versions.minSdk.get().toInteger()
+        minSdk 24
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = [AROUTER_MODULE_NAME: project.getName()]
-            }
-        }
     }
 
     buildTypes {
@@ -31,28 +25,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-
-    buildFeatures {
-        viewBinding true
-    }
 }
 
 dependencies {
-    implementation project(":core:base")
-    implementation project(":core:common")
-    implementation project(":core:data")
-    implementation project(":core:map")
-    implementation libs.arouter.api
-    annotationProcessor libs.arouter.compiler
+    implementation libs.room
+    annotationProcessor libs.room.compiler
 
-    implementation libs.glide
     implementation libs.gson
-    implementation libs.okhttp
 
     implementation libs.appcompat
     implementation libs.material
-    implementation libs.activity
-    implementation libs.constraintlayout
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
