@@ -1,6 +1,9 @@
 package com.ggg.rememo.feature.publish.contract;
 
 import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
+
+import java.util.List;
 
 /**
  * 发布模块 MVP 契约接口
@@ -23,6 +26,18 @@ public interface PublishContract {
          * @param lng 经度
          */
         void showLocation(String address, double lat, double lng);
+
+        /**
+         * 获取地址 - 供 Presenter 调用
+         * @return 地址字符串
+         */
+        String getAddress();
+
+        /**
+         * 获取时间显示文本 - 供 Presenter 调用
+         * @return 时间显示文本，如 "2024 · 冬"
+         */
+        String getTimeDisplayText();
     }
 
     /**
@@ -31,12 +46,13 @@ public interface PublishContract {
     interface Presenter {
         /**
          * 发布记忆
+         * @param title 标题
          * @param content 文字内容
-         * @param imagePath 图片路径（可为空）
+         * @param images 图片列表
          * @param lat 纬度
          * @param lng 经度
          */
-        void publish(String content, String imagePath, double lat, double lng);
+        void publish(String title, String content, List<MemoryPhoto> images, double lat, double lng);
 
         /**
          * 设置当前位置

@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.publish;
 
+import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.ggg.rememo.core.model.MemoryPhoto;
+import com.ggg.rememo.core.data.local.ImageStorageHelper;
+import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.feature.publish.databinding.ItemPhotoThumbnailBinding;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ import java.util.List;
 
 public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAdapter.PhotoViewHolder> {
     private static final int MAX_PHOTOS = 9;
-    private List<MemoryPhoto> photos = new ArrayList<>();
+    private final List<MemoryPhoto> photos = new ArrayList<>();
     private int selectedPosition = 0; // 默认选中第一张
     private OnPhotoClickListener listener;
 
@@ -31,12 +33,16 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
     }
 
     // 更新数据并刷新
-    public void addPhotos(List<Uri> newUris) {
+    // 注意：图片 URI 会被立即复制到应用的内部存储目录 (files/images/)，
+    // 避免依赖不稳定的 content:// URI，确保发布后能可靠读取。
+    public void addPhotos(Context context, List<Uri> newUris) {
         int currentSize = photos.size();
         for (Uri uri : newUris) {
             if (photos.size() < MAX_PHOTOS) {
+                // 将 content:// URI 复制到内部持久化存储，获取稳定路径
+                String stablePath = ImageStorageHelper.copyUriToInternalStorage(context, uri);
                 MemoryPhoto photo = new MemoryPhoto();
-                photo.setOriginalUrl(uri.toString());
+                photo.setOriginalUrl(stablePath);
                 photos.add(photo);
             }
         }
