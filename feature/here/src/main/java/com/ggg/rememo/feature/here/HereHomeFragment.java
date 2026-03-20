@@ -4,15 +4,19 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,13 +35,27 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.model.BitmapDescriptor;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.entity.MemoryPoint;
+import com.ggg.rememo.core.data.repository.MemoryPointRepository;
 import com.ggg.rememo.core.map.MapLifecycleHelper;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
 import com.tencent.mmkv.MMKV;
+
+import java.util.List;
+
 
 /**
  * 地图首页 Fragment
@@ -55,12 +73,13 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     private static final String PREF_LAST_LAT = "last_lat";
     private static final String PREF_LAST_LNG = "last_lng";
     // 默认缩放级别
-    private static final float DEFAULT_ZOOM_LEVEL = 15f;
+    private static final float DEFAULT_ZOOM_LEVEL = 16f;
 
     private MMKV mmkv;
     private FragmentHereHomeBinding binding;
     private AMap aMap;
     private AMapLocationClient locationClient;
+    private MemoryPointRepository memoryPointRepository;
 
     // LocationSource 监听器（地图调用 activate() 时注入，用于驱动蓝点渲染）
     private OnLocationChangedListener mLocationChangedListener;
@@ -125,7 +144,9 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // 视图创建完成后触发首次权限检查（放在此处而非 onResume，防止权限弹窗死循环）
+        // 初始化 Repository
+        memoryPointRepository = new MemoryPointRepository(requireContext());
+        // 视图创建完成后触发首次权限检查
         checkLocationPermissionAndInit();
     }
 
@@ -149,16 +170,15 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
 
         // ========== 读取缓存坐标 ==========
         if (getMMKV().containsKey(PREF_LAST_LAT) && getMMKV().containsKey(PREF_LAST_LNG)) {
-            double cachedLat = getMMKV().decodeDouble(PREF_LAST_LAT, 0.0);
-            double cachedLng = getMMKV().decodeDouble(PREF_LAST_LNG, 0.0);
-            if (cachedLat != 0.0 && cachedLng != 0.0) {
-                aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(cachedLat, cachedLng), DEFAULT_ZOOM_LEVEL));
-            }
+            double cachedLat = getMMKV().decodeDouble(PREF_LAST_LAT, 34.0);
+            double cachedLng = getMMKV().decodeDouble(PREF_LAST_LNG, 108.0);
+            aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(cachedLat, cachedLng), DEFAULT_ZOOM_LEVEL));
+        } else {
+            aMap.moveCamera(CameraUpdateFactory.zoomTo(DEFAULT_ZOOM_LEVEL));
         }
 
         // ========== 蓝点样式配置 ==========
         MyLocationStyle myLocationStyle = new MyLocationStyle();
-        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_icon));
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);
         myLocationStyle.strokeColor(Color.TRANSPARENT);
         myLocationStyle.radiusFillColor(Color.TRANSPARENT);
@@ -173,6 +193,20 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         aMap.setOnMapTouchListener(event -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN && isFollowing) {  // 避免高频重复调用UI更新
                 setFollowingMode(false);
+            }
+        });
+
+        aMap.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                // 从 Marker 中取出我们之前塞进去的 MemoryPoint 对象
+                MemoryPoint point = (MemoryPoint) marker.getObject();
+                if (point != null) {
+
+                    // 可选：让地图中心平滑移动到点击的 Marker 处
+                    aMap.animateCamera(CameraUpdateFactory.changeLatLng(marker.getPosition()));
+                }
+                return true; // 返回 true 表示消费了这个点击事件
             }
         });
     }
@@ -213,6 +247,90 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
                 locationClient.startLocation();
             }
         });
+    }
+
+    // ========== 记忆点相关方法 ==========
+    private void loadMemoryPoints() {
+        if (memoryPointRepository == null || aMap == null) {
+            return;
+        }
+
+        memoryPointRepository.getAll(new MemoryPointRepository.Callback<List<MemoryPoint>>() {
+            @Override
+            public void onSuccess(List<MemoryPoint> result) {
+                if (!isAdded() || aMap == null) {
+                    return;
+                }
+                // 在主线程更新 UI
+                requireActivity().runOnUiThread(() -> {
+                    // 清除现有标记
+                    aMap.clear();
+                    // 添加新的标记
+                    for (MemoryPoint point : result) {
+                        addMarkerForMemoryPoint(point);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "加载记忆点失败: " + e.getMessage());
+            }
+        });
+    }
+
+    private void addMarkerForMemoryPoint(MemoryPoint point) {
+        if (aMap == null || point == null) {
+            return;
+        }
+
+        LatLng position = new LatLng(point.getLatitude(), point.getLongitude());
+
+        View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_custom_marker, null);
+
+        // 将 View 转化为 BitmapDescriptor 并添加到地图上
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(markerView);
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(position)
+                .title(point.getPointName())
+                .anchor(0.5f, 1.0f) // 重要：设置锚点为底部中心，这样缩放地图时 Marker 位置才准
+                .icon(descriptor)
+                .zIndex(1.0f);
+
+        Marker marker = aMap.addMarker(markerOptions);
+        if (marker != null) {
+            marker.setObject(point); // 保存对象供点击时使用
+            boolean existImage = point.getCoverImageUrl() != null && !point.getCoverImageUrl().isEmpty();
+            int radiusPx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
+
+            RequestOptions options = new RequestOptions()
+                    .transform(new CenterCrop(), new RoundedCorners(radiusPx))
+                    .override(200, 200)       // 限制 Bitmap 大小，防止 OOM 或超过 Canvas 限制
+                    .disallowHardwareConfig(); // 禁用硬件加速，确保能在软件 Canvas 上绘制
+
+            Glide.with(this)
+                    .asBitmap()
+                    .load(existImage ? point.getCoverImageUrl() : R.drawable.pic_old)
+                    .apply(options)
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            View finalMarkerView = LayoutInflater.from(getContext()).inflate(R.layout.layout_custom_marker, null);
+                            ImageView finalIvPic = finalMarkerView.findViewById(R.id.iv_marker_pic);
+
+                            // 将裁切完美的 Bitmap 贴给新的 ImageView
+                            finalIvPic.setImageBitmap(resource);
+
+                            // 从 View 生成 Marker 的 Descriptor
+                            BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(finalMarkerView);
+                            marker.setIcon(descriptor);
+                        }
+
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {}
+                    });
+        }
     }
 
     /**
@@ -382,6 +500,9 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
             isLocationInitialized = true;
         }
         // 其他情况（未请求 / 已普通拒绝）：等待用户点击定位按钮主动触发
+
+        // 加载记忆点
+        loadMemoryPoints();
     }
 
     @Override
