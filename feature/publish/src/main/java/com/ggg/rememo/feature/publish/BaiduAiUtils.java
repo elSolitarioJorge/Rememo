@@ -5,10 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
+
+import com.ggg.rememo.core.data.local.ImageStorageHelper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.UUID;
@@ -49,18 +52,12 @@ public class BaiduAiUtils {
         throw new Exception("获取 Access Token 失败");
     }
 
-    // 2. 调用黑白图片上色接口
-    public static String colourize(Context context, Uri imageUri) throws Exception {
-        // 获取 Token
+    // 调用黑白图片上色接口，返回修复后的 Base64 字符串（不含文件操作）
+    public static String colourizeToBase64(Context context, Uri imageUri) throws Exception {
         String token = getAccessToken();
-
-        // 将本地 Uri 图片转为 Base64 字符串
         String base64Image = uriToBase64(context, imageUri);
 
-        // 构建请求发送给百度 API
         String url = "https://aip.baidubce.com/rest/2.0/image-process/v1/colourize?access_token=" + token;
-
-        // OkHttp 的 FormBody 会自动帮我们做 UrlEncode
         RequestBody formBody = new FormBody.Builder()
                 .add("image", base64Image)
                 .build();
@@ -71,7 +68,43 @@ public class BaiduAiUtils {
                 .post(formBody)
                 .build();
 
-        // 解析返回结果
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful() && response.body() != null) {
+                String jsonResponse = response.body().string();
+                JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
+
+                if (jsonObject.has("image")) {
+                    return jsonObject.get("image").getAsString();
+                } else if (jsonObject.has("error_msg")) {
+                    throw new Exception("API 报错: " + jsonObject.get("error_msg").getAsString());
+                }
+            }
+        }
+        throw new Exception("上色请求失败");
+    }
+
+    // 调用黑白图片上色接口，并将结果保存到指定路径，返回文件绝对路径
+    public static String colourizeWithOutputPath(Context context, Uri imageUri, String outputPath) throws Exception {
+        String base64 = uriToBase64(context, imageUri);
+        return ImageStorageHelper.saveRestoredImageToPath(context, base64, outputPath);
+    }
+
+    // 调用黑白图片上色接口（从文件路径读取），并保存结果到指定路径
+    public static String colourizeWithOutputPath(Context context, String imageFilePath, String outputPath) throws Exception {
+        String token = getAccessToken();
+        String base64Image = filePathToBase64(imageFilePath);
+
+        String url = "https://aip.baidubce.com/rest/2.0/image-process/v1/colourize?access_token=" + token;
+        RequestBody formBody = new FormBody.Builder()
+                .add("image", base64Image)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .post(formBody)
+                .build();
+
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && response.body() != null) {
                 String jsonResponse = response.body().string();
@@ -79,14 +112,24 @@ public class BaiduAiUtils {
 
                 if (jsonObject.has("image")) {
                     String resultBase64 = jsonObject.get("image").getAsString();
-                    // 将百度返回的 Base64 图片保存到本地缓存，并返回临时文件的路径
-                    return saveBase64ToFile(context, resultBase64);
+                    return ImageStorageHelper.saveRestoredImageToPath(context, resultBase64, outputPath);
                 } else if (jsonObject.has("error_msg")) {
                     throw new Exception("API 报错: " + jsonObject.get("error_msg").getAsString());
                 }
             }
         }
         throw new Exception("上色请求失败");
+    }
+
+    // 从文件路径读取并转为 Base64
+    private static String filePathToBase64(String filePath) throws Exception {
+        try (FileInputStream fis = new FileInputStream(filePath);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            Bitmap bitmap = BitmapFactory.decodeStream(fis);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+            byte[] bytes = outputStream.toByteArray();
+            return Base64.encodeToString(bytes, Base64.NO_WRAP);
+        }
     }
 
     // 将 Uri 转为 Base64 (百度要求不带 data:image/jpeg;base64, 头部)

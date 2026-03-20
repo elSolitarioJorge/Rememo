@@ -1,9 +1,7 @@
 package com.ggg.rememo.feature.publish;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -22,7 +20,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,8 +32,9 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.local.ImageStorageHelper;
+import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.map.LocationPickerActivity;
-import com.ggg.rememo.core.model.MemoryPhoto;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
 import com.ggg.rememo.feature.publish.databinding.DialogTimeSelectionBinding;
@@ -98,7 +96,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         });
 
         // 初始化 Presenter 并绑定 View
-        presenter = new PublishPresenter();
+        presenter = new PublishPresenter(this);
         presenter.attachView(this);
         setupRecyclerView();
         setupListeners();
@@ -158,9 +156,11 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             // 开启子线程进行网络请求
             new Thread(() -> {
                 try {
-                    // 调用百度 API 获取上色后的本地文件路径
-                    Uri originalUri = Uri.parse(currentSelectedPhoto.getOriginalUrl());
-                    String restoredFilePath = BaiduAiUtils.colourize(PublishHomeActivity.this, originalUri);
+                    // 生成稳定的 AI 修复图存储路径（files/images/restored/）
+                    String restoredPath = ImageStorageHelper.generateRestoredImagePath(PublishHomeActivity.this);
+                    // 直接从内部文件路径读取，调用百度 API 并保存结果
+                    String restoredFilePath = BaiduAiUtils.colourizeWithOutputPath(
+                            PublishHomeActivity.this, currentSelectedPhoto.getOriginalUrl(), restoredPath);
 
                     // 切回主线程更新 UI
                     new Handler(Looper.getMainLooper()).post(() -> {
@@ -226,6 +226,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             intent.putExtra("lng", currentLng);
             mapSelectLauncher.launch(intent);
         });
+
+        // 发布按钮
+        binding.btnPublish.setOnClickListener(v -> handlePublish());
     }
 
     private void launchPhotoPicker() {
@@ -245,7 +248,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         binding.ivDemoImage.setVisibility(View.VISIBLE);
         binding.rvPhotoThumbnails.setVisibility(View.VISIBLE);
 
-        photoAdapter.addPhotos(uris);
+        photoAdapter.addPhotos(this, uris);
     }
 
     private void updateSwitchButtonUI() {
@@ -354,6 +357,18 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         }
     }
 
+    // ========== 发布相关方法 ==========
+    private void handlePublish() {
+        // View 层：只负责收集 UI 数据，调用 Presenter
+        String title = binding.etMemoryTitle.getText().toString().trim();
+        String content = binding.etMemoryContent.getText().toString().trim();
+        String address = binding.tvPhysicalLocationText.getText().toString().trim();
+        List<MemoryPhoto> photos = photoAdapter.getPhotos();
+
+        // 调用 Presenter 处理发布
+        presenter.publish(title, content, photos, currentLat, currentLng);
+    }
+
     // ========== 位置相关方法 ==========
     private void initLocationAndStart() {
         try {
@@ -370,7 +385,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                             currentAddress = aMapLocation.getStreet() + aMapLocation.getStreetNum();
                         }
                         // 更新UI
-                        if (currentAddress != null && !currentAddress.isEmpty()) {
+                        if (!currentAddress.isEmpty()) {
                             Log.d(TAG, "onLocationChanged: " + currentAddress);
                             // 有地址，直接显示
                             new Handler(Looper.getMainLooper()).post(() -> {
@@ -427,6 +442,17 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
     @Override
     public void showLocation(String address, double lat, double lng) {
         // TODO: 更新 UI 显示位置信息
+    }
+
+    // ========== View 接口实现 - 供 Presenter 调用 ==========
+    @Override
+    public String getAddress() {
+        return binding.tvPhysicalLocationText.getText().toString().trim();
+    }
+
+    @Override
+    public String getTimeDisplayText() {
+        return binding.tvTimeText.getText().toString();
     }
 
     // ========== BaseView 默认实现 ==========
