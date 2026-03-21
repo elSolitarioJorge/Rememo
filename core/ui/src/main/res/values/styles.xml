@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="MarkerImageStyle">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">9dp</item>
-    </style>
 </resources>
