@@ -13,26 +13,18 @@ import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
+import com.ggg.rememo.feature.here.contract.MemoryPointBottomSheetContract;
 import com.ggg.rememo.feature.here.databinding.FragmentMemoryPointBottomSheetBinding;
+import com.ggg.rememo.feature.here.presenter.MemoryPointBottomSheetPresenter;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-/**
- * 地图 Marker 点击后弹出的底部卡片
- *
- * <p>展示单个 MemoryPoint 的概览信息，包括：
- * <ul>
- *   <li>封面图 + 记忆数量标签</li>
- *   <li>地点名称 + 详细地址</li>
- *   <li>AI 时空拾取摘要</li>
- *   <li>「进入时空长河」跳转按钮</li>
- * </ul>
- */
-public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment {
+public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
+        implements MemoryPointBottomSheetContract.View {
 
     private static final String ARG_POINT = "arg_point";
 
     private FragmentMemoryPointBottomSheetBinding binding;
-    private MemoryPoint memoryPoint;
+    private MemoryPointBottomSheetPresenter presenter;
 
     public static MemoryPointBottomSheetFragment newInstance(MemoryPoint point) {
         MemoryPointBottomSheetFragment fragment = new MemoryPointBottomSheetFragment();
@@ -40,11 +32,6 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment {
         args.putParcelable(ARG_POINT, point);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public int getTheme() {
-        return R.style.BottomSheetTheme;
     }
 
     @Override
@@ -65,16 +52,16 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        presenter = new MemoryPointBottomSheetPresenter();
+        presenter.attachView(this);
+
+        MemoryPoint point = null;
         if (getArguments() != null) {
-            memoryPoint = getArguments().getParcelable(ARG_POINT);
+            point = getArguments().getParcelable(ARG_POINT);
         }
 
-        if (memoryPoint == null) {
-            dismiss();
-            return;
-        }
-
-        bindData();
+        presenter.onViewCreated(point);
         setupListeners();
     }
 
@@ -84,14 +71,25 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment {
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
             Window window = dialog.getWindow();
-            // 去掉背后变暗的效果(Dim)
             window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         }
     }
 
-    private void bindData() {
-        // 封面图
-        String coverUrl = memoryPoint.getCoverImageUrl();
+    private void setupListeners() {
+        binding.btnEnterTimeline.setOnClickListener(v -> presenter.onEnterTimelineClicked());
+        binding.getRoot().setOnClickListener(v -> dismiss());
+    }
+
+    // ==================== MemoryPointBottomSheetContract.View 实现 ====================
+
+    @Override
+    public void showPointInfo(MemoryPoint point) {
+        if (point == null) {
+            dismiss();
+            return;
+        }
+
+        String coverUrl = point.getCoverImageUrl();
         if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
                     .load(coverUrl)
@@ -103,39 +101,39 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment {
             binding.ivHeroImage.setImageResource(R.drawable.pic_old);
         }
 
-        // 记忆数量
-        int count = memoryPoint.getMemoryCount();
-        binding.tvMemoryCount.setText(count + " 记忆");
+        binding.tvMemoryCount.setText(point.getMemoryCount() + " 记忆");
+        binding.tvTitle.setText(point.getPointName() != null ? point.getPointName() : "未命名地点");
+        binding.tvLocation.setText(point.getLocationAddress() != null ? point.getLocationAddress() : "");
 
-        // 地点名称
-        String pointName = memoryPoint.getPointName();
-        binding.tvTitle.setText(pointName != null ? pointName : "未命名地点");
-
-        // 详细地址
-        String address = memoryPoint.getLocationAddress();
-        binding.tvLocation.setText(address != null ? address : "");
-
-        // AI 摘要
-        String summary = memoryPoint.getSummaryText();
+        String summary = point.getSummaryText();
         if (summary != null && !summary.isEmpty()) {
             binding.tvAiSummary.setText(summary);
         }
     }
 
-    private void setupListeners() {
-        // 进入时空长河按钮
-        binding.btnEnterTimeline.setOnClickListener(v -> {
-            // TODO: 跳转到时间线页面，传入 pointId
-            dismiss();
-        });
+    @Override
+    public void navigateToTimeline(String pointId) {
+        // TODO: 跳转到时间线页面
+        dismiss();
+    }
 
-        // 点击卡片背景关闭
-        binding.getRoot().setOnClickListener(v -> dismiss());
+    @Override
+    public void showError(String message) {
+        // BottomSheet 场景下可直接使用 Toast
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (presenter != null) {
+            presenter.detachView();
+        }
         binding = null;
     }
 }
