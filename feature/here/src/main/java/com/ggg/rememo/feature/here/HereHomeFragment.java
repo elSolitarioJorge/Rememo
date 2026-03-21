@@ -199,14 +199,14 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
         aMap.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                // 从 Marker 中取出我们之前塞进去的 MemoryPoint 对象
                 MemoryPoint point = (MemoryPoint) marker.getObject();
                 if (point != null) {
-
-                    // 可选：让地图中心平滑移动到点击的 Marker 处
+                    // 让地图中心平滑移动到点击的 Marker 处
                     aMap.animateCamera(CameraUpdateFactory.changeLatLng(marker.getPosition()));
+                    // 弹出底部卡片
+                    showMemoryPointBottomSheet(point);
                 }
-                return true; // 返回 true 表示消费了这个点击事件
+                return true;
             }
         });
     }
@@ -482,6 +482,17 @@ public class HereHomeFragment extends Fragment implements AMapLocationListener, 
     @Override
     public void deactivate() {
         mLocationChangedListener = null;
+    }
+
+    // ==================== 底部卡片弹窗 ====================
+
+    /**
+     * 展示 MemoryPoint 的底部详情卡片
+     */
+    private void showMemoryPointBottomSheet(MemoryPoint point) {
+        MemoryPointBottomSheetFragment bottomSheet =
+                MemoryPointBottomSheetFragment.newInstance(point);
+        bottomSheet.show(getChildFragmentManager(), "MemoryPointBottomSheet");
     }
 
     // ==================== Fragment 生命周期 ====================
