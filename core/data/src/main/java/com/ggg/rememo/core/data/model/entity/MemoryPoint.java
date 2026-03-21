@@ -1,11 +1,16 @@
 package com.ggg.rememo.core.data.model.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.util.Objects;
+
 @Entity(tableName = "memory_points")
-public class MemoryPoint {
+public class MemoryPoint implements Parcelable {
     @PrimaryKey
     @NonNull
     private String pointId = "";   // 锚点ID
@@ -130,4 +135,54 @@ public class MemoryPoint {
     public void setUpdatedTime(long updatedTime) {
         this.updatedTime = updatedTime;
     }
+
+    // ==================== Parcelable 实现 ====================
+
+    protected MemoryPoint(Parcel in) {
+        pointId = Objects.requireNonNull(in.readString());
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        pointName = in.readString();
+        locationAddress = in.readString();
+        coverImageUrl = in.readString();
+        memoryCount = in.readInt();
+        summaryText = in.readString();
+        minYear = in.readInt();
+        maxYear = in.readInt();
+        createdTime = in.readLong();
+        updatedTime = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(pointId);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeString(pointName);
+        dest.writeString(locationAddress);
+        dest.writeString(coverImageUrl);
+        dest.writeInt(memoryCount);
+        dest.writeString(summaryText);
+        dest.writeInt(minYear);
+        dest.writeInt(maxYear);
+        dest.writeLong(createdTime);
+        dest.writeLong(updatedTime);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<MemoryPoint> CREATOR = new Creator<MemoryPoint>() {
+        @Override
+        public MemoryPoint createFromParcel(Parcel in) {
+            return new MemoryPoint(in);
+        }
+
+        @Override
+        public MemoryPoint[] newArray(int size) {
+            return new MemoryPoint[size];
+        }
+    };
 }
