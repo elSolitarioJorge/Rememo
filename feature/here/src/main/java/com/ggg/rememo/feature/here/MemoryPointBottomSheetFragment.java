@@ -11,7 +11,9 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.feature.here.contract.MemoryPointBottomSheetContract;
 import com.ggg.rememo.feature.here.databinding.FragmentMemoryPointBottomSheetBinding;
@@ -25,6 +27,7 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
 
     private FragmentMemoryPointBottomSheetBinding binding;
     private MemoryPointBottomSheetPresenter presenter;
+    private MemoryPoint currentPoint;
 
     public static MemoryPointBottomSheetFragment newInstance(MemoryPoint point) {
         MemoryPointBottomSheetFragment fragment = new MemoryPointBottomSheetFragment();
@@ -56,12 +59,11 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
         presenter = new MemoryPointBottomSheetPresenter();
         presenter.attachView(this);
 
-        MemoryPoint point = null;
         if (getArguments() != null) {
-            point = getArguments().getParcelable(ARG_POINT);
+            currentPoint = getArguments().getParcelable(ARG_POINT);
         }
 
-        presenter.onViewCreated(point);
+        presenter.onViewCreated(currentPoint);
         setupListeners();
     }
 
@@ -113,13 +115,17 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
 
     @Override
     public void navigateToTimeline(String pointId) {
-        // TODO: 跳转到时间线页面
         dismiss();
+        // 通过 ARouter 跳转到时光长河页面，传递地点信息
+        // 使用 core:common 中定义的路由常量，完全解耦 timeline 模块
+        ARouter.getInstance()
+                .build(Routes.Timeline.HOME)
+                .withString(Routes.Timeline.EXTRA_POINT_ID, pointId)
+                .navigation(requireContext());
     }
 
     @Override
     public void showError(String message) {
-        // BottomSheet 场景下可直接使用 Toast
         android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
     }
 

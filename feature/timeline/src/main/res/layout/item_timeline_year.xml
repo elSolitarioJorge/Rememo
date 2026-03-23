@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="40dp">
+
+    <FrameLayout
+        android:id="@+id/timeline_axis_container"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="28dp"
+        android:background="#33FBBF24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:id="@+id/timeline_axis"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/shape_timeline_axis" />
+    </FrameLayout>
+
+    <View
+        android:id="@+id/timelineNode"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/shape_node_glow"
+        app:layout_constraintEnd_toEndOf="@id/timeline_axis_container"
+        app:layout_constraintStart_toStartOf="@id/timeline_axis_container"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_year"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="1998"
+        android:textColor="#FBBF24"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/timelineNode"
+        app:layout_constraintStart_toEndOf="@id/timeline_axis_container"
+        app:layout_constraintTop_toTopOf="@id/timelineNode" />
+
+    <TextView
+        android:id="@+id/tv_year_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="流金岁月"
+        android:textColor="#80FBBF24"
+        android:textSize="12sp"
+        app:layout_constraintBaseline_toBaselineOf="@id/tv_year"
+        app:layout_constraintStart_toEndOf="@id/tv_year" />
+
+    <TextView
+        android:id="@+id/btn_explore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_explore_button"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        android:text="探索 156 个记忆 >"
+        android:textColor="#FCD34D"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@id/tv_year"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_year" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_horizontal_cards"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingStart="24dp"
+        android:paddingEnd="16dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/timeline_axis_container"
+        app:layout_constraintTop_toBottomOf="@id/tv_year" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
