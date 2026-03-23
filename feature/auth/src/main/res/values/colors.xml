@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础背景 -->
+    <color name="bg_dark">#1a1a1a</color>
+    <color name="bg_slate">#0f172a</color>
+
+    <!-- 主题色 (琥珀色) -->
+    <color name="amber_300">#FCD34D</color>
+    <color name="amber_400">#FBBF24</color>
+    <color name="amber_500">#F59E0B</color>
+    <color name="amber_600">#D97706</color>
+
+    <!-- 透明度色彩 (用于玻璃拟态) -->
+    <color name="amber_alpha_15">#26F59E0B</color>
+    <color name="amber_alpha_20">#33F59E0B</color>
+    <color name="amber_alpha_60">#99F59E0B</color>
+    <color name="amber_alpha_80">#CCF59E0B</color>
+
+    <color name="white_alpha_05">#0DFFFFFF</color>
+    <color name="white_alpha_08">#14FFFFFF</color>
+    <color name="white_alpha_10">#1AFFFFFF</color>
+    <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="white_alpha_30">#4DFFFFFF</color>
+    <color name="white_alpha_40">#66FFFFFF</color>
+    <color name="white_alpha_80">#CCFFFFFF</color>
+
+    <color name="black_alpha_20">#33000000</color>
+    <color name="black_alpha_30">#4D000000</color>
+    <color name="black_alpha_40">#66000000</color>
+    <color name="black_alpha_50">#80000000</color>
+    <color name="black_alpha_85">#D90F171A</color>
+    <color name="black_alpha_98">#FA0F171A</color>
+</resources>
