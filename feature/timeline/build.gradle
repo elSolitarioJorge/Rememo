@@ -31,12 +31,23 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
+    implementation project(":core:base")
     implementation project(":core:common")
+    implementation project(":core:data")
+    implementation project(":core:ui")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
+
+    implementation libs.glide
+    implementation libs.gson
+    implementation libs.okhttp
 
     implementation libs.appcompat
     implementation libs.material

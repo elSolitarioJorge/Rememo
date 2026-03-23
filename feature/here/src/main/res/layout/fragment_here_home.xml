@@ -22,5 +22,4 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_location_follow" />
     </com.amap.api.maps.TextureMapView>
-
 </FrameLayout>
