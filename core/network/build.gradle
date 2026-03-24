@@ -28,8 +28,13 @@ android {
 }
 
 dependencies {
+    implementation project(":core:data")
     implementation libs.appcompat
     implementation libs.material
+    implementation libs.okhttp
+    implementation libs.retrofit
+    implementation libs.retrofit.converter.gson
+    implementation libs.gson
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
