@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <ImageView
+        android:id="@+id/explore_reco_icon_navigation"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_navigation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="@dimen/screenMargin"
+        android:layout_marginTop="@dimen/screenMargin"
+        />
+
+    <TextView
+        android:id="@+id/explore_reco_text_memory_anchor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="搜索记忆锚点"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toEndOf="@id/explore_reco_icon_navigation"
+        app:layout_constraintTop_toTopOf="@id/explore_reco_icon_navigation"
+        app:layout_constraintBottom_toBottomOf="@id/explore_reco_icon_navigation"
+        android:layout_marginStart="8dp"
+        />
+
+    <TextView
+        android:id="@+id/explore_reco_text_view_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="查看更多"
+        android:textSize="10sp"
+        app:layout_constraintTop_toTopOf="@id/explore_reco_icon_more"
+        app:layout_constraintBottom_toBottomOf="@id/explore_reco_icon_more"
+        app:layout_constraintEnd_toStartOf="@id/explore_reco_icon_more"
+        android:layout_marginEnd="3dp"
+        />
+
+    <ImageView
+        android:id="@+id/explore_reco_icon_more"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:src="@drawable/ic_more"
+        app:layout_constraintTop_toTopOf="@id/explore_reco_text_memory_anchor"
+        app:layout_constraintBottom_toBottomOf="@id/explore_reco_text_memory_anchor"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/screenMargin"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/explore_reco_location_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="11dp"
+        app:layout_constraintTop_toBottomOf="@id/explore_reco_icon_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/explore_reco_content_recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/explore_reco_location_recyclerView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,9 +6,10 @@
     <color name="orange">#f4a21a</color>
     <color name="gray">#999999</color>
     <color name="divider_gray">#F3F4F6</color>
-    <color name="bg_yellow">#FFF8EC</color>
+    <color name="bg_card_yellow">#FFF8EC</color>
     <color name="message_time_gray">#9CA3AF</color>
     <color name="message_post_card_bg_gray">#F9FAFB</color>
 
     <color name="deep_space_blue">#0B0D17</color>
+    <color name="text_brown">#92400E</color>
 </resources>

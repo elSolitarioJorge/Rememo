@@ -133,7 +133,7 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:alpha="0.1"
-                    android:src="@drawable/ic__double_quotes"
+                    android:src="@drawable/ic_double_quotes"
                     app:layout_constraintTop_toTopOf="@id/like_post_card_title"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="8dp"

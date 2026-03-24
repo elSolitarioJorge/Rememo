@@ -36,7 +36,12 @@ public class MemoryPoint implements Parcelable {
     private long updatedTime;   // 锚点更新时间戳
 
     public MemoryPoint() {
+    }
 
+    public MemoryPoint(@NonNull String pointName, String coverImageUrl, int memoryCount) {
+        this.pointName = pointName;
+        this.coverImageUrl = coverImageUrl;
+        this.memoryCount = memoryCount;
     }
 
     @NonNull
