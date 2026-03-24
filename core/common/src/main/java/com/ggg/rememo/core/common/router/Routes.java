@@ -87,4 +87,12 @@ public final class Routes {
 
         public static final String LOCATION_PICKER = "/map/location_picker";
     }
+
+    /** 登录注册相关路由 */
+    public static final class Auth {
+        private Auth() { throw new AssertionError("No instances."); }
+
+        public static final String LOGIN = "/auth/login";
+        public static final String REGISTER = "/auth/register";
+    }
 }

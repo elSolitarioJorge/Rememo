@@ -253,6 +253,7 @@
                         app:layout_constraintTop_toBottomOf="@id/v_tab_indicator">
 
                         <EditText
+                            android:id="@+id/et_login_code_phone"
                             android:layout_width="match_parent"
                             android:layout_height="52dp"
                             android:background="@drawable/selector_glass_input"
@@ -270,6 +271,7 @@
                             android:layout_marginTop="16dp">
 
                             <EditText
+                                android:id="@+id/et_login_code"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:background="@drawable/selector_glass_input"
@@ -363,6 +365,7 @@
                     app:layout_constraintTop_toBottomOf="@id/ll_reg_header">
 
                     <EditText
+                        android:id="@+id/et_reg_phone"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:background="@drawable/selector_glass_input"
@@ -379,17 +382,19 @@
                         android:layout_height="52dp"
                         android:layout_marginTop="12dp">
 
-                        <EditText
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/selector_glass_input"
-                            android:hint="请输入短信验证码"
-                            android:inputType="number"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="100dp"
-                            android:textColor="@android:color/white"
-                            android:textColorHint="@color/white_alpha_30"
-                            android:textSize="14sp" />
+                            <EditText
+                                android:id="@+id/et_reg_code"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/selector_glass_input"
+                                android:hint="请输入短信验证码"
+                                android:inputType="number"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="100dp"
+                                android:textColor="@android:color/white"
+                                android:textColorHint="@color/white_alpha_30"
+                                android:textCursorDrawable="@drawable/shape_cursor"
+                                android:textSize="14sp" />
 
                         <TextView
                             android:id="@+id/tv_get_code_reg"
@@ -406,6 +411,7 @@
                     </FrameLayout>
 
                     <EditText
+                        android:id="@+id/et_reg_pwd"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:layout_marginTop="12dp"
@@ -419,6 +425,7 @@
                         android:textSize="14sp" />
 
                     <CheckBox
+                        android:id="@+id/cb_agreement"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"

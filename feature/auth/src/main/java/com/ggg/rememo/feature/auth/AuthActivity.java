@@ -12,17 +12,25 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.core.content.ContextCompat;
 
+import com.alibaba.android.arouter.facade.annotation.Route;
+import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.databinding.ActivityAuthBinding;
+import com.ggg.rememo.feature.auth.presenter.AuthPresenter;
 
-public class AuthActivity extends AppCompatActivity {
+
+@Route(path = Routes.Auth.LOGIN)
+public class AuthActivity extends AppCompatActivity implements AuthContract.View {
+
     private ActivityAuthBinding binding;
-
+    private AuthPresenter presenter;
     private CountDownTimer loginCodeTimer;
     private CountDownTimer regCodeTimer;
 
@@ -34,10 +42,12 @@ public class AuthActivity extends AppCompatActivity {
         binding = ActivityAuthBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        presenter = new AuthPresenter();
+        presenter.attachView(this);
+
         initAnimations();
         initListeners();
     }
-
 
     private void initAnimations() {
         // 背景漫游 (缓慢平移+放大)
@@ -50,7 +60,6 @@ public class AuthActivity extends AppCompatActivity {
         bgAnimSet.playTogether(bgScaleX, bgScaleY, bgTransX, bgTransY);
         bgAnimSet.setDuration(40000);
         bgAnimSet.setInterpolator(new LinearInterpolator());
-        // 循环往复
         bgScaleX.setRepeatCount(ObjectAnimator.INFINITE);
         bgScaleX.setRepeatMode(ObjectAnimator.REVERSE);
         bgScaleY.setRepeatCount(ObjectAnimator.INFINITE);
@@ -122,14 +131,19 @@ public class AuthActivity extends AppCompatActivity {
         binding.tvTabPwd.setOnClickListener(v -> handleTabSwitch(true));
         binding.tvTabCode.setOnClickListener(v -> handleTabSwitch(false));
 
-        // 面板切换
-        binding.tvSwitchRegister.setOnClickListener(v -> slideToRegister());
-        binding.tvBackLogin.setOnClickListener(v -> slideToLogin());
+        // 面板切换 — 纯 UI 操作，直接调 View 方法
+        binding.tvSwitchRegister.setOnClickListener(v -> switchToRegisterPanel());
+        binding.tvBackLogin.setOnClickListener(v -> switchToLoginPanel());
 
-        // 绑定获取验证码的点击事件
-        binding.tvGetCodeLogin.setOnClickListener(v -> startCountdown(binding.tvGetCodeLogin, true));
-        binding.tvGetCodeReg.setOnClickListener(v -> startCountdown(binding.tvGetCodeReg, false));
+        // 登录按钮
+        binding.btnLogin.setOnClickListener(v -> presenter.login());
 
+        // 注册按钮
+        binding.btnRegister.setOnClickListener(v -> presenter.register());
+
+        // 获取验证码
+        binding.tvGetCodeLogin.setOnClickListener(v -> presenter.requestLoginCode());
+        binding.tvGetCodeReg.setOnClickListener(v -> presenter.requestRegisterCode());
     }
 
     /**
@@ -141,15 +155,15 @@ public class AuthActivity extends AppCompatActivity {
         TransitionManager.beginDelayedTransition(binding.flFormContainer, transition);
 
         // 切换字体与颜色
-        binding.tvTabPwd.setTextColor(ContextCompat.getColor(this, isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
+        binding.tvTabPwd.setTextColor(getColor(isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
         binding.tvTabPwd.setTypeface(null, isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
 
-        binding.tvTabCode.setTextColor(ContextCompat.getColor(this, !isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
+        binding.tvTabCode.setTextColor(getColor(!isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
         binding.tvTabCode.setTypeface(null, !isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
 
         // 指示器平滑移动
         ConstraintSet set = new ConstraintSet();
-        set.clone(binding.clLoginView);
+        set.clone((ConstraintLayout) binding.clLoginView.getParent());
         if (isPwdTab) {
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_pwd, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_pwd, ConstraintSet.END);
@@ -157,21 +171,80 @@ public class AuthActivity extends AppCompatActivity {
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_code, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_code, ConstraintSet.END);
         }
-        set.applyTo(binding.clLoginView);
+        set.applyTo((ConstraintLayout) binding.clLoginView.getParent());
 
         // 表单区平滑交替
         binding.llPwdFields.setVisibility(isPwdTab ? View.VISIBLE : View.GONE);
         binding.llCodeFields.setVisibility(!isPwdTab ? View.VISIBLE : View.GONE);
     }
 
+    // ==================== AuthContract.View 实现 ====================
+
+    @Override
+    public void showLoginSuccess(String userId) {
+        finish();
+    }
+
+    @Override
+    public void showRegisterSuccess(String userId) {
+        Toast.makeText(this, "注册成功，欢迎加入时空拾荒者！", Toast.LENGTH_SHORT).show();
+    }
+
     /**
-     * 出入场动画 (向左移出，注册框进入)
+     * @return 登录手机号
      */
-    private void slideToRegister() {
-        TransitionManager.beginDelayedTransition(binding.flFormContainer, new ChangeBounds().setDuration(400));
+    @Override
+    public String getLoginPhone() {
+        return binding == null ? null : binding.etLoginAccount.getText().toString();
+    }
+
+    /**
+     * @return 登录密码
+     */
+    @Override
+    public String getLoginPassword() {
+        return binding == null ? null : binding.etLoginPwd.getText().toString();
+    }
+
+    /**
+     * @return 注册手机号
+     */
+    @Override
+    public String getRegisterPhone() {
+        return binding == null ? null : binding.etRegPhone.getText().toString();
+    }
+
+    /**
+     * @return 注册验证码
+     */
+    @Override
+    public String getRegisterCode() {
+        return binding == null ? null : binding.etRegCode.getText().toString();
+    }
+
+    /**
+     * @return 注册密码
+     */
+    @Override
+    public String getRegisterPassword() {
+        return binding == null ? null : binding.etRegPwd.getText().toString();
+    }
+
+    /**
+     * @return 是否勾选用户协议
+     */
+    @Override
+    public boolean isAgreementChecked() {
+        return binding != null && binding.cbAgreement.isChecked();
+    }
+
+    private void switchToRegisterPanel() {
+        TransitionManager.beginDelayedTransition(binding.flFormContainer,
+                new ChangeBounds().setDuration(400));
 
         binding.clRegisterView.setVisibility(View.VISIBLE);
         binding.clRegisterView.setTranslationX(150f);
+        binding.clRegisterView.setAlpha(0f);
 
         binding.clLoginView.animate()
                 .alpha(0f)
@@ -189,16 +262,13 @@ public class AuthActivity extends AppCompatActivity {
                 .start();
     }
 
-
-
-    /**
-     * 出入场动画 (向右移出，登录框进入)
-     */
-    private void slideToLogin() {
-        TransitionManager.beginDelayedTransition(binding.flFormContainer, new ChangeBounds().setDuration(400));
+    private void switchToLoginPanel() {
+        TransitionManager.beginDelayedTransition(binding.flFormContainer,
+                new ChangeBounds().setDuration(400));
 
         binding.clLoginView.setVisibility(View.VISIBLE);
         binding.clLoginView.setTranslationX(-150f);
+        binding.clLoginView.setAlpha(0f);
 
         binding.clRegisterView.animate()
                 .alpha(0f)
@@ -216,43 +286,63 @@ public class AuthActivity extends AppCompatActivity {
                 .start();
     }
 
-    private void startCountdown(TextView targetButton, boolean isLogin) {
-        targetButton.setEnabled(false);
-        targetButton.setTextColor(ContextCompat.getColor(this, R.color.amber_500));
+    @Override
+    public void showError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
 
-        // 初始化 CountDownTimer，总时长 60000 毫秒(60秒)，间隔 1000 毫秒(1秒)
+    @Override
+    public void showLoginCountDown() {
+        startCountdown(binding.tvGetCodeLogin, true);
+    }
+
+    @Override
+    public void showRegisterCountDown() {
+        startCountdown(binding.tvGetCodeReg, false);
+    }
+
+
+    // 验证码倒计时
+    public void startCountdown(TextView targetButton, boolean isLogin) {
+        targetButton.setEnabled(false);
+        targetButton.setTextColor(getColor(R.color.amber_500));
+
         CountDownTimer timer = new CountDownTimer(60000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                // 每次倒计时触发，更新文字
                 int seconds = (int) (millisUntilFinished / 1000);
                 targetButton.setText(seconds + "s");
             }
 
             @Override
             public void onFinish() {
-                // 倒计时结束，恢复原样
                 targetButton.setEnabled(true);
                 targetButton.setBackgroundResource(R.drawable.shape_btn_code);
-                targetButton.setTextColor(ContextCompat.getColor(AuthActivity.this, R.color.white_alpha_80));
+                targetButton.setTextColor(getColor(R.color.white_alpha_80));
                 targetButton.setText("获取验证码");
             }
         };
 
-        // 赋值给全局变量并启动
         if (isLogin) {
+            if (loginCodeTimer != null) loginCodeTimer.cancel();
             loginCodeTimer = timer;
         } else {
+            if (regCodeTimer != null) regCodeTimer.cancel();
             regCodeTimer = timer;
         }
         timer.start();
     }
 
-    // ================= 极其重要的一步 =================
+
+
+    // ==================== 生命周期 ====================
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 页面销毁时必须取消定时器，否则后台会一直跑，引发 NullPointerException 或内存泄漏
+        if (presenter != null) {
+            presenter.detachView();
+        }
         if (loginCodeTimer != null) {
             loginCodeTimer.cancel();
         }
