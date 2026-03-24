@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screenMargin">16dp</dimen>
+    <dimen name="iconToText">16dp</dimen>
+    <dimen name="itemCardCornerRadius">12dp</dimen>
+    <dimen name="itemLocationCardWidth">120dp</dimen>
+    <dimen name="itemContentCardWidth">160dp</dimen>
+    <dimen name="itemLocationCardHeight">70dp</dimen>
+    <dimen name="labelHorizontal">8dp</dimen>
+    <dimen name="labelVertical">6dp</dimen>
+    <dimen name="textToEdgeHorizontal">14dp</dimen>
+    <dimen name="textToEdgeVertical">14dp</dimen>
+    <dimen name="exploreGridSpacing">8dp</dimen>
+</resources>

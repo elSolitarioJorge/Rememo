@@ -1,5 +1,8 @@
 package com.ggg.rememo.core.data.model.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -7,7 +10,7 @@ import androidx.room.PrimaryKey;
 import java.util.List;
 
 @Entity(tableName = "memory_posts")
-public class MemoryPost {
+public class MemoryPost implements Parcelable {
     @PrimaryKey
     @NonNull
     private String postId = "";   // 记忆ID
@@ -37,6 +40,14 @@ public class MemoryPost {
 
     public MemoryPost() {
 
+    }
+
+    public MemoryPost(@NonNull String authorId, String title, String content, int memoryYear, int likeCount) {
+        this.authorId = authorId;
+        this.title = title;
+        this.content = content;
+        this.memoryYear = memoryYear;
+        this.likeCount = likeCount;
     }
 
     @NonNull
@@ -143,4 +154,56 @@ public class MemoryPost {
     public void setUpdatedTime(long updatedTime) {
         this.updatedTime = updatedTime;
     }
+
+    // 描述内容（一般返回0）
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    // 将对象写入Parcel
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(postId);
+        dest.writeString(pointId);
+        dest.writeString(authorId);
+        dest.writeString(title);
+        dest.writeString(content);
+        dest.writeTypedList(images);
+        dest.writeInt(memoryYear);
+        dest.writeString(memorySeason);
+        dest.writeInt(likeCount);
+        dest.writeInt(commentCount);
+        dest.writeInt(collectCount);
+        dest.writeLong(createdTime);
+        dest.writeLong(updatedTime);
+    }
+
+    protected MemoryPost(Parcel in) {
+        postId = in.readString();
+        pointId = in.readString();
+        authorId = in.readString();
+        title = in.readString();
+        content = in.readString();
+        images = in.createTypedArrayList(MemoryPhoto.CREATOR);
+        memoryYear = in.readInt();
+        memorySeason = in.readString();
+        likeCount = in.readInt();
+        commentCount = in.readInt();
+        collectCount = in.readInt();
+        createdTime = in.readLong();
+        updatedTime = in.readLong();
+    }
+
+    // 必须提供 CREATOR 字段（静态、final、名为 CREATOR）
+    public static final Creator<MemoryPost> CREATOR = new Creator<MemoryPost>() {
+        @Override
+        public MemoryPost createFromParcel(Parcel in) {
+            return new MemoryPost(in); // // 调用带 Parcel 的构造函数
+        }
+        @Override
+        public MemoryPost[] newArray(int size) {
+            return new MemoryPost[size];
+        }
+    };
 }
