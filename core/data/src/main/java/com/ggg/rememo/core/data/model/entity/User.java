@@ -4,14 +4,26 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 @Entity(tableName = "users")
 public class User {
     @PrimaryKey
     @NonNull
-    private String userId = "";          // 用户 ID
-    private String nickName;     // 昵称
-    private String avatarUrl;    // 头像
-    private String signature;    // 个性签名
+    @SerializedName("userId")
+    private String userId = "";
+
+    @SerializedName("nickname")
+    private String nickname;
+
+    @SerializedName("avatar")
+    private String avatar;
+
+    @SerializedName("gender")
+    private String gender = "secret";
+
+    @SerializedName("bio")
+    private String bio = "";
 
     public User() {
 
@@ -26,27 +38,35 @@ public class User {
         this.userId = userId;
     }
 
-    public String getNickName() {
-        return nickName;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
-    public String getSignature() {
-        return signature;
+    public String getGender() {
+        return gender;
     }
 
-    public void setSignature(String signature) {
-        this.signature = signature;
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }
