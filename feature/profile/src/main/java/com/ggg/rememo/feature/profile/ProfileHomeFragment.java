@@ -37,6 +37,17 @@ public class ProfileHomeFragment extends Fragment {
 
         handleWindowInsets();
         initScrollEffect();
+        initClickListeners();
+    }
+
+    private void initClickListeners() {
+        binding.btnEditProfile.setOnClickListener(v -> {
+            new EditProfileDialogFragment().show(getChildFragmentManager(), "edit_profile");
+        });
+
+        binding.ivSettings.setOnClickListener(v -> {
+            new SettingsDialogFragment().show(getChildFragmentManager(), "settings");
+        });
     }
 
     /**
@@ -89,9 +100,9 @@ public class ProfileHomeFragment extends Fragment {
      * 处理窗口内边距（状态栏适配）
      */
     private void handleWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar, (v, windowInsets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, insets.top, 0, 0);
+            binding.toolbar.setPadding(0, insets.top, 0, 0);
             return windowInsets;
         });
     }
