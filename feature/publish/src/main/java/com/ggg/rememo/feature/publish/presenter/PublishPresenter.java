@@ -1,6 +1,8 @@
 package com.ggg.rememo.feature.publish.presenter;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
@@ -21,29 +23,31 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
     private static final String DEFAULT_SEASON = "冬";
 
     private final PublishRepository repository;
+    private final Handler mainHandler;
 
     public PublishPresenter(Context context) {
         this.repository = new PublishRepository(context);
+        this.mainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
     public void publish(String title, String content, List<MemoryPhoto> images,
                        double lat, double lng) {
-        // 参数校验
-        if (title == null || title.trim().isEmpty()) {
-            ifViewAttached(view -> view.showError("标题不能为空"));
-            return;
-        }
-
-        if (content == null || content.trim().isEmpty()) {
-            ifViewAttached(view -> view.showError("内容不能为空"));
-            return;
-        }
-
-        if (lat == 0.0 && lng == 0.0) {
-            ifViewAttached(view -> view.showError("请选择位置"));
-            return;
-        }
+//        // 参数校验
+//        if (title == null || title.trim().isEmpty()) {
+//            ifViewAttached(view -> view.showError("标题不能为空"));
+//            return;
+//        }
+//
+//        if (content == null || content.trim().isEmpty()) {
+//            ifViewAttached(view -> view.showError("内容不能为空"));
+//            return;
+//        }
+//
+//        if (lat == 0.0 && lng == 0.0) {
+//            ifViewAttached(view -> view.showError("请选择位置"));
+//            return;
+//        }
 
         // 调用 View 获取其他必要数据（地址、时间）
         // 这里通过 ifViewAttached 回调获取 View 中的数据
@@ -72,12 +76,12 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
                 new MemoryPostRepository.Callback<Boolean>() {
                     @Override
                     public void onSuccess(Boolean result) {
-                        ifViewAttached(PublishContract.View::showPublishSuccess);
+                        mainHandler.post(() -> ifViewAttached(PublishContract.View::showPublishSuccess));
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        ifViewAttached(view1 -> view1.showError("保存失败: " + e.getMessage()));
+                        mainHandler.post(() -> ifViewAttached(view1 -> view1.showError("保存失败: " + e.getMessage())));
                     }
                 });
         });
