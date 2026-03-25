@@ -20,7 +20,7 @@ public class NetworkClient {
 
     // Android 模拟器访问本机后端时使用 10.0.2.2
     // TODO: 上线前改为真实服务器地址
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    private static final String BASE_URL = "http://192.168.1.37:9090/";
 
     private static volatile NetworkClient instance;
     private static volatile String authToken;

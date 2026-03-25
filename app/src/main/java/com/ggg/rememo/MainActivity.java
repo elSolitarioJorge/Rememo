@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.databinding.ActivityMainBinding;
+import com.ggg.rememo.feature.auth.util.TokenManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +30,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        if (!TokenManager.isLoggedIn()) {
+            ARouter.getInstance()
+                    .build(Routes.Auth.LOGIN)
+                    .navigation();
+            finish();
+            return;
+        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
