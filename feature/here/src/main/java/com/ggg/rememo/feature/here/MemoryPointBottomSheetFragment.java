@@ -73,7 +73,9 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
             Window window = dialog.getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            // 让这个 Dialog 的内容可以突破屏幕限制，画到整个屏幕（包括状态栏/导航栏区域）
+            window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
     }
 
