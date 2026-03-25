@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_bg">#0B0D17</color>      <!-- 深空蓝 -->
+    <color name="brand_card">#16192B</color>    <!-- 卡片深蓝 -->
+    <color name="brand_accent">#F5A623</color>  <!-- 琥珀金 -->
+
+    <!-- 文本颜色 -->
+    <color name="brand_text_main">#E2E8F0</color> <!-- 亮灰主文本 -->
+    <color name="brand_text_sub">#64748B</color>  <!-- 暗灰副文本 -->
+
+
+    <color name="glass_border">#0DFFFFFF</color>
+    <color name="glass_bg_start">#B31E2235</color>
+    <color name="glass_bg_end">#6616192B</color>
+    <color name="bottom_nav_bg">#F2121420</color>
+</resources>
