@@ -19,11 +19,11 @@ public class UserInfo {
     @SerializedName("avatar")
     private String avatar;
 
-    @SerializedName("createdAt")
-    private long createdAt;
+    @SerializedName("gender")
+    private String gender = "secret";
 
-    @SerializedName("updatedAt")
-    private long updatedAt;
+    @SerializedName("bio")
+    private String bio = "";
 
     public String getUserId() {
         return userId;
@@ -57,19 +57,19 @@ public class UserInfo {
         this.avatar = avatar;
     }
 
-    public long getCreatedAt() {
-        return createdAt;
+    public String getGender() {
+        return gender;
     }
 
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
-    public long getUpdatedAt() {
-        return updatedAt;
+    public String getBio() {
+        return bio;
     }
 
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }

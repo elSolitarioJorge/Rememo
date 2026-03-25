@@ -39,7 +39,7 @@ public interface UserDao {
     @Query("SELECT * FROM users ORDER BY userId DESC LIMIT :limit")
     List<User> getRecent(int limit);
 
-    @Query("SELECT * FROM users WHERE nickName LIKE '%' || :keyword || '%'")
+    @Query("SELECT * FROM users WHERE nickname LIKE '%' || :keyword || '%'")
     List<User> searchByNickName(String keyword);
 
     @Query("SELECT COUNT(*) FROM users")
