@@ -1,5 +1,8 @@
 package com.ggg.rememo.feature.here.presenter;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.amap.api.location.AMapLocation;
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
@@ -13,12 +16,14 @@ public class HerePresenter extends BasePresenter<HereContract.View>
         implements HereContract.Presenter {
 
     private final HereRepository repository;
+    private final Handler mainHandler;
 
     private boolean isFollowing = true;
     private boolean isLocationInitialized = false;
 
     public HerePresenter(HereRepository repository) {
         this.repository = repository;
+        this.mainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -80,12 +85,12 @@ public class HerePresenter extends BasePresenter<HereContract.View>
         repository.loadAllMemoryPoints(new MemoryPointRepository.Callback<List<MemoryPoint>>() {
             @Override
             public void onSuccess(List<MemoryPoint> result) {
-                ifViewAttached(view -> view.showMemoryPoints(result));
+                mainHandler.post(() -> ifViewAttached(view -> view.showMemoryPoints(result)));
             }
 
             @Override
             public void onError(Exception e) {
-                ifViewAttached(view -> view.showError("加载记忆点失败: " + e.getMessage()));
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载记忆点失败: " + e.getMessage())));
             }
         });
     }
