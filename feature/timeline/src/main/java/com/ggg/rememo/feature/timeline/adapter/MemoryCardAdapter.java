@@ -128,7 +128,7 @@ public class MemoryCardAdapter extends RecyclerView.Adapter<MemoryCardAdapter.Vi
 
             // 用户头像
             Glide.with(binding.getRoot().getContext())
-                    .load(R.drawable.sample_avatar)
+                    .load(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
                     .circleCrop()
                     .into(binding.ivAvatar);
 
@@ -155,7 +155,7 @@ public class MemoryCardAdapter extends RecyclerView.Adapter<MemoryCardAdapter.Vi
 
         private void loadCoverImage(MemoryPost post) {
             if (post.getImages() == null || post.getImages().isEmpty()) {
-                binding.ivCover.setImageResource(R.drawable.sample_image);
+                binding.ivCover.setImageResource(com.ggg.rememo.core.ui.R.drawable.cover_placeholder);
                 return;
             }
 
@@ -164,12 +164,12 @@ public class MemoryCardAdapter extends RecyclerView.Adapter<MemoryCardAdapter.Vi
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(binding.getRoot().getContext())
                         .load(imageUrl)
-                        .placeholder(R.drawable.sample_image)
-                        .error(R.drawable.sample_image)
+                        .placeholder(com.ggg.rememo.core.ui.R.drawable.cover_placeholder)
+                        .error(com.ggg.rememo.core.ui.R.drawable.cover_placeholder)
                         .centerCrop()
                         .into(binding.ivCover);
             } else {
-                binding.ivCover.setImageResource(R.drawable.sample_image);
+                binding.ivCover.setImageResource(com.ggg.rememo.core.ui.R.drawable.cover_placeholder);
             }
         }
     }

@@ -123,6 +123,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
 
     private void initMap() {
         aMap = binding.mapView.getMap();
+        aMap.setMapType(AMap.MAP_TYPE_NIGHT);
 
         aMap.getUiSettings().setScaleControlsEnabled(false);
         aMap.getUiSettings().setZoomControlsEnabled(false);
@@ -135,9 +136,11 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         myLocationStyle.strokeColor(Color.TRANSPARENT);
         myLocationStyle.radiusFillColor(Color.TRANSPARENT);
         myLocationStyle.strokeWidth(0f);
+        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.icon_my_location));
         aMap.setMyLocationStyle(myLocationStyle);
 
         aMap.setLocationSource(this);
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(DEFAULT_ZOOM_LEVEL));
 
         aMap.setOnMapTouchListener(event -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN && presenter.isFollowing()) {

@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.here.presenter;
 
+import com.amap.api.location.AMapLocation;
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
@@ -57,12 +58,12 @@ public class HerePresenter extends BasePresenter<HereContract.View>
     }
 
     @Override
-    public void onLocationChanged(com.amap.api.location.AMapLocation location) {
+    public void onLocationChanged(AMapLocation location) {
         if (location == null) {
             return;
         }
 
-        if (location.getErrorCode() != com.amap.api.location.AMapLocation.LOCATION_SUCCESS) {
+        if (location.getErrorCode() != AMapLocation.LOCATION_SUCCESS) {
             ifViewAttached(view -> view.showLocationError(location.getErrorInfo()));
             return;
         }
@@ -111,7 +112,7 @@ public class HerePresenter extends BasePresenter<HereContract.View>
     }
 
     @Override
-    public void onMarkerClicked(com.ggg.rememo.core.data.model.entity.MemoryPoint point) {
+    public void onMarkerClicked(MemoryPoint point) {
         if (point == null) {
             return;
         }
