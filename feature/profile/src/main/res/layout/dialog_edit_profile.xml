@@ -78,11 +78,14 @@
                     app:strokeColor="#1AFFFFFF"
                     app:strokeWidth="1dp" />
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_setting_item"
-                    android:backgroundTint="#66000000" />
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_profile_camara"
+                    app:tint="#F5A623"
+                    android:background="@drawable/bg_round_camara"
+                    android:layout_gravity="end|bottom"
+                    android:padding="4dp"/>
 
             </FrameLayout>
 
