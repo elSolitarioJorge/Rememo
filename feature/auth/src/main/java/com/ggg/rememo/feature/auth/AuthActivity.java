@@ -131,7 +131,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
         binding.tvTabPwd.setOnClickListener(v -> handleTabSwitch(true));
         binding.tvTabCode.setOnClickListener(v -> handleTabSwitch(false));
 
-        // 面板切换 — 纯 UI 操作，直接调 View 方法
+        // 面板切换
         binding.tvSwitchRegister.setOnClickListener(v -> switchToRegisterPanel());
         binding.tvBackLogin.setOnClickListener(v -> switchToLoginPanel());
 
@@ -163,7 +163,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
 
         // 指示器平滑移动
         ConstraintSet set = new ConstraintSet();
-        set.clone((ConstraintLayout) binding.clLoginView.getParent());
+        set.clone(binding.clLoginView);
         if (isPwdTab) {
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_pwd, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_pwd, ConstraintSet.END);
@@ -171,7 +171,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_code, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_code, ConstraintSet.END);
         }
-        set.applyTo((ConstraintLayout) binding.clLoginView.getParent());
+        set.applyTo(binding.clLoginView);
 
         // 表单区平滑交替
         binding.llPwdFields.setVisibility(isPwdTab ? View.VISIBLE : View.GONE);

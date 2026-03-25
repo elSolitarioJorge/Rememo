@@ -5,8 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:background="#03A9F4">
+    android:background="#0B0D17"
+    tools:context=".MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fcv_navigation"
@@ -19,10 +19,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:minHeight="64dp"
-        app:backgroundTint="@android:color/white"
+        app:backgroundTint="#16192B"
         app:fabAlignmentMode="center"
         app:fabCradleRoundedCornerRadius="40dp"
-        app:fabCradleVerticalOffset="10dp"
+        app:fabCradleMargin="8dp"
+        app:fabCradleVerticalOffset="12dp"
         app:hideOnScroll="false"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -34,9 +35,9 @@
         app:elevation="0dp"
         app:itemBackground="@color/transparent"
         app:itemHorizontalTranslationEnabled="false"
-        app:itemIconTint="@color/color_bnv_item"
+        app:itemIconTint="@color/selector_bnv_item_dark"
         app:itemRippleColor="@color/transparent"
-        app:itemTextColor="@color/color_bnv_item"
+        app:itemTextColor="@color/selector_bnv_item_dark"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_bottom_navigation" />
 
@@ -46,9 +47,10 @@
         android:layout_height="wrap_content"
         android:contentDescription="发布"
         app:srcCompat="@drawable/ic_publish"
-        app:maxImageSize="48dp"
-        app:backgroundTint="@color/orange"
+        app:tint="#FFFFFF"
+        app:maxImageSize="32dp"
+        app:backgroundTint="#F5A623"
+        app:elevation="8dp"
         app:layout_anchor="@id/bab_navigation"/>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

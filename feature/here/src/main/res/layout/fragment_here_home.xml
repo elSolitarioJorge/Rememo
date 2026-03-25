@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#0B0D17">
 
     <com.amap.api.maps.TextureMapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent" />
 
-        <ImageButton
-            android:id="@+id/btn_my_location"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="100dp"
-            android:background="@drawable/bg_location_btn"
-            android:contentDescription="@null"
-            android:elevation="4dp"
-            android:padding="12dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_location_follow" />
-    </com.amap.api.maps.TextureMapView>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom"
+        android:clickable="false"
+        android:background="@drawable/shape_gradient_bottom_dark" />
+
+    <ImageButton
+        android:id="@+id/btn_my_location"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="110dp"
+        android:background="@drawable/bg_location_btn_dark"
+        android:contentDescription="定位"
+        android:elevation="6dp"
+        android:padding="12dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_location_follow"
+        app:tint="#F5A623" />
+
 </FrameLayout>
