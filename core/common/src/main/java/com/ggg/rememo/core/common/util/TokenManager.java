@@ -1,4 +1,4 @@
-package com.ggg.rememo.feature.auth.util;
+package com.ggg.rememo.core.common.util;
 
 import com.tencent.mmkv.MMKV;
 

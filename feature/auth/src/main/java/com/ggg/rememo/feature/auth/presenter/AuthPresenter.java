@@ -10,7 +10,7 @@ import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.NetworkClient;
 import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.data.AuthRepository;
-import com.ggg.rememo.feature.auth.util.TokenManager;
+import com.ggg.rememo.core.common.util.TokenManager;
 
 import java.util.regex.Pattern;
 
