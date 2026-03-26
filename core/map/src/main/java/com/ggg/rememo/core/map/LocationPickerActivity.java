@@ -59,6 +59,7 @@ public class LocationPickerActivity extends AppCompatActivity implements AMap.On
 
     private void initMap() {
         aMap = binding.mapView.getMap();
+        aMap.setMapType(AMap.MAP_TYPE_NIGHT);
 
         // 隐藏默认UI控件
         aMap.getUiSettings().setScaleControlsEnabled(false);

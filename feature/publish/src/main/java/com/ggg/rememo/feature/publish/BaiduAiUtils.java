@@ -42,7 +42,7 @@ public class BaiduAiUtils {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.isSuccessful()) {
                 String jsonStr = response.body().string();
                 JsonObject jsonObject = JsonParser.parseString(jsonStr).getAsJsonObject();
                 cachedAccessToken = jsonObject.get("access_token").getAsString();
@@ -69,7 +69,7 @@ public class BaiduAiUtils {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.isSuccessful()) {
                 String jsonResponse = response.body().string();
                 JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
@@ -106,7 +106,7 @@ public class BaiduAiUtils {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.isSuccessful()) {
                 String jsonResponse = response.body().string();
                 JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
