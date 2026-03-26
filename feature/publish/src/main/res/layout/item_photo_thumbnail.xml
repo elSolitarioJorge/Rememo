@@ -19,16 +19,16 @@
         android:id="@+id/iv_add_more"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#F3F4F6"
+        android:background="#16192B"
         android:padding="16dp"
         android:src="@drawable/ic_add_pic"
-        app:tint="#9CA3AF"
+        app:tint="#F5A623"
         android:visibility="visible" />
 
     <View
         android:id="@+id/view_selected_mask"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#4D000000"
+        android:background="#66000000"
         android:visibility="visible" />
 </com.google.android.material.card.MaterialCardView>

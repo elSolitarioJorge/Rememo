@@ -25,7 +25,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.alibaba.android.arouter.facade.annotation.Autowired;
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -96,7 +98,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         });
 
         // 初始化 Presenter 并绑定 View
-        presenter = new PublishPresenter(this);
+        presenter = new PublishPresenter();
         presenter.attachView(this);
         setupRecyclerView();
         setupListeners();
@@ -221,7 +223,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         binding.btnSelectLocation.setOnClickListener(v -> {
             // 跳转到选点页面，传入当前已选位置作为初始位置
             Intent intent = new Intent(PublishHomeActivity.this, LocationPickerActivity.class);
-            // 可以把当前的经纬度传过去，让地图打开时中心点就是当前位置
+            // 把当前的经纬度传过去，让地图打开时中心点就是当前位置
             intent.putExtra("lat", currentLat);
             intent.putExtra("lng", currentLng);
             mapSelectLauncher.launch(intent);
@@ -330,7 +332,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             // 组装结果并更新外部 Activity UI
             String finalTime = yearInput + " · " + currentSelectedSeason;
             binding.tvTimeText.setText(finalTime);
-            binding.tvTimeText.setTextColor(Color.parseColor("#1F2937"));
+            binding.tvTimeText.setTextColor(Color.parseColor("#F5A623"));
             binding.tvTimeText.setTypeface(null, Typeface.BOLD);
             binding.tvTimeText.setTextSize(14f);
 
@@ -344,14 +346,16 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
     private void updateSeasonUI(TextView[] seasonViews, String selected) {
         for (TextView view : seasonViews) {
             if (view.getText().toString().equals(selected)) {
-                // 选中状态：套用黄色圆角背景，字体变深琥珀色并加粗
+                /* 选中状态：套用黄色圆角背景，字体变深琥珀色并加粗
                 view.setBackgroundResource(R.drawable.bg_season_selected);
-                view.setTextColor(Color.parseColor("#D97706"));
+                view.setTextColor(Color.parseColor("#D97706"));*/
+                view.setSelected(true);
                 view.setTypeface(null, Typeface.BOLD);
             } else {
-                // 未选中状态：套用灰色圆角背景，字体变浅灰色恢复正常
+                /* 未选中状态：套用灰色圆角背景，字体变浅灰色恢复正常
                 view.setBackgroundResource(R.drawable.bg_season_normal);
-                view.setTextColor(Color.parseColor("#6B7280"));
+                view.setTextColor(Color.parseColor("#6B7280"));*/
+                view.setSelected(false);
                 view.setTypeface(null, Typeface.NORMAL);
             }
         }
@@ -390,7 +394,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                             // 有地址，直接显示
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 binding.tvPhysicalLocationText.setText(currentAddress);
-                                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#1F2937"));
+                                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
                             });
                             // 停止定位
                             locationClient.stopLocation();
@@ -404,6 +408,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                                 // 超时了，停止定位
                                 locationClient.stopLocation();
                                 new Handler(Looper.getMainLooper()).post(() -> {
+                                    if (binding == null) return;
                                     binding.tvPhysicalLocationText.setText("地址获取失败，请手动选点");
                                     binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#EF4444"));
                                 });
@@ -465,6 +470,12 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
     @Override
     protected void onDestroy() {
+        // 停止定位并销毁客户端，防止异步回调
+        if (locationClient != null) {
+            locationClient.stopLocation();
+            locationClient.onDestroy();
+        }
+
         super.onDestroy();
         binding = null;
         // 解绑 Presenter，防止内存泄漏

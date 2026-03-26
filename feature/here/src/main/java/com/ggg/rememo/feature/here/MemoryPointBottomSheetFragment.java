@@ -76,12 +76,12 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
             // 让这个 Dialog 的内容可以突破屏幕限制，画到整个屏幕（包括状态栏/导航栏区域）
             window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            dialog.setCanceledOnTouchOutside(true);
         }
     }
 
     private void setupListeners() {
         binding.btnEnterTimeline.setOnClickListener(v -> presenter.onEnterTimelineClicked());
-        binding.getRoot().setOnClickListener(v -> dismiss());
     }
 
     // ==================== MemoryPointBottomSheetContract.View 实现 ====================
@@ -119,7 +119,6 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
     public void navigateToTimeline(String pointId) {
         dismiss();
         // 通过 ARouter 跳转到时光长河页面，传递地点信息
-        // 使用 core:common 中定义的路由常量，完全解耦 timeline 模块
         ARouter.getInstance()
                 .build(Routes.Timeline.HOME)
                 .withString(Routes.Timeline.EXTRA_POINT_ID, pointId)

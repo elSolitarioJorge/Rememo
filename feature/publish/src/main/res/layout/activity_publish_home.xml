@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="#0B0D17"
     android:id="@+id/main">
 
     <ImageView
@@ -16,7 +16,7 @@
         app:layout_constraintBottom_toBottomOf="@id/tv_top_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_top_title"
-        app:tint="#9CA3AF" />
+        app:tint="#E2E8F0" />
 
     <TextView
         android:id="@+id/tv_top_title"
@@ -24,7 +24,7 @@
         android:layout_height="56dp"
         android:gravity="center"
         android:text="发布记忆"
-        android:textColor="#1F2937"
+        android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,7 +35,7 @@
         android:id="@+id/divider_top"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#F3F4F6"
+        android:background="#1AFFFFFF"
         app:layout_constraintTop_toBottomOf="@id/tv_top_title" />
 
     <androidx.core.widget.NestedScrollView
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="照片上传"
-                android:textColor="#1F2937"
+                android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -69,11 +69,11 @@
                 android:id="@+id/badge_ai_lab"
                 android:layout_width="80dp"
                 android:layout_height="36dp"
-                android:backgroundTint="#FFFBEB"
+                android:backgroundTint="#16192B"
                 android:clickable="false"
                 android:padding="0dp"
                 android:text="AI实验室"
-                android:textColor="#D97706"
+                android:textColor="#F5A623"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 app:cornerRadius="8dp"
@@ -81,11 +81,11 @@
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
                 app:iconSize="12dp"
-                app:iconTint="#D97706"
+                app:iconTint="#F5A623"
                 app:layout_constraintBottom_toBottomOf="@+id/tv_upload_title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_upload_title"
-                app:strokeColor="#FEF3C7"
+                app:strokeColor="#33F5A623"
                 app:strokeWidth="1dp" />
 
             <com.google.android.material.card.MaterialCardView
@@ -93,14 +93,14 @@
                 android:layout_width="0dp"
                 android:layout_height="220dp"
                 android:layout_marginTop="12dp"
-                app:cardBackgroundColor="#F9FAFB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_upload_title"
-                app:strokeColor="#E5E7EB"
-                app:strokeWidth="2dp">
+                app:strokeColor="#1AFFFFFF"
+                app:strokeWidth="1dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -119,14 +119,14 @@
                             android:layout_height="56dp"
                             android:src="@drawable/ic_add_pic"
                             android:scaleType="centerCrop"
-                            app:tint="#F59E0B" />
+                            app:tint="#F5A623" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:text="点击上传黑白老照片"
-                            android:textColor="#9CA3AF"
+                            android:textColor="#E2E8F0"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -135,7 +135,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="支持 JPG / PNG，最多9张"
-                            android:textColor="#D1D5DB"
+                            android:textColor="#64748B"
                             android:textSize="10sp" />
 
                     </LinearLayout>
@@ -151,7 +151,7 @@
                         android:id="@+id/view_scan_line"
                         android:layout_width="4dp"
                         android:layout_height="match_parent"
-                        android:background="#FFFFFF"
+                        android:background="#F5A623"
                         android:elevation="4dp"
                         android:visibility="gone" />
 
@@ -164,7 +164,7 @@
                         android:backgroundTint="#B3000000"
                         android:padding="0dp"
                         android:text="看修复图"
-                        android:textColor="#F59E0B"
+                        android:textColor="#F5A623"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:visibility="gone"
@@ -173,8 +173,8 @@
                         app:iconPadding="4dp"
                         app:iconSize="14dp"
                         app:iconGravity="textStart"
-                        app:iconTint="#F59E0B"
-                        app:strokeColor="#80F59E0B"
+                        app:iconTint="#F5A623"
+                        app:strokeColor="#80F5A623"
                         app:strokeWidth="1dp" />
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -196,9 +196,9 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#111827"
+                android:backgroundTint="#16192B"
                 android:text="启动 AI 修复与上色"
-                android:textColor="#FFFFFF"
+                android:textColor="#E2E8F0"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:visibility="gone"
@@ -206,7 +206,9 @@
                 app:icon="@drawable/ic_ai_polish"
                 app:iconSize="24dp"
                 app:iconGravity="textStart"
-                app:iconTint="#F59E0B"
+                app:iconTint="#F5A623"
+                app:strokeColor="#1AFFFFFF"
+                app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="@+id/rv_photo_thumbnails"
                 app:layout_constraintStart_toStartOf="@+id/rv_photo_thumbnails"
                 app:layout_constraintTop_toBottomOf="@id/rv_photo_thumbnails" />
@@ -224,7 +226,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="记忆锚点"
-                android:textColor="#1F2937"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -236,7 +238,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="请为回忆之地命名"
-                android:textColor="#9CA3AF"
+                android:textColor="#64748B"
                 android:textSize="10sp"
                 app:layout_constraintBottom_toBottomOf="@id/tv_location_title"
                 app:layout_constraintStart_toEndOf="@id/tv_location_title"
@@ -247,11 +249,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardBackgroundColor="#F9FAFB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:layout_constraintTop_toBottomOf="@id/tv_location_title"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="#1AFFFFFF"
                 app:strokeWidth="1dp">
 
                 <EditText
@@ -262,8 +264,8 @@
                     android:hint="例如: 老火车站、古城钟楼"
                     android:padding="16dp"
                     android:singleLine="true"
-                    android:textColor="#1F2937"
-                    android:textColorHint="#9CA3AF"
+                    android:textColor="#E2E8F0"
+                    android:textColorHint="#475569"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </com.google.android.material.card.MaterialCardView>
@@ -280,10 +282,10 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#F9FAFB"
+                    app:cardBackgroundColor="#16192B"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="#1AFFFFFF"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -297,7 +299,7 @@
                             android:layout_height="18dp"
                             android:src="@drawable/ic_my_location"
                             android:layout_gravity="center_vertical"
-                            app:tint="#F59E0B" />
+                            app:tint="#F5A623" />
 
                         <TextView
                             android:id="@+id/tv_physical_location_text"
@@ -320,19 +322,20 @@
                     android:layout_marginStart="8dp"
                     android:padding="0dp"
                     android:layout_gravity="center_vertical"
-                    android:backgroundTint="#FEF3C7"
+                    android:backgroundTint="#33F5A623"
                     android:text="选点"
-                    android:textColor="#B45309"
+                    android:textColor="#F5A623"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:iconPadding="4dp"
                     app:iconGravity="textStart"
                     app:cornerRadius="12dp"
                     app:icon="@drawable/ic_select_location"
-                    app:iconTint="#B45309"
+                    app:iconTint="#F5A623"
                     app:iconSize="20dp"
                     android:elevation="0dp"
-                    app:strokeWidth="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#80F5A623"
                     android:stateListAnimator="@null"/>
             </LinearLayout>
 
@@ -349,7 +352,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="发生时间"
-                android:textColor="#1F2937"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -361,12 +364,12 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="#F9FAFB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_time_title"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="#1AFFFFFF"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -381,16 +384,14 @@
                         android:layout_height="18dp"
                         android:src="@drawable/ic_calendar"
                         android:layout_gravity="center_vertical"
-                        app:tint="#F59E0B" />
+                        app:tint="#F5A623" />
                     <TextView
                         android:id="@+id/tv_time_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="选择这段记忆的发生时间..."
-                        android:textColor="#9CA3AF"
+                        android:text="选择这段记忆的时间..."
+                        android:textColor="#475569"
                         android:textSize="12sp"
                         android:layout_gravity="center_vertical"/>
                 </LinearLayout>
@@ -402,7 +403,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="记忆标题"
-                android:textColor="#1F2937"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -413,13 +414,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardBackgroundColor="#F9FAFB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_title_title"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="#1AFFFFFF"
                 app:strokeWidth="1dp">
 
                 <EditText
@@ -430,8 +431,8 @@
                     android:hint="给这段记忆起个名字 (如: 绿皮车上的离别)"
                     android:padding="16dp"
                     android:singleLine="true"
-                    android:textColor="#374151"
-                    android:textColorHint="#9CA3AF"
+                    android:textColor="#E2E8F0"
+                    android:textColorHint="#475569"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </com.google.android.material.card.MaterialCardView>
@@ -442,7 +443,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="背后的故事"
-                android:textColor="#1F2937"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -453,11 +454,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardBackgroundColor="#F9FAFB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:layout_constraintTop_toBottomOf="@id/tv_story_title"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="#1AFFFFFF"
                 app:strokeWidth="1dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -472,8 +473,8 @@
                         android:gravity="top|start"
                         android:hint="写下这张照片背后的故事... (AI 智能助手随时为您效劳)"
                         android:padding="16dp"
-                        android:textColor="#374151"
-                        android:textColorHint="#9CA3AF"
+                        android:textColor="#E2E8F0"
+                        android:textColorHint="#475569"
                         android:textSize="14sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -488,7 +489,7 @@
                         android:src="@drawable/ic_ai_polish"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:tint="#9CA3AF" />
+                        app:tint="#64748B" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -496,9 +497,9 @@
                 android:id="@+id/btn_publish"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="50dp"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="#F59E0B"
+                android:backgroundTint="#F5A623"
                 android:text="发布记忆"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"

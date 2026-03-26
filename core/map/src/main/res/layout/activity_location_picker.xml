@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#0B0D17">
 
     <com.amap.api.maps.TextureMapView
         android:id="@+id/map_view"
@@ -13,6 +13,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/bg_gradient_overlay_dark"
+        android:rotation="180"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@drawable/bg_gradient_overlay_dark"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <FrameLayout
         android:id="@+id/title_container"
@@ -31,20 +44,20 @@
             android:layout_marginStart="16dp"
             android:padding="12dp"
             android:src="@drawable/ic_cancel"
-            app:tint="#F1000000" />
-
+            app:tint="#FFFFFF" />
 
         <TextView
             android:id="@+id/tv_prompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="@drawable/bg_location_prompt"
+            android:background="@drawable/bg_ai_summary_card_dark"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
             android:text="拖动地图选择位置"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+            android:textColor="#F5A623"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
     </FrameLayout>
 
@@ -58,13 +71,15 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginBottom="20dp" />
 
-
     <com.google.android.material.card.MaterialCardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
+        app:cardBackgroundColor="#16192B"
         app:cardCornerRadius="16dp"
-        app:cardElevation="10dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#1AFFFFFF"
+        app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -88,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="正在获取位置信息..."
-                android:textColor="#1F2937"
+                android:textColor="#E2E8F0"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textSize="16sp"
@@ -97,13 +112,14 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_location"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#F59E0B"
+                android:backgroundTint="#F5A623"
                 android:text="确认使用该坐标"
                 android:textColor="#FFFFFF"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="12dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
