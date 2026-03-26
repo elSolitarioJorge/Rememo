@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingBottom="30dp"
-    android:background="@drawable/bg_bottom_sheet_surface"
+    android:background="@drawable/bg_bottom_sheet_dark"
     tools:ignore="HardcodedText,ContentDescription">
 
     <View
@@ -15,7 +15,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_top_line" />
+        android:background="@drawable/bg_top_line_dark" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,7 +31,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:cardBackgroundColor="#E5E7EB"
+                app:cardBackgroundColor="#16192B"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
@@ -40,12 +40,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    tools:src="#A0A0A0" />
+                    tools:src="#16192B" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#1A5C4000"/>
+                    android:background="@drawable/bg_gradient_overlay_dark"/>
             </androidx.cardview.widget.CardView>
 
             <TextView
@@ -55,11 +55,11 @@
                 android:layout_gravity="top|end"
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="12dp"
-                android:background="@drawable/bg_tag_overlay"
+                android:background="@drawable/bg_tag_overlay_dark"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
                 android:text="342 记忆"
-                android:textColor="#FDE68A"
+                android:textColor="#F5A623"
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </FrameLayout>
@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:text="父亲送我的月台"
-                android:textColor="#292524"
+                android:textColor="#FFFFFF"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -99,7 +99,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="西安市碑林区老火车站"
-                    android:textColor="#78716C"
+                    android:textColor="#9CA3AF"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
@@ -108,7 +108,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:background="@drawable/bg_ai_summary_card"
+            android:background="@drawable/bg_ai_summary_card_dark"
             android:orientation="vertical"
             android:padding="12dp">
 
@@ -124,13 +124,13 @@
                     android:layout_height="12dp"
                     android:layout_marginEnd="6dp"
                     android:src="@android:drawable/btn_star_big_on"
-                    app:tint="#F59E0B" />
+                    app:tint="#F5A623" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="AI 时空拾取"
-                    android:textColor="#78350F"
+                    android:textColor="#F5A623"
                     android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -144,7 +144,7 @@
                 android:lineSpacingExtra="4dp"
                 android:maxLines="2"
                 android:text="这里曾是无数年轻人南下打工的起点。大家共同的味觉记忆是广场上那热腾腾的烤红薯，以及绿皮火车上永恒的离别与重逢..."
-                android:textColor="#92400E"
+                android:textColor="#D1D5DB"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -172,7 +172,7 @@
                 android:layout_height="28dp"
                 android:layout_marginStart="8dp"
                 android:src="@drawable/ic_right_arrow"
-                app:tint="#FEF3C7" />
+                app:tint="#FFFFFF" />
         </LinearLayout>
 
     </LinearLayout>
