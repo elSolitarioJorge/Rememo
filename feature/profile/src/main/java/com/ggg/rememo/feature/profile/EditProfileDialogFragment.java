@@ -1,6 +1,5 @@
 package com.ggg.rememo.feature.profile;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -12,18 +11,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
+import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class EditProfileDialogFragment extends BottomSheetDialogFragment {
+public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
+
     private DialogEditProfileBinding binding;
+    private ProfilePresenter presenter;
+    private String currentAvatar = "";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,12 +59,38 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        presenter = new ProfilePresenter();
+        presenter.attachView(this);
+
         binding.ivClose.setOnClickListener(v -> dismiss());
-        binding.btnSave.setOnClickListener(v -> {
-            // TODO: 保存逻辑
-            dismiss();
-        });
+        binding.btnSave.setOnClickListener(v -> saveProfile());
         binding.etGender.setOnClickListener(v -> selectGender());
+    }
+
+    private void saveProfile() {
+        String nickname = binding.etNickname.getText() != null
+                ? binding.etNickname.getText().toString().trim() : "";
+        String bio = binding.etBio.getText() != null
+                ? binding.etBio.getText().toString().trim() : "";
+        String genderText = binding.etGender.getText() != null
+                ? binding.etGender.getText().toString().trim() : "保密";
+
+        if (nickname.isEmpty()) {
+            Toast.makeText(requireContext(), "昵称不能为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String gender = mapGenderToApi(genderText);
+        presenter.updateProfile(nickname, currentAvatar, gender, bio);
+    }
+
+    private String mapGenderToApi(String displayGender) {
+        switch (displayGender) {
+            case "男":   return "male";
+            case "女":   return "female";
+            default:     return "secret";
+        }
     }
 
     private void selectGender() {
@@ -98,12 +128,12 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment {
             tv.setGravity(Gravity.CENTER);
             tv.setPadding(0, 40, 0, 40);
 
-            // 选中状态使用品牌色高亮加粗
+            // 选中状态高亮加粗
             if (option.equals(currentChoice)) {
-                tv.setTextColor(Color.parseColor("#F5A623")); // brand-accent
+                tv.setTextColor(Color.parseColor("#F5A623"));
                 tv.setTypeface(null, Typeface.BOLD);
             } else {
-                tv.setTextColor(Color.parseColor("#E2E8F0")); // brand-text-main
+                tv.setTextColor(Color.parseColor("#E2E8F0"));
             }
 
             // 触摸反馈 (水波纹)
@@ -137,6 +167,34 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (presenter != null) {
+            presenter.detachView();
+        }
         binding = null;
+    }
+
+    // ========== ProfileContract.View 实现 ==========
+
+    @Override
+    public void showUserInfo(com.ggg.rememo.core.data.model.network.response.UserInfo userInfo) {
+        // 由主页 Fragment 调用，编辑弹窗不需要实现
+    }
+
+    @Override
+    public void showUpdateSuccess() {
+        Toast.makeText(requireContext(), "保存成功", Toast.LENGTH_SHORT).show();
+        dismiss();
+    }
+
+    @Override
+    public void navigateToLogin() {
+        // 本弹窗不需要实现
+    }
+
+    @Override
+    public void showError(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }

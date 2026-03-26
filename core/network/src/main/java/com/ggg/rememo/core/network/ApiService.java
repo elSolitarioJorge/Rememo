@@ -3,6 +3,7 @@ package com.ggg.rememo.core.network;
 import com.ggg.rememo.core.data.model.network.response.AuthResponse;
 import com.ggg.rememo.core.data.model.network.request.LoginRequest;
 import com.ggg.rememo.core.data.model.network.request.RegisterRequest;
+import com.ggg.rememo.core.data.model.network.request.UpdateUserRequest;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 
 import retrofit2.Call;
@@ -43,5 +44,5 @@ public interface ApiService {
      * 更新用户信息（昵称、头像）
      */
     @PUT("/api/user/info")
-    Call<ApiResponse<UserInfo>> updateUserInfo(@Body Object request);
+    Call<ApiResponse<UserInfo>> updateUserInfo(@Body UpdateUserRequest request);
 }

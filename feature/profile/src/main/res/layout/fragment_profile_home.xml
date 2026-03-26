@@ -21,15 +21,32 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="86dp"
-                android:paddingBottom="16dp"
                 android:clipChildren="false">
+
+                <ImageView
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+                    android:layout_marginTop="-50dp"
+                    android:layout_marginStart="-50dp"
+                    android:background="@drawable/bg_glow_orb"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginEnd="-80dp"
+                    android:background="@drawable/bg_glow_orb"
+                    android:alpha="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/iv_avatar" />
 
                 <TextView
                     android:id="@+id/btn_edit_profile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="100dp"
                     android:layout_marginEnd="20dp"
                     android:background="@drawable/bg_tag_outline"
                     android:drawableStart="@drawable/ic_edit_small"
@@ -47,7 +64,7 @@
                     android:id="@+id/iv_avatar"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="100dp"
                     android:padding="4dp"
                     android:src="@drawable/avatar_placeholder"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -134,62 +151,53 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <com.google.android.material.card.MaterialCardView
+                <LinearLayout
                     android:id="@+id/card_stats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="20dp"
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="24dp"
-                    app:cardBackgroundColor="#661E2235"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="8dp"
-                    app:layout_constraintTop_toBottomOf="@id/ll_tags"
-                    app:strokeColor="#0DFFFFFF"
-                    app:strokeWidth="1dp">
+                    android:background="@drawable/bg_glass_stats_card"
+                    app:layout_constraintTop_toBottomOf="@id/ll_tags">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="20dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="128" android:textColor="@color/brand_accent" android:textSize="24sp" android:textStyle="bold"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="拾取记忆" android:textColor="@color/brand_text_sub" android:textSize="10sp" />
-                        </LinearLayout>
-
-                        <View android:layout_width="1dp" android:layout_height="40dp" android:background="#1AFFFFFF" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="42" android:textColor="@color/white" android:textSize="24sp" android:textStyle="bold"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="点亮锚点" android:textColor="@color/brand_text_sub" android:textSize="10sp" />
-                        </LinearLayout>
-
-                        <View android:layout_width="1dp" android:layout_height="40dp" android:background="#1AFFFFFF" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="8.9k" android:textColor="@color/white" android:textSize="24sp" android:textStyle="bold"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="获得共鸣" android:textColor="@color/brand_text_sub" android:textSize="10sp" />
-                        </LinearLayout>
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView style="@style/ProfileStatValueStyle" android:text="128" android:textColor="@color/brand_accent" android:shadowColor="#40F5A623" android:shadowDx="0" android:shadowDy="4" android:shadowRadius="8"/>
+                        <TextView style="@style/ProfileStatLabelStyle" android:text="拾取记忆" />
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+
+                    <View android:layout_width="1dp" android:layout_height="40dp" android:background="#1AFFFFFF" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView style="@style/ProfileStatValueStyle" android:text="42"/>
+                        <TextView style="@style/ProfileStatLabelStyle" android:text="足迹地图"  />
+                    </LinearLayout>
+
+                    <View android:layout_width="1dp" android:layout_height="40dp" android:background="#1AFFFFFF" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView style="@style/ProfileStatValueStyle" android:text="8.9k" />
+                        <TextView style="@style/ProfileStatLabelStyle" android:text="获得共鸣" />
+                    </LinearLayout>
+                </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.appcompat.widget.Toolbar
