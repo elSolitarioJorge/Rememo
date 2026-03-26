@@ -21,4 +21,22 @@
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
+    <!-- 统计卡片中的数值样式 -->
+    <style name="ProfileStatValueStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- 统计卡片中的描述文字样式 -->
+    <style name="ProfileStatLabelStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textColor">@color/brand_text_sub</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
 </resources>

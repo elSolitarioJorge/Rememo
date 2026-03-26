@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,12 +16,18 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.FragmentProfileHomeBinding;
+import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
 
 @Route(path = Routes.Profile.HOME_FRAGMENT)
-public class ProfileHomeFragment extends Fragment {
+public class ProfileHomeFragment extends Fragment implements ProfileContract.View {
+
     private FragmentProfileHomeBinding binding;
+    private ProfilePresenter presenter;
 
     @Nullable
     @Override
@@ -38,6 +45,17 @@ public class ProfileHomeFragment extends Fragment {
         handleWindowInsets();
         initScrollEffect();
         initClickListeners();
+
+        presenter = new ProfilePresenter();
+        presenter.attachView(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (presenter != null) {
+            presenter.loadUserInfo();
+        }
     }
 
     private void initClickListeners() {
@@ -112,6 +130,48 @@ public class ProfileHomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (presenter != null) {
+            presenter.detachView();
+        }
         binding = null;
+    }
+
+    // ========== ProfileContract.View 实现 ==========
+
+    @Override
+    public void showUserInfo(UserInfo userInfo) {
+        if (binding == null || userInfo == null) return;
+        binding.tvName.setText(userInfo.getNickname() != null ? userInfo.getNickname() : "");
+        binding.tvBio.setText(userInfo.getBio() != null ? userInfo.getBio() : "");
+        if (userInfo.getAvatar() != null && !userInfo.getAvatar().isEmpty()) {
+            Glide.with(this)
+                    .load(userInfo.getAvatar())
+                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivAvatar);
+            Glide.with(this)
+                    .load(userInfo.getAvatar())
+                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivToolbarSmallAvatar);
+        }
+    }
+
+    @Override
+    public void showUpdateSuccess() {
+        // 编辑保存成功后刷新主页
+        if (presenter != null) {
+            presenter.loadUserInfo();
+        }
+    }
+
+    @Override
+    public void navigateToLogin() {
+        // 本 Fragment 不处理跳转，由 SettingsDialogFragment 处理
+    }
+
+    @Override
+    public void showError(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }
