@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
+import com.ggg.rememo.core.data.util.ImageToBase64Util;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -33,6 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
 
+    private static final String TAG = "EditProfile";
     private static final String ARG_AVATAR = "arg_avatar";
 
     private DialogEditProfileBinding binding;
@@ -197,7 +200,28 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         }
 
         String gender = mapGenderToApi(genderText);
-        String avatar = selectedAvatarPath.isEmpty() ? currentAvatar : selectedAvatarPath;
+
+        binding.btnSave.setEnabled(false);
+        binding.btnSave.setText("上传中...");
+
+        String avatar;
+        if (!selectedAvatarPath.isEmpty()) {
+            try {
+                avatar = ImageToBase64Util.filePathToBase64(selectedAvatarPath);
+                Log.d(TAG, "Base64 转换成功: avatar长度=" + avatar.length() + ", 前100字符=" + avatar.substring(0, Math.min(100, avatar.length())));
+            } catch (Exception e) {
+                Log.e(TAG, "Base64 转换失败", e);
+                Toast.makeText(requireContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("保存");
+                return;
+            }
+        } else {
+            avatar = currentAvatar;
+            Log.d(TAG, "未选择新头像，使用现有头像: " + avatar);
+        }
+
+        Log.d(TAG, "调用 presenter.updateProfile -> nickname=" + nickname + ", avatar长度=" + avatar.length() + ", gender=" + gender + ", bio=" + bio);
         presenter.updateProfile(nickname, avatar, gender, bio);
     }
 
@@ -299,6 +323,8 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     @Override
     public void showUpdateSuccess() {
         Toast.makeText(requireContext(), "保存成功", Toast.LENGTH_SHORT).show();
+        binding.btnSave.setEnabled(true);
+        binding.btnSave.setText("保存");
         dismiss();
     }
 
@@ -310,6 +336,8 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     @Override
     public void showError(String message) {
         if (getContext() != null) {
+            binding.btnSave.setEnabled(true);
+            binding.btnSave.setText("保存");
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
     }

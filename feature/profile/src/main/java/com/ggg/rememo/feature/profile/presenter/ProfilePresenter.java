@@ -2,6 +2,7 @@ package com.ggg.rememo.feature.profile.presenter;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.common.util.TokenManager;
@@ -18,6 +19,7 @@ import com.ggg.rememo.feature.profile.data.ProfileRepository;
 public class ProfilePresenter extends BasePresenter<ProfileContract.View>
         implements ProfileContract.Presenter {
 
+    private static final String TAG = "ProfilePresenter";
     private final ProfileRepository repository;
     private final Handler mainHandler;
 
@@ -54,6 +56,7 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
 
             @Override
             public void onError(String message) {
+                Log.e(TAG, "loadUserInfo 失败: " + message);
                 mainHandler.post(() -> {
                     ifViewAttached(view -> {
                         view.hideLoading();
@@ -66,11 +69,13 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
 
     @Override
     public void updateProfile(String nickname, String avatar, String gender, String bio) {
+        Log.d(TAG, "updateProfile 调用: nickname=" + nickname + ", avatar长度=" + (avatar == null ? 0 : avatar.length()) + ", gender=" + gender + ", bio=" + bio);
         ifViewAttached(view -> view.showLoading());
 
         repository.updateProfile(nickname, avatar, gender, bio, new ApiCallback<UserInfo>() {
             @Override
             public void onSuccess(UserInfo data) {
+                Log.d(TAG, "updateProfile 成功: " + data);
                 mainHandler.post(() -> {
                     ifViewAttached(view -> {
                         view.hideLoading();
@@ -90,6 +95,7 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
 
             @Override
             public void onError(String message) {
+                Log.e(TAG, "updateProfile 失败: " + message);
                 mainHandler.post(() -> {
                     ifViewAttached(view -> {
                         view.hideLoading();

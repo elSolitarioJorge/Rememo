@@ -13,8 +13,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.databinding.ActivityMainBinding;
-import com.ggg.rememo.feature.auth.util.TokenManager;
 
 public class MainActivity extends AppCompatActivity {
 

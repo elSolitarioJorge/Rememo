@@ -47,6 +47,7 @@ dependencies {
 
     implementation libs.retrofit
     implementation libs.glide
+    implementation libs.gson
 
     implementation libs.appcompat
     implementation libs.material

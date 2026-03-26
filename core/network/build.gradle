@@ -32,6 +32,7 @@ dependencies {
     implementation libs.appcompat
     implementation libs.material
     implementation libs.okhttp
+    implementation libs.okhttp.logging.interceptor
     implementation libs.retrofit
     implementation libs.retrofit.converter.gson
     implementation libs.gson
