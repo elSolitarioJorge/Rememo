@@ -2,12 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_map"
-        android:icon="@drawable/ic_map"
+        android:icon="@drawable/ic_map1"
         android:title="地图"/>
 
     <item
         android:id="@+id/menu_discover"
-        android:icon="@drawable/ic_discover"
+        android:icon="@drawable/ic_discover2"
         android:title="发现"/>
 
     <item
@@ -17,11 +17,11 @@
 
     <item
         android:id="@+id/menu_message"
-        android:icon="@drawable/ic_message"
+        android:icon="@drawable/ic_message2"
         android:title="消息"/>
 
     <item
         android:id="@+id/menu_me"
-        android:icon="@drawable/ic_me"
+        android:icon="@drawable/ic_me1"
         android:title="我的"/>
 </menu>

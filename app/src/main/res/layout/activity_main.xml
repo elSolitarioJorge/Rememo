@@ -19,11 +19,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:minHeight="64dp"
-        app:backgroundTint="#16192B"
+        app:backgroundTint="#FA16192B"
+        app:elevation="0dp"
         app:fabAlignmentMode="center"
-        app:fabCradleRoundedCornerRadius="40dp"
-        app:fabCradleMargin="8dp"
-        app:fabCradleVerticalOffset="12dp"
+        app:fabCradleRoundedCornerRadius="24dp"
+        app:fabCradleMargin="12dp"
+        app:fabCradleVerticalOffset="8dp"
         app:hideOnScroll="false"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -39,6 +40,7 @@
         app:itemRippleColor="@color/transparent"
         app:itemTextColor="@color/selector_bnv_item_dark"
         app:labelVisibilityMode="labeled"
+        app:itemIconSize="28dp"
         app:menu="@menu/menu_bottom_navigation" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -48,9 +50,13 @@
         android:contentDescription="发布"
         app:srcCompat="@drawable/ic_publish"
         app:tint="#FFFFFF"
-        app:maxImageSize="32dp"
+        app:maxImageSize="30dp"
         app:backgroundTint="#F5A623"
-        app:elevation="8dp"
-        app:layout_anchor="@id/bab_navigation"/>
+        app:borderWidth="3dp"
+        app:elevation="12dp"
+        android:outlineAmbientShadowColor="#F5A623"
+        android:outlineSpotShadowColor="#F5A623"
+        app:layout_anchor="@id/bab_navigation"
+        tools:targetApi="28" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
