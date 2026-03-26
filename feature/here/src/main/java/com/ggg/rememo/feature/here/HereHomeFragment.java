@@ -1,6 +1,8 @@
 package com.ggg.rememo.feature.here;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -119,6 +123,9 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         super.onViewCreated(view, savedInstanceState);
         presenter.initLocation();
         presenter.checkLocationPermission();
+
+        startScanLineAnimation();
+        startARGlowAnimation();
     }
 
     private void initMap() {
@@ -136,6 +143,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         myLocationStyle.strokeColor(Color.TRANSPARENT);
         myLocationStyle.radiusFillColor(Color.TRANSPARENT);
         myLocationStyle.strokeWidth(0f);
+        myLocationStyle.setZIndex(100);
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.icon_my_location));
         aMap.setMyLocationStyle(myLocationStyle);
 
@@ -184,7 +192,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
 
             AMapLocationClientOption option = new AMapLocationClientOption();
             option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-            option.setNeedAddress(false);
+            option.setNeedAddress(true);
             if (hasFineLocationPermission()) {
                 option.setOnceLocation(false);
                 option.setInterval(2000);
@@ -300,8 +308,8 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
 
         LatLng position = new LatLng(point.getLatitude(), point.getLongitude());
 
-        View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_custom_marker, null);
-
+        View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_custom_marker_2, null);
+        measureViewForAMap(markerView);
         BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(markerView);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(position)
@@ -311,6 +319,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
                 .zIndex(1.0f);
 
         Marker marker = aMap.addMarker(markerOptions);
+
         if (marker != null) {
             marker.setObject(point);
             boolean existImage = point.getCoverImageUrl() != null && !point.getCoverImageUrl().isEmpty();
@@ -329,10 +338,11 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            View finalMarkerView = LayoutInflater.from(getContext()).inflate(R.layout.layout_custom_marker, null);
-                            ImageView finalIvPic = finalMarkerView.findViewById(R.id.iv_marker_pic);
-
+                            if (getActivity() == null || isDetached()) return;
+                            View finalMarkerView = LayoutInflater.from(getContext()).inflate(R.layout.layout_custom_marker_2, null);
+                            ImageView finalIvPic = finalMarkerView.findViewById(R.id.iv_marker_image);
                             finalIvPic.setImageBitmap(resource);
+                            measureViewForAMap(finalMarkerView);
 
                             BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(finalMarkerView);
                             marker.setIcon(descriptor);
@@ -341,7 +351,40 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
                         @Override
                         public void onLoadCleared(@Nullable Drawable placeholder) {}
                     });
+
+            ValueAnimator floatAnimator = ValueAnimator.ofFloat(1.0f, 1.15f);
+            floatAnimator.setDuration(1500); // 单次浮动耗时 1.5 秒
+            floatAnimator.setRepeatCount(ValueAnimator.INFINITE); // 无限循环
+            floatAnimator.setRepeatMode(ValueAnimator.REVERSE); // 反向重复，实现平滑的上下起伏
+            floatAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+
+            floatAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(@NonNull ValueAnimator animation) {
+                    // 如果 Marker 已经被移除，或者地图被销毁，立刻停止动画
+                    if (marker.isRemoved() || aMap == null) {
+                        animation.cancel();
+                        return;
+                    }
+                    float currentAnchorY = (float) animation.getAnimatedValue();
+                    // 动态更新锚点
+                    marker.setAnchor(0.5f, currentAnchorY);
+                }
+            });
+
+            floatAnimator.start();
         }
+    }
+
+    /**
+     * 专门用于强制测量 View 宽高的工具方法
+     */
+    private void measureViewForAMap(View view) {
+        view.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        );
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
     }
 
     // ==================== AMapLocationListener ====================
@@ -354,6 +397,8 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         if (mLocationChangedListener != null) {
             mLocationChangedListener.onLocationChanged(aMapLocation);
         }
+
+        updateHudWithRealData(aMapLocation);
     }
 
     // ==================== LocationSource 接口 ====================
@@ -369,6 +414,46 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
     @Override
     public void deactivate() {
         mLocationChangedListener = null;
+    }
+
+    // ==================== 动画 ====================
+
+    /**
+     * 启动扫描线动画 (从上往下无限扫描)
+     */
+    private void startScanLineAnimation() {
+        int height = getResources().getDisplayMetrics().heightPixels;    // 剩下的动画逻辑保持不变
+        ObjectAnimator scanAnim = ObjectAnimator.ofFloat(binding.viewScanLine, "translationY", -100f, height + 100f);
+        scanAnim.setDuration(5000);
+        scanAnim.setRepeatCount(ValueAnimator.INFINITE);
+        scanAnim.start();
+    }
+
+    /**
+     * 启动 AR 按钮呼吸光动画
+     */
+    private void startARGlowAnimation() {
+        AlphaAnimation alphaAnimation = new AlphaAnimation(0.3f, 1.0f);
+        alphaAnimation.setDuration(1200);
+        alphaAnimation.setRepeatMode(Animation.REVERSE);
+        alphaAnimation.setRepeatCount(Animation.INFINITE);
+        binding.viewArGlow.startAnimation(alphaAnimation);
+    }
+
+    /**
+     * 更新 HUD
+     */
+    private void updateHudWithRealData(AMapLocation aMapLocation) {
+        if (binding == null || aMapLocation == null) return;
+
+        binding.tvHudLat.setText(String.format("LAT: %.4f° N", aMapLocation.getLatitude()));
+        binding.tvHudLng.setText(String.format("LNG: %.4f° E", aMapLocation.getLongitude()));
+
+        String address = aMapLocation.getDistrict() + aMapLocation.getStreet() + aMapLocation.getStreetNum();
+        if (address.isEmpty()) {
+            address = aMapLocation.getAddress();
+        }
+        binding.tvHudAddress.setText("LOC: " + address);
     }
 
     // ==================== Fragment 生命周期 ====================
