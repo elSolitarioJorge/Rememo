@@ -1,8 +1,6 @@
 package com.ggg.rememo.core.data.repository;
 
-import android.content.Context;
-
-
+import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.dao.UserDao;
 import com.ggg.rememo.core.data.local.database.RememoDatabase;
 import com.ggg.rememo.core.data.model.entity.User;
@@ -16,8 +14,8 @@ public class UserRepository {
     private final UserDao userDao;
     private final ExecutorService executorService;
 
-    public UserRepository(Context context) {
-        RememoDatabase database = RememoDatabase.getInstance(context);
+    public UserRepository() {
+        RememoDatabase database = RememoDatabase.getInstance(AppContext.get());
         this.userDao = database.userDao();
         this.executorService = Executors.newSingleThreadExecutor();
     }

@@ -1,6 +1,5 @@
 package com.ggg.rememo.feature.publish.presenter;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -25,8 +24,8 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
     private final PublishRepository repository;
     private final Handler mainHandler;
 
-    public PublishPresenter(Context context) {
-        this.repository = new PublishRepository(context);
+    public PublishPresenter() {
+        this.repository = new PublishRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
 

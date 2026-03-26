@@ -1,7 +1,5 @@
 package com.ggg.rememo.feature.here.data;
 
-import android.content.Context;
-
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
 import com.tencent.mmkv.MMKV;
@@ -17,9 +15,9 @@ public class HereRepository {
     private final MMKV mmkv;
     private final MemoryPointRepository memoryPointRepository;
 
-    public HereRepository(Context context) {
+    public HereRepository() {
         this.mmkv = MMKV.mmkvWithID(MMKV_ID);
-        this.memoryPointRepository = new MemoryPointRepository(context);
+        this.memoryPointRepository = new MemoryPointRepository();
     }
 
     /**

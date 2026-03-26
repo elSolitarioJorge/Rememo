@@ -1,8 +1,7 @@
 package com.ggg.rememo.core.data.repository;
 
-import android.content.Context;
 
-
+import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.dao.CommentDao;
 import com.ggg.rememo.core.data.local.database.RememoDatabase;
 import com.ggg.rememo.core.data.model.entity.Comment;
@@ -16,8 +15,8 @@ public class CommentRepository {
     private final CommentDao commentDao;
     private final ExecutorService executorService;
 
-    public CommentRepository(Context context) {
-        RememoDatabase database = RememoDatabase.getInstance(context);
+    public CommentRepository() {
+        RememoDatabase database = RememoDatabase.getInstance(AppContext.get());
         this.commentDao = database.commentDao();
         this.executorService = Executors.newSingleThreadExecutor();
     }

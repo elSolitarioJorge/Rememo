@@ -105,7 +105,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         binding = FragmentHereHomeBinding.inflate(inflater, container, false);
         MapLifecycleHelper.bindTo(this, binding.mapView, savedInstanceState);
 
-        presenter = new HerePresenter(new HereRepository(requireContext()));
+        presenter = new HerePresenter(new HereRepository());
         presenter.attachView(this);
 
         initMap();
