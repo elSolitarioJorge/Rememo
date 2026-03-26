@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.profile.data;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.ggg.rememo.core.common.util.TokenManager;
@@ -11,6 +12,7 @@ import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
 import com.ggg.rememo.core.network.NetworkClient;
+import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,6 +24,7 @@ import retrofit2.Response;
  */
 public class ProfileRepository {
 
+    private static final String TAG = "ProfileRepository";
     private final ApiService apiService;
     private final UserRepository userRepository;
 
@@ -54,15 +57,19 @@ public class ProfileRepository {
     public void updateProfile(String nickname, String avatar, String gender, String bio,
                                ApiCallback<UserInfo> callback) {
         UpdateUserRequest request = new UpdateUserRequest(nickname, avatar, gender, bio);
+        Log.d(TAG, "updateProfile 请求 - nickname=" + nickname + ", avatar长度=" + (avatar == null ? 0 : avatar.length()) + ", gender=" + gender + ", bio=" + bio);
+        Log.d(TAG, "updateProfile 请求体: " + new Gson().toJson(request));
         apiService.updateUserInfo(request).enqueue(new Callback<ApiResponse<UserInfo>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<UserInfo>> call,
                                    @NonNull Response<ApiResponse<UserInfo>> response) {
+                Log.d(TAG, "updateProfile 响应 - code=" + response.code() + ", body=" + response.body());
                 handleResponse(response, callback);
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<UserInfo>> call, @NonNull Throwable t) {
+                Log.e(TAG, "updateProfile 请求失败", t);
                 callback.onError("网络异常: " + t.getMessage());
             }
         });
@@ -120,14 +127,21 @@ public class ProfileRepository {
     }
 
     private <T> void handleResponse(Response<ApiResponse<T>> response, ApiCallback<T> callback) {
+        Log.d(TAG, "handleResponse HTTP code=" + response.code());
         if (response.isSuccessful() && response.body() != null) {
             ApiResponse<T> body = response.body();
+            Log.d(TAG, "handleResponse body -> code=" + body.getCode() + ", message=" + body.getMessage() + ", data=" + body.getData());
             if (body.isSuccess()) {
                 callback.onSuccess(body.getData());
             } else {
                 callback.onError(body.getMessage());
             }
         } else {
+            String errorBody = "";
+            try {
+                if (response.errorBody() != null) errorBody = response.errorBody().string();
+            } catch (Exception ignored) {}
+            Log.e(TAG, "handleResponse 请求失败: code=" + response.code() + ", errorBody=" + errorBody);
             callback.onError("请求失败: " + response.code());
         }
     }
