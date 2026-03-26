@@ -65,7 +65,7 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
     }
 
     private void initPresenter() {
-        presenter = new TimelinePresenter(this);
+        presenter = new TimelinePresenter();
         presenter.attachView(this);
     }
 

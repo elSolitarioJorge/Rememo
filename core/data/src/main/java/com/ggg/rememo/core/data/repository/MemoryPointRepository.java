@@ -1,8 +1,7 @@
 package com.ggg.rememo.core.data.repository;
 
-import android.content.Context;
 
-
+import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.dao.MemoryPointDao;
 import com.ggg.rememo.core.data.local.database.RememoDatabase;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
@@ -16,8 +15,8 @@ public class MemoryPointRepository {
     private final MemoryPointDao memoryPointDao;
     private final ExecutorService executorService;
 
-    public MemoryPointRepository(Context context) {
-        RememoDatabase database = RememoDatabase.getInstance(context);
+    public MemoryPointRepository() {
+        RememoDatabase database = RememoDatabase.getInstance(AppContext.get());
         this.memoryPointDao = database.memoryPointDao();
         this.executorService = Executors.newSingleThreadExecutor();
     }

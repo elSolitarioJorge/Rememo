@@ -1,6 +1,5 @@
 package com.ggg.rememo.feature.timeline.presenter;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,8 +27,8 @@ public class TimelinePresenter extends BasePresenter<TimelineContract.View>
     private String currentPointId;
     private MemoryPoint currentPoint;
 
-    public TimelinePresenter(Context context) {
-        this.repository = new TimelineRepository(context);
+    public TimelinePresenter() {
+        this.repository = new TimelineRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
 

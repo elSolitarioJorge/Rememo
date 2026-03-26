@@ -1,7 +1,5 @@
 package com.ggg.rememo.feature.publish.data;
 
-import android.content.Context;
-
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
@@ -20,9 +18,9 @@ public class PublishRepository {
     private final MemoryPointRepository memoryPointRepository;
     private final MemoryPostRepository memoryPostRepository;
 
-    public PublishRepository(Context context) {
-        this.memoryPointRepository = new MemoryPointRepository(context);
-        this.memoryPostRepository = new MemoryPostRepository(context);
+    public PublishRepository() {
+        this.memoryPointRepository = new MemoryPointRepository();
+        this.memoryPostRepository = new MemoryPostRepository();
     }
 
     /**

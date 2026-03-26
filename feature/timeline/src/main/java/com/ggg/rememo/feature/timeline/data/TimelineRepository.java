@@ -1,7 +1,5 @@
 package com.ggg.rememo.feature.timeline.data;
 
-import android.content.Context;
-
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
@@ -24,14 +22,12 @@ import java.util.UUID;
  */
 public class TimelineRepository {
 
-    private final Context context;
     private final MemoryPostRepository memoryPostRepository;
     private final MemoryPointRepository memoryPointRepository;
 
-    public TimelineRepository(Context context) {
-        this.context = context.getApplicationContext();
-        this.memoryPostRepository = new MemoryPostRepository(context);
-        this.memoryPointRepository = new MemoryPointRepository(context);
+    public TimelineRepository() {
+        this.memoryPostRepository = new MemoryPostRepository();
+        this.memoryPointRepository = new MemoryPointRepository();
     }
 
     /**
