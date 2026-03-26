@@ -1,8 +1,10 @@
 package com.ggg.rememo.feature.profile;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -13,9 +15,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
+import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.common.util.AppContext;
+import com.ggg.rememo.core.data.local.ImageStorageHelper;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -25,14 +33,38 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
 
+    private static final String ARG_AVATAR = "arg_avatar";
+
     private DialogEditProfileBinding binding;
     private ProfilePresenter presenter;
     private String currentAvatar = "";
+    private String selectedAvatarPath = "";
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == FragmentActivity.RESULT_OK && result.getData() != null) {
+                    Uri selectedUri = result.getData().getData();
+                    if (selectedUri != null) {
+                        handleImageSelected(selectedUri);
+                    }
+                }
+            });
+
+    public static EditProfileDialogFragment newInstance(String currentAvatar) {
+        EditProfileDialogFragment fragment = new EditProfileDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_AVATAR, currentAvatar != null ? currentAvatar : "");
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, R.style.BottomSheetTheme);
+        if (getArguments() != null) {
+            currentAvatar = getArguments().getString(ARG_AVATAR, "");
+        }
     }
 
     @Override
@@ -63,9 +95,92 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         presenter = new ProfilePresenter();
         presenter.attachView(this);
 
+        loadCurrentAvatar();
+        initClickListeners();
+    }
+
+    private void loadCurrentAvatar() {
+        if (currentAvatar != null && !currentAvatar.isEmpty()) {
+            Glide.with(this)
+                    .load(currentAvatar)
+                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivEditAvatar);
+        }
+    }
+
+    private void initClickListeners() {
         binding.ivClose.setOnClickListener(v -> dismiss());
         binding.btnSave.setOnClickListener(v -> saveProfile());
         binding.etGender.setOnClickListener(v -> selectGender());
+        binding.flAvatarContainer.setOnClickListener(v -> showImageSourceDialog());
+    }
+
+    private void showImageSourceDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(Color.parseColor("#16192B"));
+        bg.setCornerRadii(new float[]{60, 60, 60, 60, 0, 0, 0, 0});
+        container.setBackground(bg);
+        container.setPadding(0, 40, 0, 20);
+
+        TextView title = new TextView(requireContext());
+        title.setText("更换头像");
+        title.setTextColor(Color.parseColor("#64748B"));
+        title.setTextSize(13);
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, 0, 0, 40);
+        container.addView(title);
+
+        String[] options = {"从相册选择"};
+        for (String option : options) {
+            TextView tv = new TextView(requireContext());
+            tv.setText(option);
+            tv.setTextSize(16);
+            tv.setGravity(Gravity.CENTER);
+            tv.setPadding(0, 40, 0, 40);
+            tv.setTextColor(Color.parseColor("#E2E8F0"));
+
+            TypedValue outValue = new TypedValue();
+            requireContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+            tv.setBackgroundResource(outValue.resourceId);
+            tv.setClickable(true);
+
+            tv.setOnClickListener(v1 -> {
+                dialog.dismiss();
+                openImagePicker();
+            });
+            container.addView(tv);
+        }
+
+        dialog.setContentView(container);
+        View parentView = (View) container.getParent();
+        if (parentView != null) {
+            parentView.setBackgroundColor(Color.TRANSPARENT);
+        }
+        dialog.show();
+    }
+
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        imagePickerLauncher.launch(intent);
+    }
+
+    private void handleImageSelected(Uri uri) {
+        try {
+            String localPath = ImageStorageHelper.copyUriToInternalStorage(
+                    AppContext.get(), uri);
+            selectedAvatarPath = localPath;
+            Glide.with(this)
+                    .load(localPath)
+                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivEditAvatar);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void saveProfile() {
@@ -82,7 +197,8 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         }
 
         String gender = mapGenderToApi(genderText);
-        presenter.updateProfile(nickname, currentAvatar, gender, bio);
+        String avatar = selectedAvatarPath.isEmpty() ? currentAvatar : selectedAvatarPath;
+        presenter.updateProfile(nickname, avatar, gender, bio);
     }
 
     private String mapGenderToApi(String displayGender) {
