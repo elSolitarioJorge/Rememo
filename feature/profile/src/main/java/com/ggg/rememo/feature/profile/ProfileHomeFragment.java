@@ -60,7 +60,15 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
 
     private void initClickListeners() {
         binding.btnEditProfile.setOnClickListener(v -> {
-            new EditProfileDialogFragment().show(getChildFragmentManager(), "edit_profile");
+            String avatar = "";
+            if (binding.ivAvatar.getDrawable() != null) {
+                Object tag = binding.ivAvatar.getTag();
+                if (tag instanceof String && !((String) tag).isEmpty()) {
+                    avatar = (String) tag;
+                }
+            }
+            EditProfileDialogFragment.newInstance(avatar)
+                    .show(getChildFragmentManager(), "edit_profile");
         });
 
         binding.ivSettings.setOnClickListener(v -> {
@@ -144,6 +152,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         binding.tvName.setText(userInfo.getNickname() != null ? userInfo.getNickname() : "");
         binding.tvBio.setText(userInfo.getBio() != null ? userInfo.getBio() : "");
         if (userInfo.getAvatar() != null && !userInfo.getAvatar().isEmpty()) {
+            binding.ivAvatar.setTag(userInfo.getAvatar());
             Glide.with(this)
                     .load(userInfo.getAvatar())
                     .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
