@@ -51,28 +51,42 @@
             app:tint="#64748B" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/explore_reco_location_recyclerView"
+    <com.ggg.rememo.feature.explore.Utils.NestedScrollableHost
+        android:id="@+id/explore_reco_location_nested_host"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="11dp"
+        android:layout_marginTop="12dp"
         app:layout_constraintTop_toBottomOf="@id/layout_search_bar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/explore_reco_content_recyclerView"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/explore_reco_location_recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="11dp" />
+
+    </com.ggg.rememo.feature.explore.Utils.NestedScrollableHost>
+
+    <com.ggg.rememo.feature.explore.Utils.NestedScrollableHost
+        android:id="@+id/explore_reco_content_nested_host"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
-        android:paddingHorizontal="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/explore_reco_location_recyclerView"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@id/explore_reco_location_nested_host">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/explore_reco_content_recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="8dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false" />
+
+    </com.ggg.rememo.feature.explore.Utils.NestedScrollableHost>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
