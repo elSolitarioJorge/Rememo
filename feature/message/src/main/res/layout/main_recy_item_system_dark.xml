@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#16192B"
+    app:strokeColor="#1AFFFFFF"
+    app:strokeWidth="1dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_ai_card_gradient"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <View
+            android:layout_width="3dp"
+            android:layout_height="0dp"
+            android:background="#F5A623"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <FrameLayout
+            android:id="@+id/fl_system_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_circle_action_visitor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/system_avatar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/pic_my_avatar"
+                app:tint="#F5A623" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/system_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/fl_system_avatar"
+            app:layout_constraintTop_toTopOf="@id/fl_system_avatar"
+            android:text="时光修理铺"
+            android:textColor="#E2E8F0"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginStart="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI"
+            android:textColor="#F5A623"
+            android:textSize="9sp"
+            android:fontFamily="monospace"
+            android:background="@drawable/bg_round_rect"
+            android:backgroundTint="#1AF5A623"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="1dp"
+            app:layout_constraintStart_toEndOf="@id/system_title"
+            app:layout_constraintTop_toTopOf="@id/system_title"
+            app:layout_constraintBottom_toBottomOf="@id/system_title"
+            android:layout_marginStart="6dp" />
+
+        <TextView
+            android:id="@+id/system_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/system_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/system_title"
+            android:text="10 MINS AGO"
+            android:fontFamily="monospace"
+            android:textColor="#64748B"
+            android:textSize="10sp"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/system_msg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/system_title"
+            app:layout_constraintStart_toStartOf="@id/system_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="您提交的老照片 #892 已经通过云端算法深度修复上色成功，快去看看吧！"
+            android:textSize="13sp"
+            android:textColor="#D1D5DB"
+            android:lineSpacingMultiplier="1.2"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

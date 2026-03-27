@@ -13,9 +13,13 @@ import com.ggg.rememo.feature.message.DataModule.ItemSystemMsg;
 import com.ggg.rememo.feature.message.DataModule.ItemTimeHeadMsg;
 import com.ggg.rememo.feature.message.DataModule.ListItem;
 import com.ggg.rememo.feature.message.databinding.MainRecyItemCommentBinding;
+import com.ggg.rememo.feature.message.databinding.MainRecyItemCommentDarkBinding;
 import com.ggg.rememo.feature.message.databinding.MainRecyItemLikeBinding;
+import com.ggg.rememo.feature.message.databinding.MainRecyItemLikeDarkBinding;
 import com.ggg.rememo.feature.message.databinding.MainRecyItemSystemBinding;
+import com.ggg.rememo.feature.message.databinding.MainRecyItemSystemDarkBinding;
 import com.ggg.rememo.feature.message.databinding.MainRecyItemTimeBinding;
+import com.ggg.rememo.feature.message.databinding.MainRecyItemTimeDarkBinding;
 
 import java.util.List;
 
@@ -30,19 +34,19 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ListItem.TYPE_TIME_HEADER) {
-            MainRecyItemTimeBinding timeBinding = MainRecyItemTimeBinding.inflate(
+            MainRecyItemTimeDarkBinding timeBinding = MainRecyItemTimeDarkBinding.inflate(
                     LayoutInflater.from(parent.getContext()), parent, false);
             return new HeadTimeViewHolder(timeBinding);
         } else if (viewType == ListItem.TYPE_COMMENT) {
-            MainRecyItemCommentBinding commentBinding = MainRecyItemCommentBinding.inflate(
+            MainRecyItemCommentDarkBinding commentBinding = MainRecyItemCommentDarkBinding.inflate(
                     LayoutInflater.from(parent.getContext()), parent, false);
             return new CommentViewHolder(commentBinding);
         } else if (viewType == ListItem.TYPE_LIKE) {
-            MainRecyItemLikeBinding likeBinding = MainRecyItemLikeBinding.inflate(
+            MainRecyItemLikeDarkBinding likeBinding = MainRecyItemLikeDarkBinding.inflate(
                     LayoutInflater.from(parent.getContext()), parent, false);
             return new LikeViewHolder(likeBinding);
         } else {
-            MainRecyItemSystemBinding systemBinding = MainRecyItemSystemBinding.inflate(
+            MainRecyItemSystemDarkBinding systemBinding = MainRecyItemSystemDarkBinding.inflate(
                     LayoutInflater.from(parent.getContext()), parent, false);
             return new SystemViewHolder(systemBinding);
         }
@@ -73,8 +77,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class HeadTimeViewHolder extends RecyclerView.ViewHolder {
-        private final MainRecyItemTimeBinding binding;
-        public HeadTimeViewHolder(MainRecyItemTimeBinding binding) {
+        private final MainRecyItemTimeDarkBinding binding;
+        public HeadTimeViewHolder(MainRecyItemTimeDarkBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
@@ -85,8 +89,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class CommentViewHolder extends RecyclerView.ViewHolder {
-        private final MainRecyItemCommentBinding binding;
-        public CommentViewHolder(MainRecyItemCommentBinding binding) {
+        private final MainRecyItemCommentDarkBinding binding;
+        public CommentViewHolder(MainRecyItemCommentDarkBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
@@ -110,8 +114,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
     static class LikeViewHolder extends RecyclerView.ViewHolder {
-        private final MainRecyItemLikeBinding binding;
-        public LikeViewHolder(MainRecyItemLikeBinding binding) {
+        private final MainRecyItemLikeDarkBinding binding;
+        public LikeViewHolder(MainRecyItemLikeDarkBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
@@ -128,8 +132,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class SystemViewHolder extends RecyclerView.ViewHolder {
-        private final MainRecyItemSystemBinding binding;
-        public SystemViewHolder(MainRecyItemSystemBinding binding) {
+        private final MainRecyItemSystemDarkBinding binding;
+        public SystemViewHolder(MainRecyItemSystemDarkBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

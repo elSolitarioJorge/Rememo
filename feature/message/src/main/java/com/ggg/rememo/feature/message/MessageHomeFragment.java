@@ -23,14 +23,14 @@ import com.ggg.rememo.feature.message.DataModule.ItemSystemMsg;
 import com.ggg.rememo.feature.message.DataModule.ItemTimeHeadMsg;
 import com.ggg.rememo.feature.message.DataModule.ListItem;
 import com.ggg.rememo.feature.message.Utils.VerticalItemDecoration;
-import com.ggg.rememo.feature.message.databinding.FragmentMessageHomeBinding;
+import com.ggg.rememo.feature.message.databinding.FragmentMessageHomeDarkBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Route(path = Routes.Message.HOME_FRAGMENT)
 public class MessageHomeFragment extends Fragment {
-    FragmentMessageHomeBinding binding;
+    FragmentMessageHomeDarkBinding binding;
     MessageAdapter adapter;
 
     @Nullable
@@ -38,7 +38,7 @@ public class MessageHomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentMessageHomeBinding.inflate(inflater, container, false);
+        binding = FragmentMessageHomeDarkBinding.inflate(inflater, container, false);
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(0, systemBars.top, 0, 0);
@@ -59,13 +59,13 @@ public class MessageHomeFragment extends Fragment {
         // 准备数据
         List<ListItem> items = new ArrayList<>();
         items.add(new ItemTimeHeadMsg("今天"));
-        items.add(new ItemSystemMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "时光修理铺(AI)", "10分钟前", "您提交的老照片#892已经通过云端算法深度修复上色完毕，快去看看吧！"));
+        items.add(new ItemSystemMsg(R.drawable.ic_robot, "时光修理铺", "10分钟前", "您提交的老照片#892已经通过云端算法深度修复上色完毕，快去看看吧！"));
         items.add(new ItemCommentMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "老王头", "那会儿的橘子是不是特别甜？哈哈哈。这AI上色技术真牛，衣服的颜色都还原对了", "2小时前", com.ggg.rememo.core.ui.R.drawable.pic_avatar2, "绿皮车上的离别绿皮车上的离别绿皮车上的离别", "父亲在这里送我，隔着车窗递给我橘子"));
         items.add(new ItemTimeHeadMsg("昨天"));
         items.add(new ItemLikeMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "建国叔", 12, "昨天16:30", "我给的橘子被你给收藏了，快去看看吧！", "消失的糖葫芦", "小时候钟楼旁边的那个糖葫芦摊，是我"));
 
         items.add(new ItemTimeHeadMsg("今天"));
-        items.add(new ItemSystemMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "时光修理铺(AI)", "10分钟前", "您提交的老照片#892已经通过云端算法深度修复上色完毕，快去看看吧！"));
+        items.add(new ItemSystemMsg(R.drawable.ic_robot, "时光修理铺(AI)", "10分钟前", "您提交的老照片#892已经通过云端算法深度修复上色完毕，快去看看吧！"));
         items.add(new ItemCommentMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "老王头", "那会儿的橘子是不是特别甜？哈哈哈。这AI上色技术真牛，衣服的颜色都还原对了", "2小时前", com.ggg.rememo.core.ui.R.drawable.pic_avatar2, "绿皮车上的离别绿皮车上的离别绿皮车上的离别", "父亲在这里送我，隔着车窗递给我橘子"));
         items.add(new ItemTimeHeadMsg("昨天"));
         items.add(new ItemLikeMsg(com.ggg.rememo.core.ui.R.drawable.pic_my_avatar, "建国叔", 12, "昨天16:30", "我给的橘子被你给收藏了，快去看看吧！", "消失的糖葫芦", "小时候钟楼旁边的那个糖葫芦摊，是我"));

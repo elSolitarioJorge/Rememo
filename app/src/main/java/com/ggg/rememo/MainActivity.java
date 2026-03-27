@@ -30,13 +30,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        if (!TokenManager.isLoggedIn()) {
-            ARouter.getInstance()
-                    .build(Routes.Auth.LOGIN)
-                    .navigation();
-            finish();
-            return;
-        }
+//        if (!TokenManager.isLoggedIn()) {
+//            ARouter.getInstance()
+//                    .build(Routes.Auth.LOGIN)
+//                    .navigation();
+//            finish();
+//            return;
+//        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
