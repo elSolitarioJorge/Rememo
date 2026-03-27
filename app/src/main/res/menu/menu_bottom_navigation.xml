@@ -18,7 +18,7 @@
     <item
         android:id="@+id/menu_message"
         android:icon="@drawable/ic_message2"
-        android:title="消息"/>
+        android:title="共鸣"/>
 
     <item
         android:id="@+id/menu_me"
