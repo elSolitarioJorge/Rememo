@@ -2,21 +2,23 @@
 <resources>
     <!--发现页首部导航栏样式-->
     <style name="ExplorePageTabLayout">
-        <item name="tabIndicatorColor">@color/orange</item>
+        <item name="tabIndicatorColor">#F5A623</item>
         <item name="tabIndicatorFullWidth">false</item>
         <item name="tabRippleColor">@null</item>
         <item name="tabPaddingStart">11dp</item>
         <item name="tabPaddingEnd">11dp</item>
         <item name="tabMinWidth">25dp</item>
         <item name="textAllCaps">false</item>
-        <item name="tabTextColor">@color/black</item>
+        <item name="tabTextColor">#64748B</item>
+        <item name="tabSelectedTextColor">#E2E8F0</item>
+
         <item name="tabTextAppearance">@style/ExplorePageTabLayoutUnselectedTextStyle</item>
         <item name="tabSelectedTextAppearance">@style/ExplorePageTabLayoutSelectedTextStyle</item>
     </style>
 
     <style name="ExplorePageTabLayoutUnselectedTextStyle">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="ExplorePageTabLayoutSelectedTextStyle">

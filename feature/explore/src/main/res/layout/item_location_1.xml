@@ -4,6 +4,10 @@
     android:layout_height="@dimen/itemLocationCardHeight"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="@dimen/itemCardCornerRadius"
+    app:cardBackgroundColor="#16192B"
+    app:strokeColor="#1AFFFFFF"
+    app:strokeWidth="1dp"
+    android:layout_marginEnd="12dp"
     android:elevation="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,25 +19,24 @@
             android:id="@+id/img_point_cover"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/pic_location"
-            />
+            android:scaleType="centerCrop"
+            android:background="@drawable/pic_location" />
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/bg_point_shadow"
-            />
+            android:background="@drawable/bg_gradient_overlay_dark" />
 
         <ImageView
             android:id="@+id/icon_spark"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
             android:src="@drawable/ic_spark"
+            app:tint="#F5A623"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="6dp"
-            />
+            android:layout_marginStart="8dp" />
 
         <TextView
             android:id="@+id/text_memory_count"
@@ -42,11 +45,10 @@
             app:layout_constraintTop_toTopOf="@id/icon_spark"
             app:layout_constraintBottom_toBottomOf="@id/icon_spark"
             app:layout_constraintStart_toEndOf="@id/icon_spark"
-            android:layout_marginStart="3dp"
-            android:text="342条回忆封存"
-            android:textColor="#EEEEEE"
-            android:textSize="10sp"
-            />
+            android:layout_marginStart="4dp"
+            android:text="342条回忆"
+            android:textColor="#F5A623"
+            android:textSize="9sp" />
 
         <TextView
             android:id="@+id/text_location_name"
@@ -54,12 +56,11 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/icon_spark"
             app:layout_constraintBottom_toTopOf="@id/icon_spark"
-            android:layout_marginBottom="3dp"
+            android:layout_marginBottom="2dp"
             android:text="西安老火车站"
             android:textColor="@color/white"
             android:textSize="12sp"
-            />
+            android:textStyle="bold" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </com.google.android.material.card.MaterialCardView>
