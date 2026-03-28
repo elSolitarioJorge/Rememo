@@ -150,8 +150,10 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
 
     @Override
     public void navigateToMemoryDetail(String postId) {
-        // TODO: 实现跳转到记忆详情页
-        Toast.makeText(this, "查看记忆: " + postId, Toast.LENGTH_SHORT).show();
+        ARouter.getInstance()
+                .build(Routes.Detail.HOME)
+                .withString(Routes.Detail.EXTRA_POST_ID, postId)
+                .navigation(this);
     }
 
     /**

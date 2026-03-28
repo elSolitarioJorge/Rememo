@@ -89,6 +89,15 @@ public final class Routes {
         public static final String LOCATION_PICKER = "/map/location_picker";
     }
 
+    /** 记忆详情相关路由 */
+    public static final class Detail {
+        private Detail() {
+            throw new AssertionError("No instances.");
+        }
+        public static final String HOME = "/detail/home";
+        public static final String EXTRA_POST_ID = "postId";
+    }
+
     /** 登录注册相关路由 */
     public static final class Auth {
         private Auth() { throw new AssertionError("No instances."); }
