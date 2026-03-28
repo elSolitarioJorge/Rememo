@@ -2,6 +2,8 @@ package com.ggg.rememo;
 
 import android.app.Application;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.alibaba.android.arouter.BuildConfig;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.maps.MapsInitializer;
@@ -13,6 +15,8 @@ public class RememoApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // 开启全局暗色模式，使状态栏的文字和图标改为浅色（白色）
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         AppContext.init(this);
 

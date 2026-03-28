@@ -2,6 +2,8 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Rememo" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
         <item name="colorControlActivated">@color/orange</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
 
     <style name="Theme.Rememo" parent="Base.Theme.Rememo" />

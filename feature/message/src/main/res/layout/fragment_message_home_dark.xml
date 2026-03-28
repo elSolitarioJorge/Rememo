@@ -71,7 +71,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_heart"
+                            android:src="@drawable/ic_heart_message"
                             app:tint="#EF4444" />
                     </FrameLayout>
 
