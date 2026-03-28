@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="12dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_comment_avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/CircleImage"
+        app:strokeColor="#1AFFFFFF"
+        app:strokeWidth="1dp" />
+
+    <TextView
+        android:id="@+id/tv_comment_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="时光记录员"
+        android:textColor="#9CA3AF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/iv_comment_avatar"
+        app:layout_constraintTop_toTopOf="@id/iv_comment_avatar" />
+
+    <ImageView
+        android:id="@+id/iv_comment_like"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:src="@drawable/ic_heart"
+        app:layout_constraintBottom_toBottomOf="@id/tv_comment_name"
+        app:layout_constraintEnd_toStartOf="@id/tv_comment_like_count"
+        app:layout_constraintTop_toTopOf="@id/tv_comment_name"
+        app:tint="#64748B"
+        android:layout_marginEnd="4dp"/>
+
+    <TextView
+        android:id="@+id/tv_comment_like_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12"
+        android:textColor="#64748B"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@id/tv_comment_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_comment_name" />
+
+    <TextView
+        android:id="@+id/tv_comment_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:lineSpacingMultiplier="1.2"
+        android:text="太有画面感了！AI 这上色技术绝了，那个军绿色的军大衣瞬间把我拉回了 90 年代。"
+        android:textColor="#E2E8F0"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tv_comment_name"
+        app:layout_constraintTop_toBottomOf="@id/tv_comment_name" />
+
+    <TextView
+        android:id="@+id/tv_comment_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="monospace"
+        android:text="YESTERDAY 14:30"
+        android:textColor="#64748B"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="@id/tv_comment_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_comment_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="REPLY"
+        android:fontFamily="monospace"
+        android:textColor="#9CA3AF"
+        android:textStyle="bold"
+        android:textSize="10sp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/tv_comment_time"
+        app:layout_constraintTop_toTopOf="@id/tv_comment_time"
+        app:layout_constraintBottom_toBottomOf="@id/tv_comment_time" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#0DFFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tv_comment_name"
+        app:layout_constraintTop_toBottomOf="@id/tv_comment_time" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
