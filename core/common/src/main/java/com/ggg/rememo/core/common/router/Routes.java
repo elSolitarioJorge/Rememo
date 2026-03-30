@@ -37,6 +37,7 @@ public final class Routes {
         public static final String HOME = "/here/home";
         public static final String HOME_FRAGMENT = "/here/home_fragment";
         public static final String DETAIL = "/here/detail";
+        public static final String AI_CHAT = "/here/ai_chat";
     }
 
     /** 探索页相关路由 */
