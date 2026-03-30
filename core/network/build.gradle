@@ -2,6 +2,13 @@ plugins {
     alias(libs.plugins.android.library)
 }
 
+// 读取 local.properties
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localProps.load(localPropsFile.newDataInputStream())
+}
+
 android {
     namespace 'com.ggg.rememo.core.network'
     compileSdk {
@@ -13,6 +20,8 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${localProps.getProperty('DEEPSEEK_API_KEY', '')}\"")
     }
 
     buildTypes {
@@ -21,6 +30,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11

@@ -53,6 +53,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.map.MapLifecycleHelper;
+import com.ggg.rememo.feature.here.chat.AiChatFragment;
 import com.ggg.rememo.feature.here.contract.HereContract;
 import com.ggg.rememo.feature.here.data.HereRepository;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
@@ -126,6 +127,17 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
 
         startScanLineAnimation();
         startARGlowAnimation();
+
+        binding.btnArLab.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            android.R.anim.fade_in, android.R.anim.fade_out,
+                            android.R.anim.fade_in, android.R.anim.fade_out)
+                    .add(android.R.id.content, AiChatFragment.newInstance())
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     private void initMap() {

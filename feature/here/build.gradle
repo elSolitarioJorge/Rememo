@@ -46,12 +46,17 @@ dependencies {
     implementation project(":core:base")
     implementation project(":core:common")
     implementation project(":core:map")
+    implementation project(":core:network")
     implementation project(":core:ui")
     implementation project(":core:data")
+    implementation libs.retrofit
+    implementation libs.retrofit.converter.gson
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
     implementation libs.mmkv
     implementation libs.glide
+    implementation libs.markwon
+    implementation libs.markwon.tables
 
     implementation libs.appcompat
     implementation libs.material
