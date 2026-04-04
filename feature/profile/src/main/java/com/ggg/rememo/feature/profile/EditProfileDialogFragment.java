@@ -25,7 +25,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
-import com.ggg.rememo.core.data.util.ImageToBase64Util;
+import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -42,6 +42,7 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     private ProfilePresenter presenter;
     private String currentAvatar = "";
     private String selectedAvatarPath = "";
+    private OnProfileUpdateListener updateListener;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -53,8 +54,13 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
                 }
             });
 
-    public static EditProfileDialogFragment newInstance(String currentAvatar) {
+    public interface OnProfileUpdateListener {
+        void onProfileUpdated(UserInfo updatedUserInfo);
+    }
+
+    public static EditProfileDialogFragment newInstance(String currentAvatar, OnProfileUpdateListener listener) {
         EditProfileDialogFragment fragment = new EditProfileDialogFragment();
+        fragment.updateListener = listener;
         Bundle args = new Bundle();
         args.putString(ARG_AVATAR, currentAvatar != null ? currentAvatar : "");
         fragment.setArguments(args);
@@ -202,27 +208,20 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         String gender = mapGenderToApi(genderText);
 
         binding.btnSave.setEnabled(false);
-        binding.btnSave.setText("上传中...");
+        binding.btnSave.setText("保存中...");
 
-        String avatar;
         if (!selectedAvatarPath.isEmpty()) {
-            try {
-                avatar = ImageToBase64Util.filePathToBase64(selectedAvatarPath);
-                Log.d(TAG, "Base64 转换成功: avatar长度=" + avatar.length() + ", 前100字符=" + avatar.substring(0, Math.min(100, avatar.length())));
-            } catch (Exception e) {
-                Log.e(TAG, "Base64 转换失败", e);
-                Toast.makeText(requireContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
-                binding.btnSave.setEnabled(true);
-                binding.btnSave.setText("保存");
-                return;
-            }
+            // 先上传头像图片，获取 URL 后再更新用户信息
+            presenter.uploadAvatarAndUpdateProfile(
+                    selectedAvatarPath,
+                    nickname,
+                    gender,
+                    bio
+            );
         } else {
-            avatar = currentAvatar;
-            Log.d(TAG, "未选择新头像，使用现有头像: " + avatar);
+            // 未选择新头像，直接更新其他信息
+            presenter.updateProfile(nickname, currentAvatar, gender, bio);
         }
-
-        Log.d(TAG, "调用 presenter.updateProfile -> nickname=" + nickname + ", avatar长度=" + avatar.length() + ", gender=" + gender + ", bio=" + bio);
-        presenter.updateProfile(nickname, avatar, gender, bio);
     }
 
     private String mapGenderToApi(String displayGender) {
@@ -325,6 +324,20 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         Toast.makeText(requireContext(), "保存成功", Toast.LENGTH_SHORT).show();
         binding.btnSave.setEnabled(true);
         binding.btnSave.setText("保存");
+        if (updateListener != null) {
+            updateListener.onProfileUpdated(null);
+        }
+        dismiss();
+    }
+
+    @Override
+    public void showUpdateSuccessWithData(UserInfo userInfo) {
+        Toast.makeText(requireContext(), "保存成功", Toast.LENGTH_SHORT).show();
+        binding.btnSave.setEnabled(true);
+        binding.btnSave.setText("保存");
+        if (updateListener != null) {
+            updateListener.onProfileUpdated(userInfo);
+        }
         dismiss();
     }
 

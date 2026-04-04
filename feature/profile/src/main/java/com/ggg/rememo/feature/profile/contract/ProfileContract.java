@@ -28,6 +28,16 @@ public interface ProfileContract {
         void showUpdateSuccess();
 
         /**
+         * 使用更新后的用户信息立即刷新主页（避免重新请求网络）。
+         *
+         * @param userInfo 更新后的用户信息
+         */
+        default void showUpdateSuccessWithData(UserInfo userInfo) {
+            // 默认实现兼容旧逻辑
+            showUpdateSuccess();
+        }
+
+        /**
          * 退出登录后跳转到登录页。
          */
         void navigateToLogin();
@@ -42,6 +52,12 @@ public interface ProfileContract {
          * 加载用户信息到主页。
          */
         void loadUserInfo();
+
+        /**
+         * 直接显示用户信息（不触发网络请求，用于编辑成功后刷新）。
+         */
+        default void showUserInfoDirectly(UserInfo userInfo) {
+        }
 
         /**
          * 保存编辑后的资料。
