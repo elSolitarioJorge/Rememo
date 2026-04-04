@@ -295,4 +295,80 @@ public class MemoryPostRepository {
             }
         });
     }
+
+    public void getByPointIdPaged(String pointId, int limit, int offset, Callback<List<MemoryPost>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<MemoryPost> result = memoryPostDao.getByPointIdPaged(pointId, limit, offset);
+                if (callback != null) {
+                    callback.onSuccess(result);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    public void getCountByPointIdPaged(String pointId, Callback<Integer> callback) {
+        executorService.execute(() -> {
+            try {
+                int result = memoryPostDao.getCountByPointIdPaged(pointId);
+                if (callback != null) {
+                    callback.onSuccess(result);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    public void getByYearPaged(int year, int limit, int offset, Callback<List<MemoryPost>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<MemoryPost> result = memoryPostDao.getByYearPaged(year, limit, offset);
+                if (callback != null) {
+                    callback.onSuccess(result);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    public void getByAuthorIdPaged(String authorId, int limit, int offset, Callback<List<MemoryPost>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<MemoryPost> result = memoryPostDao.getByAuthorIdPaged(authorId, limit, offset);
+                if (callback != null) {
+                    callback.onSuccess(result);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    public void getByAuthorIdAndYearRange(String authorId, int startYear, int endYear, Callback<List<MemoryPost>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<MemoryPost> result = memoryPostDao.getByAuthorIdAndYearRange(authorId, startYear, endYear);
+                if (callback != null) {
+                    callback.onSuccess(result);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
 }

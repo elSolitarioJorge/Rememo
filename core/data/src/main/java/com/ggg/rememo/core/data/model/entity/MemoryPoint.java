@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Objects;
@@ -20,8 +21,6 @@ public class MemoryPoint implements Parcelable {
     private double longitude; // 经度
     private String pointName; // 锚点名称
     private String locationAddress;   // 详细地址
-
-
     // 聚合统计信息
     private String coverImageUrl; // 封面图
     private int memoryCount;    // 记忆数量
@@ -33,11 +32,11 @@ public class MemoryPoint implements Parcelable {
 
     // 记录元数据
     private long createdTime;   // 锚点创建时间戳
-    private long updatedTime;   // 锚点更新时间戳
 
     public MemoryPoint() {
     }
 
+    @Ignore
     public MemoryPoint(@NonNull String pointName, String coverImageUrl, int memoryCount) {
         this.pointName = pointName;
         this.coverImageUrl = coverImageUrl;
@@ -133,14 +132,6 @@ public class MemoryPoint implements Parcelable {
         this.createdTime = createdTime;
     }
 
-    public long getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(long updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
     // ==================== Parcelable 实现 ====================
 
     protected MemoryPoint(Parcel in) {
@@ -155,7 +146,6 @@ public class MemoryPoint implements Parcelable {
         minYear = in.readInt();
         maxYear = in.readInt();
         createdTime = in.readLong();
-        updatedTime = in.readLong();
     }
 
     @Override
@@ -171,7 +161,6 @@ public class MemoryPoint implements Parcelable {
         dest.writeInt(minYear);
         dest.writeInt(maxYear);
         dest.writeLong(createdTime);
-        dest.writeLong(updatedTime);
     }
 
     @Override

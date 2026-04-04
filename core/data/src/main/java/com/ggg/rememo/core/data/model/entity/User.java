@@ -8,10 +8,14 @@ import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "users")
 public class User {
+
     @PrimaryKey
     @NonNull
     @SerializedName("userId")
     private String userId = "";
+
+    @SerializedName("phone")
+    private String phone;
 
     @SerializedName("nickname")
     private String nickname;
@@ -25,8 +29,10 @@ public class User {
     @SerializedName("bio")
     private String bio = "";
 
-    public User() {
+    @SerializedName("createdAt")
+    private long createdAt = 0;
 
+    public User() {
     }
 
     @NonNull
@@ -36,6 +42,14 @@ public class User {
 
     public void setUserId(@NonNull String userId) {
         this.userId = userId;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getNickname() {
@@ -68,5 +82,13 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
     }
 }

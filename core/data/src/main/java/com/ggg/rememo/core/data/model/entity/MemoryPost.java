@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public class MemoryPost implements Parcelable {
     // 外键关联
     private String pointId;  // 锚点ID
     private String authorId;   // 用户ID
+    private String authorNickname; // 作者昵称
+    private String authorAvatar;   // 作者头像
 
     // 核心内容
     private String title;    // 标题
@@ -33,15 +36,17 @@ public class MemoryPost implements Parcelable {
     private int likeCount;       // 点赞数量
     private int commentCount;    // 评论数量
     private int collectCount;    // 收藏数量
+    private boolean isLiked;    // 当前用户是否点赞
+    private boolean isCollected; // 当前用户是否收藏
 
     // 记录元数据
     private long createdTime;   // 记忆创建时间戳
-    private long updatedTime;   // 记忆更新时间戳
 
     public MemoryPost() {
 
     }
 
+    @Ignore
     public MemoryPost(@NonNull String authorId, String title, String content, int memoryYear, int likeCount) {
         this.authorId = authorId;
         this.title = title;
@@ -73,6 +78,22 @@ public class MemoryPost implements Parcelable {
 
     public void setAuthorId(String authorId) {
         this.authorId = authorId;
+    }
+
+    public String getAuthorNickname() {
+        return authorNickname;
+    }
+
+    public void setAuthorNickname(String authorNickname) {
+        this.authorNickname = authorNickname;
+    }
+
+    public String getAuthorAvatar() {
+        return authorAvatar;
+    }
+
+    public void setAuthorAvatar(String authorAvatar) {
+        this.authorAvatar = authorAvatar;
     }
 
     public String getTitle() {
@@ -139,20 +160,28 @@ public class MemoryPost implements Parcelable {
         this.collectCount = collectCount;
     }
 
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        this.isLiked = liked;
+    }
+
+    public boolean isCollected() {
+        return isCollected;
+    }
+
+    public void setCollected(boolean collected) {
+        this.isCollected = collected;
+    }
+
     public long getCreatedTime() {
         return createdTime;
     }
 
     public void setCreatedTime(long createdTime) {
         this.createdTime = createdTime;
-    }
-
-    public long getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(long updatedTime) {
-        this.updatedTime = updatedTime;
     }
 
     // 描述内容（一般返回0）
@@ -167,6 +196,8 @@ public class MemoryPost implements Parcelable {
         dest.writeString(postId);
         dest.writeString(pointId);
         dest.writeString(authorId);
+        dest.writeString(authorNickname);
+        dest.writeString(authorAvatar);
         dest.writeString(title);
         dest.writeString(content);
         dest.writeTypedList(images);
@@ -175,14 +206,17 @@ public class MemoryPost implements Parcelable {
         dest.writeInt(likeCount);
         dest.writeInt(commentCount);
         dest.writeInt(collectCount);
+        dest.writeInt(isLiked ? 1 : 0);
+        dest.writeInt(isCollected ? 1 : 0);
         dest.writeLong(createdTime);
-        dest.writeLong(updatedTime);
     }
 
     protected MemoryPost(Parcel in) {
         postId = in.readString();
         pointId = in.readString();
         authorId = in.readString();
+        authorNickname = in.readString();
+        authorAvatar = in.readString();
         title = in.readString();
         content = in.readString();
         images = in.createTypedArrayList(MemoryPhoto.CREATOR);
@@ -191,15 +225,16 @@ public class MemoryPost implements Parcelable {
         likeCount = in.readInt();
         commentCount = in.readInt();
         collectCount = in.readInt();
+        isLiked = in.readInt() == 1;
+        isCollected = in.readInt() == 1;
         createdTime = in.readLong();
-        updatedTime = in.readLong();
     }
 
     // 必须提供 CREATOR 字段（静态、final、名为 CREATOR）
     public static final Creator<MemoryPost> CREATOR = new Creator<MemoryPost>() {
         @Override
         public MemoryPost createFromParcel(Parcel in) {
-            return new MemoryPost(in); // // 调用带 Parcel 的构造函数
+            return new MemoryPost(in);
         }
         @Override
         public MemoryPost[] newArray(int size) {

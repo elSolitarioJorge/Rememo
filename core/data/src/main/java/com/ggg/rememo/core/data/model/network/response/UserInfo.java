@@ -25,6 +25,9 @@ public class UserInfo {
     @SerializedName("bio")
     private String bio = "";
 
+    @SerializedName("createdAt")
+    private long createdAt;
+
     public String getUserId() {
         return userId;
     }
@@ -71,5 +74,13 @@ public class UserInfo {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
     }
 }

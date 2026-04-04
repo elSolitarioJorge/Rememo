@@ -1,39 +1,38 @@
-package com.ggg.rememo.core.data.model.entity;
+package com.ggg.rememo.core.data.model.network.response;
 
-import androidx.annotation.NonNull;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+import com.google.gson.annotations.SerializedName;
 
-@Entity(tableName = "comments")
-public class Comment {
-    @PrimaryKey
-    @NonNull
-    private String commentId = "";   // 评论ID
+/**
+ * 评论数据（用于 API 响应中的 data 字段）。
+ */
+public class CommentResponse {
 
-    // 外键关联
-    private String postId;   // 记忆ID
-    private String authorId;   // 用户ID
+    @SerializedName("commentId")
+    private String commentId;
 
-    // 评论者展示信息（冗余存储，避免每次查询用户表）
-    private String authorNickname;  // 评论者昵称
-    private String authorAvatar;    // 评论者头像 URL
+    @SerializedName("postId")
+    private String postId;
 
-    // 核心内容
-    private String content;  // 评论内容
+    @SerializedName("authorId")
+    private String authorId;
 
-    // 时间戳
-    private long createdTime;   // 评论创建时间戳
+    @SerializedName("authorNickname")
+    private String authorNickname;
 
-    public Comment() {
+    @SerializedName("authorAvatar")
+    private String authorAvatar;
 
-    }
+    @SerializedName("content")
+    private String content;
 
-    @NonNull
+    @SerializedName("createdTime")
+    private long createdTime;
+
     public String getCommentId() {
         return commentId;
     }
 
-    public void setCommentId(@NonNull String commentId) {
+    public void setCommentId(String commentId) {
         this.commentId = commentId;
     }
 
@@ -49,7 +48,7 @@ public class Comment {
         return authorId;
     }
 
-    public void setAuthorId(@NonNull String authorId) {
+    public void setAuthorId(String authorId) {
         this.authorId = authorId;
     }
 
