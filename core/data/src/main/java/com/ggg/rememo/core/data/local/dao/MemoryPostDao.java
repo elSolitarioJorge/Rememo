@@ -66,6 +66,27 @@ public interface MemoryPostDao {
     @Query("UPDATE memory_posts SET commentCount = :count WHERE postId = :postId")
     void updateCommentCount(String postId, int count);
 
+    @Query("SELECT * FROM memory_posts WHERE pointId = :pointId ORDER BY memoryYear DESC LIMIT :limit OFFSET :offset")
+    List<MemoryPost> getByPointIdPaged(String pointId, int limit, int offset);
+
+    @Query("SELECT COUNT(*) FROM memory_posts WHERE pointId = :pointId")
+    int getCountByPointIdPaged(String pointId);
+
+    @Query("SELECT * FROM memory_posts WHERE memoryYear = :year ORDER BY createdTime DESC LIMIT :limit OFFSET :offset")
+    List<MemoryPost> getByYearPaged(int year, int limit, int offset);
+
+    @Query("SELECT * FROM memory_posts WHERE authorId = :authorId ORDER BY createdTime DESC LIMIT :limit OFFSET :offset")
+    List<MemoryPost> getByAuthorIdPaged(String authorId, int limit, int offset);
+
+    @Query("SELECT * FROM memory_posts WHERE authorId = :authorId AND memoryYear BETWEEN :startYear AND :endYear ORDER BY memoryYear DESC")
+    List<MemoryPost> getByAuthorIdAndYearRange(String authorId, int startYear, int endYear);
+
     @Query("UPDATE memory_posts SET collectCount = :count WHERE postId = :postId")
     void updateCollectCount(String postId, int count);
+
+    @Query("UPDATE memory_posts SET isLiked = :isLiked, likeCount = :likeCount WHERE postId = :postId")
+    void updateLikeStatus(String postId, boolean isLiked, int likeCount);
+
+    @Query("UPDATE memory_posts SET isCollected = :isCollected, collectCount = :collectCount WHERE postId = :postId")
+    void updateCollectStatus(String postId, boolean isCollected, int collectCount);
 }
