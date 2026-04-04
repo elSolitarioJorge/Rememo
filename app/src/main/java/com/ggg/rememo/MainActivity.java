@@ -11,11 +11,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.databinding.ActivityMainBinding;
 
+@Route(path = Routes.Main.HOME)
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -30,13 +32,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-//        if (!TokenManager.isLoggedIn()) {
-//            ARouter.getInstance()
-//                    .build(Routes.Auth.LOGIN)
-//                    .navigation();
-//            finish();
-//            return;
-//        }
+        if (!TokenManager.isLoggedIn()) {
+            ARouter.getInstance()
+                    .build(Routes.Auth.LOGIN)
+                    .navigation();
+            finish();
+            return;
+        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
