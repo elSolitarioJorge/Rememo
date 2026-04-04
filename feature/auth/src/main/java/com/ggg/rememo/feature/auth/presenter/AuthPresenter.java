@@ -3,14 +3,17 @@ package com.ggg.rememo.feature.auth.presenter;
 import android.os.Handler;
 import android.os.Looper;
 
-
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.base.BasePresenter;
+import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.model.network.response.AuthResponse;
+import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.core.data.service.UserService;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.NetworkClient;
 import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.data.AuthRepository;
-import com.ggg.rememo.core.common.util.TokenManager;
 
 import java.util.regex.Pattern;
 
@@ -24,11 +27,16 @@ public class AuthPresenter extends BasePresenter<AuthContract.View> implements A
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^.{6,20}$");
 
     private final AuthRepository repository;
+    private UserService userService;
     private final Handler mainHandler;
 
     public AuthPresenter() {
         this.repository = new AuthRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
+        // 通过 ARouter 获取 UserService，避免直接依赖 profile 模块
+        this.userService = (UserService) ARouter.getInstance()
+                .build(Routes.Profile.USER_SERVICE)
+                .navigation();
     }
 
     // ========== 登录 ==========
@@ -166,12 +174,56 @@ public class AuthPresenter extends BasePresenter<AuthContract.View> implements A
     private void saveAndNotifyLoginSuccess(AuthContract.View view, AuthResponse data) {
         TokenManager.saveToken(data.getToken(), data.getExpiresAt(), data.getUserId());
         NetworkClient.setAuthToken(data.getToken());
-        view.showLoginSuccess(data.getUserId());
+
+        // 登录成功后立即获取并保存用户信息到本地数据库
+        userService.getUserInfo(new UserService.UserInfoCallback() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                userService.saveUserInfo(userInfo, new UserService.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        mainHandler.post(() -> view.showLoginSuccess(data.getUserId()));
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        mainHandler.post(() -> view.showLoginSuccess(data.getUserId()));
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> view.showLoginSuccess(data.getUserId()));
+            }
+        });
     }
 
     private void saveAndNotifyRegisterSuccess(AuthContract.View view, AuthResponse data) {
         TokenManager.saveToken(data.getToken(), data.getExpiresAt(), data.getUserId());
         NetworkClient.setAuthToken(data.getToken());
-        view.showRegisterSuccess(data.getUserId());
+
+        // 注册成功后立即获取并保存用户信息到本地数据库
+        userService.getUserInfo(new UserService.UserInfoCallback() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                userService.saveUserInfo(userInfo, new UserService.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        mainHandler.post(() -> view.showRegisterSuccess(data.getUserId()));
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        mainHandler.post(() -> view.showRegisterSuccess(data.getUserId()));
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> view.showRegisterSuccess(data.getUserId()));
+            }
+        });
     }
 }

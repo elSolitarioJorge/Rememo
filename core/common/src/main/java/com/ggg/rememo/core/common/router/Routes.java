@@ -72,6 +72,11 @@ public final class Routes {
         private Publish() { throw new AssertionError("No instances."); }
 
         public static final String HOME = "/publish/home";
+        public static final String EXTRA_POINT_ID = "point_id";
+        public static final String EXTRA_LAT = "lat";
+        public static final String EXTRA_LNG = "lng";
+        public static final String EXTRA_ADDRESS = "address";
+        public static final String EXTRA_POINT_NAME = "point_name";
     }
 
     /** 我的（Profile）相关路由 */
@@ -80,6 +85,7 @@ public final class Routes {
 
         public static final String HOME = "/profile/home";
         public static final String HOME_FRAGMENT = "/profile/home_fragment";
+        public static final String USER_SERVICE = "/profile/user_service";
     }
 
     /** 地图相关路由 */
@@ -104,5 +110,12 @@ public final class Routes {
 
         public static final String LOGIN = "/auth/login";
         public static final String REGISTER = "/auth/register";
+    }
+
+    /** 主页面相关路由 */
+    public static final class Main {
+        private Main() { throw new AssertionError("No instances."); }
+
+        public static final String HOME = "/main/home";
     }
 }

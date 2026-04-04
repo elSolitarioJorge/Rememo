@@ -2,6 +2,7 @@ package com.ggg.rememo.feature.auth;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -20,6 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.databinding.ActivityAuthBinding;
@@ -182,12 +184,26 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
 
     @Override
     public void showLoginSuccess(String userId) {
-        finish();
+        Toast.makeText(this, "登录成功", Toast.LENGTH_SHORT).show();
+        navigateToMain();
     }
 
     @Override
     public void showRegisterSuccess(String userId) {
         Toast.makeText(this, "注册成功，欢迎加入时空拾荒者！", Toast.LENGTH_SHORT).show();
+        // 注册成功后自动登录，跳转到主页
+        navigateToMain();
+    }
+
+    /**
+     * 跳转到主页
+     */
+    private void navigateToMain() {
+        ARouter.getInstance()
+                .build(Routes.Main.HOME)
+                .withFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .navigation();
+        finish();
     }
 
     /**
