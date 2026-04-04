@@ -18,7 +18,9 @@ import androidx.fragment.app.Fragment;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.FragmentProfileHomeBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -48,6 +50,44 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
 
         presenter = new ProfilePresenter();
         presenter.attachView(this);
+
+        // 立即尝试从本地缓存加载，避免闪烁
+        loadAvatarFromCache();
+    }
+
+    /**
+     * 从本地缓存加载头像（同步操作），避免 Glide 异步加载闪烁
+     */
+    private void loadAvatarFromCache() {
+        // 直接读取本地缓存并设置图片
+        new com.ggg.rememo.feature.profile.data.ProfileRepository().getLocalUser(
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(com.ggg.rememo.core.data.model.entity.User user) {
+                        if (user != null && user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+                            requireActivity().runOnUiThread(() -> {
+                                if (binding != null) {
+                                    // 直接用 Glide 加载，不使用 placeholder
+                                    Glide.with(ProfileHomeFragment.this)
+                                            .load(user.getAvatar())
+                                            .dontAnimate()
+                                            .into(binding.ivAvatar);
+                                    Glide.with(ProfileHomeFragment.this)
+                                            .load(user.getAvatar())
+                                            .dontAnimate()
+                                            .into(binding.ivToolbarSmallAvatar);
+                                    binding.ivAvatar.setTag(user.getAvatar());
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        // 忽略，本地无缓存时由网络请求处理
+                    }
+                }
+        );
     }
 
     @Override
@@ -67,8 +107,12 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
                     avatar = (String) tag;
                 }
             }
-            EditProfileDialogFragment.newInstance(avatar)
-                    .show(getChildFragmentManager(), "edit_profile");
+            EditProfileDialogFragment.newInstance(avatar, updatedUserInfo -> {
+                if (updatedUserInfo != null && presenter != null) {
+                    // 直接使用更新后的数据刷新 UI，避免重新请求
+                    presenter.showUserInfoDirectly(updatedUserInfo);
+                }
+            }).show(getChildFragmentManager(), "edit_profile");
         });
 
         binding.ivSettings.setOnClickListener(v -> {
@@ -147,29 +191,46 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     // ========== ProfileContract.View 实现 ==========
 
     @Override
+    public void showLoading() {
+    }
+
+    @Override
+    public void hideLoading() {
+    }
+
+    @Override
     public void showUserInfo(UserInfo userInfo) {
         if (binding == null || userInfo == null) return;
         binding.tvName.setText(userInfo.getNickname() != null ? userInfo.getNickname() : "");
         binding.tvBio.setText(userInfo.getBio() != null ? userInfo.getBio() : "");
         if (userInfo.getAvatar() != null && !userInfo.getAvatar().isEmpty()) {
             binding.ivAvatar.setTag(userInfo.getAvatar());
+            // 不使用 placeholder，避免闪烁
             Glide.with(this)
                     .load(userInfo.getAvatar())
-                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
                     .into(binding.ivAvatar);
             Glide.with(this)
                     .load(userInfo.getAvatar())
-                    .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivToolbarSmallAvatar);
+        } else {
+            Glide.with(this)
+                    .load(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
+                    .into(binding.ivAvatar);
+            Glide.with(this)
+                    .load(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
                     .into(binding.ivToolbarSmallAvatar);
         }
     }
 
     @Override
     public void showUpdateSuccess() {
-        // 编辑保存成功后刷新主页
-        if (presenter != null) {
-            presenter.loadUserInfo();
-        }
+        // 旧方法兼容，不再使用
+    }
+
+    @Override
+    public void showUpdateSuccessWithData(UserInfo userInfo) {
+        if (binding == null || userInfo == null) return;
+        showUserInfo(userInfo);
     }
 
     @Override
