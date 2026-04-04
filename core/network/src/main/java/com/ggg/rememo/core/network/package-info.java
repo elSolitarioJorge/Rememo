@@ -1,12 +1,12 @@
 /**
- * core:network
+ * core:network — 网络基础设施模块
  *
- * <p>网络基础设施模块：</p>
  * <ul>
- *   <li>Retrofit/OkHttp 初始化与配置</li>
- *   <li>拦截器与统一错误处理</li>
+ *   <li>NetworkClient      - Retrofit / OkHttp 单例初始化、AuthInterceptor</li>
+ *   <li>ApiService         - 所有业务接口定义（Retrofit 注解）</li>
+ *   <li>ApiResponse        - 统一响应包装 { code, message, data }</li>
+ *   <li>ApiCallback        - 网络回调接口</li>
  * </ul>
  *
- * <p>不应包含任何业务 API 与业务逻辑。</p>
  */
 package com.ggg.rememo.core.network;

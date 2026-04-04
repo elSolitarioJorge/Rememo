@@ -2,6 +2,8 @@ package com.ggg.rememo.core.network;
 
 import androidx.annotation.NonNull;
 
+import com.ggg.rememo.core.common.util.TokenManager;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -19,8 +21,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class NetworkClient {
 
-    // Android 模拟器访问本机后端时使用 10.0.2.2
-    // TODO: 上线前改为真实服务器地址
     private static final String BASE_URL = "http://192.168.1.37:9090/";
 
     private static volatile NetworkClient instance;
@@ -56,6 +56,10 @@ public class NetworkClient {
         return apiService;
     }
 
+    public static String getBaseUrl() {
+        return BASE_URL;
+    }
+
     /**
      * 设置全局认证 Token。
      * 在登录/注册成功后由调用方传入，后续所有请求自动携带此 Token。
@@ -79,9 +83,9 @@ public class NetworkClient {
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         return new OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(120, TimeUnit.SECONDS)
                 .addInterceptor(new AuthInterceptor())
                 .addInterceptor(loggingInterceptor)
                 .build();
@@ -89,7 +93,8 @@ public class NetworkClient {
 
     /**
      * 自动注入 Authorization Header 的拦截器。
-     * 从 NetworkClient.setAuthToken() 读取 Token 并注入到所有请求中。
+     * 直接从 TokenManager（MMKV 持久化存储）读取 Token，
+     * 保证 App 重启后仍能自动恢复登录态。
      */
     private static class AuthInterceptor implements Interceptor {
         @NonNull
@@ -97,13 +102,15 @@ public class NetworkClient {
         public Response intercept(Chain chain) throws IOException {
             Request original = chain.request();
 
-            if (authToken != null && !authToken.isEmpty()) {
+            String token = TokenManager.getToken();
+            if (token != null && !token.isEmpty()) {
+                android.util.Log.d("AuthInterceptor", "[Auth] Token 已注入: " + token.substring(0, Math.min(10, token.length())) + "...");
                 Request.Builder builder = original.newBuilder()
-                        .header("Authorization", "Bearer " + authToken)
-                        .header("Content-Type", "application/json");
+                        .header("Authorization", "Bearer " + token);
                 return chain.proceed(builder.build());
             }
 
+            android.util.Log.w("AuthInterceptor", "[Auth] Token 为空! 请求 " + original.url() + " 将不带 Authorization Header，可能导致 401");
             return chain.proceed(original);
         }
     }
