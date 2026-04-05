@@ -78,11 +78,8 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
             }
 
             @Override
-            public void onExploreClick(TimelineYearModel yearModel) {
-                // TODO: 跳转到年份详情页
-                Toast.makeText(TimelineHomeActivity.this,
-                        "探索 " + yearModel.getYear() + " 年的 " + yearModel.getMemoryCount() + " 个记忆",
-                        Toast.LENGTH_SHORT).show();
+            public void onGatewayClick(TimelineYearModel yearModel) {
+                presenter.onGatewayClick(yearModel);
             }
         });
 
@@ -160,13 +157,14 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
      * 跳转到发布页面
      */
     @Override
-    public void navigateToPublish(String pointId, double lat, double lng, String address) {
+    public void navigateToPublish(String pointId, double lat, double lng, String address, String pointName) {
         ARouter.getInstance()
                 .build(Routes.Publish.HOME)
-                .withString(PublishParams.POINT_ID, pointId)
-                .withDouble(PublishParams.LAT, lat)
-                .withDouble(PublishParams.LNG, lng)
-                .withString(PublishParams.ADDRESS, address)
+                .withString(Routes.Publish.EXTRA_POINT_ID, pointId)
+                .withDouble(Routes.Publish.EXTRA_LAT, lat)
+                .withDouble(Routes.Publish.EXTRA_LNG, lng)
+                .withString(Routes.Publish.EXTRA_ADDRESS, address)
+                .withString(Routes.Publish.EXTRA_POINT_NAME, pointName)
                 .navigation(this);
     }
 
@@ -190,18 +188,16 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    // ==================== 发布模块参数常量 ====================
-
-    /**
-     * 发布模块参数 Key 常量
-     */
-    public static final class PublishParams {
-        private PublishParams() {}
-
-        public static final String POINT_ID = "pointId";
-        public static final String LAT = "lat";
-        public static final String LNG = "lng";
-        public static final String ADDRESS = "address";
+    @Override
+    public void navigateToExploreYear(int year, int memoryCount) {
+        Toast.makeText(this,
+                "探索 " + year + " 年的 " + memoryCount + " 个记忆",
+                Toast.LENGTH_SHORT).show();
+        // TODO: 跳转到年份详情页（YearDetailActivity）
+        // ARouter.getInstance()
+        //         .build(Routes.Timeline.YEAR_DETAIL)
+        //         .withInt(Routes.Timeline.EXTRA_YEAR, year)
+        //         .withString(Routes.Timeline.EXTRA_POINT_ID, presenter.getCurrentPointId())
+        //         .navigation(this);
     }
-
 }

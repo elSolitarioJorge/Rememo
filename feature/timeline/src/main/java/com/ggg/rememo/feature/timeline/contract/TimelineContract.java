@@ -41,19 +41,28 @@ public interface TimelineContract {
         void navigateToMemoryDetail(String postId);
 
         /**
-         * 跳转到发布页面（通过 ARouter 路由跳转，无需依赖 publish 模块）
+         * 跳转到发布页面
          * @param pointId 地点ID
          * @param lat 纬度（可选，0 表示使用当前位置）
          * @param lng 经度（可选，0 表示使用当前位置）
          * @param address 地址（可选）
+         * @param pointName 地址（可选）
          */
-        void navigateToPublish(String pointId, double lat, double lng, String address);
+        void navigateToPublish(String pointId, double lat, double lng, String address, String pointName);
 
         /**
          * 跳转系统分享
          * @param shareIntent 分享意图
          */
         void navigateToShare(Intent shareIntent);
+
+        /**
+         * 跳转年份探索页（时空传送门/探索更多入口）
+         *
+         * @param year         年份
+         * @param memoryCount  该年份记忆总数
+         */
+        void navigateToExploreYear(int year, int memoryCount);
     }
 
     /**
@@ -81,5 +90,12 @@ public interface TimelineContract {
          * 分享按钮点击
          */
         void onShareClicked();
+
+        /**
+         * 时空传送门/探索更多按钮点击（年份维度入口）
+         *
+         * @param yearModel 被点击的年份数据
+         */
+        void onGatewayClick(TimelineYearModel yearModel);
     }
 }

@@ -37,13 +37,12 @@ public class TimelinePresenter extends BasePresenter<TimelineContract.View>
         this.currentPointId = pointId;
 
         ifViewAttached(BaseView::showLoading);
-        loadMockData();
 
-//        if (pointId == null || pointId.isEmpty()) {
-//            loadMockData();
-//        } else {
-//            loadRealData(pointId);
-//        }
+        if (pointId == null || pointId.isEmpty()) {
+            loadMockData();
+        } else {
+            loadRealData(pointId);
+        }
     }
 
     /**
@@ -122,9 +121,8 @@ public class TimelinePresenter extends BasePresenter<TimelineContract.View>
                     currentPoint.getPointId(),
                     currentPoint.getLatitude(),
                     currentPoint.getLongitude(),
-                    currentPoint.getLocationAddress()));
-        } else if (currentPointId != null && !currentPointId.isEmpty()) {
-            ifViewAttached(view -> view.navigateToPublish(currentPointId, 0, 0, null));
+                    currentPoint.getLocationAddress(),
+                    currentPoint.getPointName()));
         }
     }
 
@@ -142,6 +140,11 @@ public class TimelinePresenter extends BasePresenter<TimelineContract.View>
                 view.navigateToShare(shareIntent);
             }
         });
+    }
+
+    @Override
+    public void onGatewayClick(TimelineYearModel yearModel) {
+        ifViewAttached(view -> view.navigateToExploreYear(yearModel.getYear(), yearModel.getMemoryCount()));
     }
 
     /**

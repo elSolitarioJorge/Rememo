@@ -105,7 +105,7 @@
             android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:lineSpacingExtra="4dp"
-            android:maxLines="2"
+            android:maxLines="1"
             android:text="那时候的绿皮车，车窗是可以向上推开的。爸爸在这里送我，站台上人挤人..."
             android:textColor="#9CA3AF"
             android:textSize="12sp"
