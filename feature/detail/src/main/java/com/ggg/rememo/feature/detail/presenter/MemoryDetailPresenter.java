@@ -4,18 +4,23 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.ggg.rememo.core.base.BasePresenter;
+import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.repository.MemoryPostRepository;
 import com.ggg.rememo.core.data.model.network.response.CollectResponse;
 import com.ggg.rememo.core.data.model.network.response.LikeResponse;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
+import com.ggg.rememo.feature.detail.data.CommentRepository;
 import com.ggg.rememo.feature.detail.data.InteractionRepository;
+
+import java.util.List;
 
 public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.View>
         implements MemoryDetailContract.Presenter {
 
     private final MemoryPostRepository postRepository;
     private final InteractionRepository interactionRepository;
+    private final CommentRepository commentRepository;
     private final Handler mainHandler;
 
     private String currentPostId;
@@ -23,6 +28,7 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
     public MemoryDetailPresenter() {
         this.postRepository = new MemoryPostRepository();
         this.interactionRepository = new InteractionRepository();
+        this.commentRepository = new CommentRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -43,16 +49,12 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
                     });
                     return;
                 }
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.showMemory(result));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.showMemory(result)));
             }
 
             @Override
             public void onError(Exception e) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.showError("加载失败: " + e.getMessage()));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载失败: " + e.getMessage())));
             }
         });
     }
@@ -68,16 +70,12 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
         interactionRepository.toggleLike(currentPostId, new InteractionRepository.Callback<LikeResponse>() {
             @Override
             public void onSuccess(LikeResponse result) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.updateLikeState(result.isLiked(), result.getLikeCount()));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.updateLikeState(result.isLiked(), result.getLikeCount())));
             }
 
             @Override
             public void onError(String message) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.showError("点赞失败: " + message));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("点赞失败: " + message)));
             }
         });
     }
@@ -88,25 +86,59 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
         interactionRepository.toggleCollect(currentPostId, new InteractionRepository.Callback<CollectResponse>() {
             @Override
             public void onSuccess(CollectResponse result) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.updateCollectState(result.isCollected(), result.getCollectCount()));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.updateCollectState(result.isCollected(), result.getCollectCount())));
             }
 
             @Override
             public void onError(String message) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.showError("收藏失败: " + message));
-                });
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("收藏失败: " + message)));
             }
         });
     }
 
     @Override
     public void onImageAiFix(int position) {
-        ifViewAttached(view -> {
-            view.showToast("SYS: 记忆色彩已恢复");
-            view.notifyImageFixed(position);
+        ifViewAttached(view -> view.notifyImageFixed(position));
+    }
+
+    @Override
+    public void loadComments(String postId) {
+        if (postId == null || postId.isEmpty()) return;
+
+        commentRepository.loadComments(postId, 1, 20, new CommentRepository.Callback<List<Comment>>() {
+            @Override
+            public void onSuccess(List<Comment> result) {
+                mainHandler.post(() -> ifViewAttached(view -> view.showComments(result)));
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载评论失败: " + message)));
+            }
+        });
+    }
+
+    @Override
+    public void onSendComment(String postId, String content) {
+        if (postId == null || postId.isEmpty() || content == null || content.trim().isEmpty()) {
+            return;
+        }
+
+        commentRepository.createComment(postId, content.trim(), new CommentRepository.Callback<Comment>() {
+            @Override
+            public void onSuccess(Comment result) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> {
+                        view.showCommentSendSuccess();
+                        view.showToast("评论发布成功");
+                    });
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("发送评论失败: " + message)));
+            }
         });
     }
 }

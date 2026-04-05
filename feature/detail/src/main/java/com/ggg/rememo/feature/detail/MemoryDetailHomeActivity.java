@@ -18,19 +18,25 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.feature.detail.adapter.CommentAdapter;
 import com.ggg.rememo.feature.detail.adapter.GalleryAdapter;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
 import com.ggg.rememo.feature.detail.databinding.ActivityMemoryDetailHomeBinding;
 import com.ggg.rememo.feature.detail.presenter.MemoryDetailPresenter;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Route(path = Routes.Detail.HOME)
 public class MemoryDetailHomeActivity extends AppCompatActivity implements MemoryDetailContract.View {
@@ -38,6 +44,8 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
     private ActivityMemoryDetailHomeBinding binding;
     private MemoryDetailPresenter presenter;
     private GalleryAdapter galleryAdapter;
+    private CommentAdapter commentAdapter;
+    private String currentPostId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +58,15 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
 
         initClickListeners();
 
-        String postId = getIntent().getStringExtra(Routes.Detail.EXTRA_POST_ID);
-        presenter.loadMemory(postId);
+        // Initialize comment adapter
+        commentAdapter = new CommentAdapter();
+        binding.rvComments.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvComments.setAdapter(commentAdapter);
+        binding.rvComments.setNestedScrollingEnabled(false);
+
+        currentPostId = getIntent().getStringExtra(Routes.Detail.EXTRA_POST_ID);
+        presenter.loadMemory(currentPostId);
+        presenter.loadComments(currentPostId);
     }
 
     private void setupKeyboardListener() {
@@ -162,9 +177,9 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         binding.btnSendComment.setOnClickListener(v -> {
             String content = binding.etRealComment.getText().toString().trim();
             if (!content.isEmpty()) {
-
+                presenter.onSendComment(currentPostId, content);
             } else {
-                Toast.makeText(this, "有内容才能发送哦🙂", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "有内容才能发送哦", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -185,6 +200,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         binding.tvContentBody.setText(post.getContent());
         String authorName = post.getAuthorNickname();
         binding.tvAuthorName.setText(authorName != null && !authorName.isEmpty() ? authorName : "匿名用户");
+        binding.tvPublishTime.setText(formatTime(post.getCreatedTime()));
 
         if (post.getAuthorAvatar() != null && !post.getAuthorAvatar().isEmpty()) {
             Glide.with(this)
@@ -235,7 +251,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         } else {
             binding.iconLike.clearColorFilter();
         }
-        binding.tvLikeCount.setText(likeCount + "");
+        binding.tvLikeCount.setText(likeCount == 0 ? "点赞" : likeCount + "");
     }
 
     @Override
@@ -248,7 +264,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         } else {
             binding.iconStar.clearColorFilter();
         }
-        binding.tvStarCount.setText(collectCount + "");
+        binding.tvStarCount.setText(collectCount == 0 ? "收藏" : collectCount + "");
     }
 
     @Override
@@ -259,6 +275,33 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
     @Override
     public void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showComments(List<Comment> comments) {
+        if (comments != null && !comments.isEmpty()) {
+            binding.layoutEmptyComments.setVisibility(View.GONE);
+            binding.rvComments.setVisibility(View.VISIBLE);
+            commentAdapter.setComments(comments);
+            binding.tvCommentCount.setText(comments.size() + "");
+        } else {
+            binding.layoutEmptyComments.setVisibility(View.VISIBLE);
+            binding.rvComments.setVisibility(View.GONE);
+            binding.tvCommentCount.setText("评论");
+        }
+    }
+
+    @Override
+    public void showCommentSendSuccess() {
+        binding.etRealComment.setText("");
+        binding.layoutRealCommentContainer.setVisibility(View.GONE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(binding.etRealComment.getWindowToken(), 0);
+        }
+        if (currentPostId != null) {
+            presenter.loadComments(currentPostId);
+        }
     }
 
 
@@ -285,5 +328,27 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
     private int dpToPx(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return Math.round((float) dp * density);
+    }
+
+    private String formatTime(long timestamp) {
+        if (timestamp <= 0) return "";
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+        long minute = 60 * 1000;
+        long hour = 60 * minute;
+        long day = 24 * hour;
+
+        if (diff < minute) {
+            return "刚刚";
+        } else if (diff < hour) {
+            return (diff / minute) + "分钟前";
+        } else if (diff < day) {
+            return (diff / hour) + "小时前";
+        } else if (diff < 7 * day) {
+            return (diff / day) + "天前";
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            return sdf.format(new Date(timestamp));
+        }
     }
 }

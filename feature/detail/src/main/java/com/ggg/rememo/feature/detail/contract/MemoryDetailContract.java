@@ -1,7 +1,10 @@
 package com.ggg.rememo.feature.detail.contract;
 
 import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+
+import java.util.List;
 
 /**
  * 记忆详情模块 MVP Contract。
@@ -41,6 +44,16 @@ public interface MemoryDetailContract {
          * 显示 Toast 提示。
          */
         void showToast(String message);
+
+        /**
+         * 展示评论列表。
+         */
+        void showComments(List<Comment> comments);
+
+        /**
+         * 评论发送成功回调。
+         */
+        void showCommentSendSuccess();
     }
 
     /**
@@ -72,5 +85,15 @@ public interface MemoryDetailContract {
          * AI 修复按钮点击。
          */
         void onImageAiFix(int position);
+
+        /**
+         * 加载评论列表。
+         */
+        void loadComments(String postId);
+
+        /**
+         * 发送评论。
+         */
+        void onSendComment(String postId, String content);
     }
 }
