@@ -369,10 +369,56 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_bottom_action_bar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/bg_bottom_action_bar"
         android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
         app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/tv_star_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12"
+            android:textColor="#9CA3AF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/icon_star"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_star"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_star_count"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_like_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="128"
+            android:textColor="#9CA3AF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/icon_star"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/icon_like"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_heart_outline"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_like_count"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_comment_input"
@@ -390,117 +436,117 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/icon_like"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_heart_outline"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/icon_star"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <ImageView
-            android:id="@+id/icon_star"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_star"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <View
-        android:id="@+id/view_keyboard_overlay"
+    <LinearLayout
+        android:id="@+id/layout_real_comment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
-        android:elevation="20dp"
-        android:visibility="gone" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_real_comment_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#16192B"
-        android:elevation="21dp"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/et_real_comment"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_comment_input_dark"
-            android:gravity="top|start"
-            android:hint="爱评论的人运气都不差..."
-            android:inputType="textMultiLine"
-            android:maxLines="4"
-            android:minHeight="40dp"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="10dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#64748B"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <View
+            android:id="@+id/view_keyboard_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#80000000"
+            android:elevation="20dp"
+            android:layout_gravity="top"/>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_real_comment_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/et_real_comment">
+            android:background="#16192B"
+            android:elevation="21dp"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:layout_gravity="bottom">
 
-            <ImageView
-                android:id="@+id/btn_input_at"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="16dp"
-                android:src="@drawable/ic_location_point"
-                app:tint="#9CA3AF" />
-
-            <ImageView
-                android:id="@+id/btn_input_emoji"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="16dp"
-                android:src="@drawable/ic_heart_outline"
-                app:tint="#9CA3AF" />
-
-            <ImageView
-                android:id="@+id/btn_input_image"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_share"
-                app:tint="#9CA3AF" />
-
-            <Space
+            <EditText
+                android:id="@+id/et_real_comment"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/btn_send_comment"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_glass_pill"
-                android:backgroundTint="#F5A623"
-                android:gravity="center"
+                android:background="@drawable/bg_comment_input_dark"
+                android:gravity="top|start"
+                android:hint="爱评论的人运气都不差..."
+                android:inputType="textMultiLine"
+                android:maxLines="6"
+                android:minHeight="40dp"
                 android:paddingHorizontal="16dp"
-                android:text="发送"
+                android:paddingVertical="10dp"
                 android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:textColorHint="#64748B"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/et_real_comment">
+                <ImageView
+                    android:id="@+id/btn_input_emoji"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_input_emoji"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF" />
+
+                <ImageView
+                    android:id="@+id/btn_input_image"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_input_image"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF" />
+
+                <ImageView
+                    android:id="@+id/btn_input_speech"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_input_speech"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF" />
+
+                <ImageView
+                    android:id="@+id/btn_input_add"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_input_add"
+                    android:scaleType="centerCrop"
+                    app:tint="#9CA3AF" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/btn_send_comment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_glass_pill"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="发送"
+                    android:textColor="#40FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
