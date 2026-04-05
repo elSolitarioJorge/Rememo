@@ -16,12 +16,26 @@ public interface MemoryDetailContract {
         /**
          * 展示记忆详情。
          */
-        void showMemory(MemoryPost post, String authorName);
+        void showMemory(MemoryPost post);
 
         /**
          * 刷新指定图片的 AI 修复状态。
          */
         void notifyImageFixed(int position);
+
+        /**
+         * 更新点赞状态和数量。
+         * @param isLiked    当前用户是否已点赞
+         * @param likeCount  最新的点赞数量
+         */
+        void updateLikeState(boolean isLiked, int likeCount);
+
+        /**
+         * 更新收藏状态和数量。
+         * @param isCollected  当前用户是否已收藏
+         * @param collectCount  最新的收藏数量
+         */
+        void updateCollectState(boolean isCollected, int collectCount);
 
         /**
          * 显示 Toast 提示。

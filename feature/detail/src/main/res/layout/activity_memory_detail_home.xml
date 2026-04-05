@@ -283,7 +283,7 @@
                         </FrameLayout>
 
                         <TextView
-                            android:id="@+id/tv_map_title"
+                            android:id="@+id/tv_point_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
@@ -296,6 +296,7 @@
                             app:layout_constraintTop_toTopOf="@id/fl_map_icon" />
 
                         <TextView
+                            android:id="@+id/tv_point_address"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
@@ -303,8 +304,8 @@
                             android:text="西安老火车站遗址"
                             android:textColor="#9CA3AF"
                             android:textSize="11sp"
-                            app:layout_constraintStart_toStartOf="@id/tv_map_title"
-                            app:layout_constraintTop_toBottomOf="@id/tv_map_title" />
+                            app:layout_constraintStart_toStartOf="@id/tv_point_name"
+                            app:layout_constraintTop_toBottomOf="@id/tv_point_name" />
 
                         <ImageView
                             android:layout_width="16dp"
@@ -334,6 +335,32 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     app:layout_constraintTop_toBottomOf="@id/tv_comment_header" />
+
+                <LinearLayout
+                    android:id="@+id/layout_empty_comments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="36dp"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_comment_header">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_chat_bubble_outline"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="这片时空还在沉睡，快来留下第一个共鸣吧"
+                        android:textColor="#475569"
+                        android:textSize="12sp"
+                        android:letterSpacing="0.05"/>
+                </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -368,26 +395,11 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_heart"
+            android:src="@drawable/ic_heart_outline"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/icon_star"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#E2E8F0" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_badge_red_stroke"
-            android:text="128"
-            android:textColor="#FFFFFF"
-            android:textSize="9sp"
-            android:textStyle="bold"
-            android:paddingHorizontal="4dp"
-            app:layout_constraintTop_toTopOf="@id/icon_like"
-            app:layout_constraintStart_toEndOf="@id/icon_like"
-            android:layout_marginTop="-6dp"
-            android:layout_marginStart="-8dp"
-            android:elevation="2dp"/>
 
         <ImageView
             android:id="@+id/icon_star"
@@ -398,6 +410,96 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view_keyboard_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:elevation="20dp"
+        android:visibility="gone" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_real_comment_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#16192B"
+        android:elevation="21dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <EditText
+            android:id="@+id/et_real_comment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_comment_input_dark"
+            android:gravity="top|start"
+            android:hint="爱评论的人运气都不差..."
+            android:inputType="textMultiLine"
+            android:maxLines="4"
+            android:minHeight="40dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#64748B"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/et_real_comment">
+
+            <ImageView
+                android:id="@+id/btn_input_at"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_location_point"
+                app:tint="#9CA3AF" />
+
+            <ImageView
+                android:id="@+id/btn_input_emoji"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_heart_outline"
+                app:tint="#9CA3AF" />
+
+            <ImageView
+                android:id="@+id/btn_input_image"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_share"
+                app:tint="#9CA3AF" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/btn_send_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_glass_pill"
+                android:backgroundTint="#F5A623"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:text="发送"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
