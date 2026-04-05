@@ -5,21 +5,24 @@ import android.os.Looper;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
-import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.repository.MemoryPostRepository;
-import com.ggg.rememo.core.data.repository.UserRepository;
+import com.ggg.rememo.core.data.model.network.response.CollectResponse;
+import com.ggg.rememo.core.data.model.network.response.LikeResponse;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
+import com.ggg.rememo.feature.detail.data.InteractionRepository;
 
 public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.View>
         implements MemoryDetailContract.Presenter {
 
     private final MemoryPostRepository postRepository;
-    private final UserRepository userRepository;
+    private final InteractionRepository interactionRepository;
     private final Handler mainHandler;
+
+    private String currentPostId;
 
     public MemoryDetailPresenter() {
         this.postRepository = new MemoryPostRepository();
-        this.userRepository = new UserRepository();
+        this.interactionRepository = new InteractionRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -29,6 +32,7 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
             ifViewAttached(view -> view.showError("记忆不存在"));
             return;
         }
+        this.currentPostId = postId;
 
         postRepository.getById(postId, new MemoryPostRepository.Callback<MemoryPost>() {
             @Override
@@ -39,24 +43,8 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
                     });
                     return;
                 }
-                // 获取作者名称
-                userRepository.getById(result.getAuthorId(), new UserRepository.Callback<User>() {
-                    @Override
-                    public void onSuccess(User userResult) {
-                        String authorName = (userResult != null && userResult.getNickname() != null)
-                                ? userResult.getNickname()
-                                : "匿名用户";
-                        mainHandler.post(() -> {
-                            ifViewAttached(view -> view.showMemory(result, authorName));
-                        });
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        mainHandler.post(() -> {
-                            ifViewAttached(view -> view.showMemory(result, "匿名用户"));
-                        });
-                    }
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.showMemory(result));
                 });
             }
 
@@ -76,12 +64,42 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
 
     @Override
     public void onLikeClick() {
-        ifViewAttached(view -> view.showToast("❤️ 共鸣信号已发送"));
+        if (currentPostId == null) return;
+        interactionRepository.toggleLike(currentPostId, new InteractionRepository.Callback<LikeResponse>() {
+            @Override
+            public void onSuccess(LikeResponse result) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.updateLikeState(result.isLiked(), result.getLikeCount()));
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.showError("点赞失败: " + message));
+                });
+            }
+        });
     }
 
     @Override
     public void onStarClick() {
-        ifViewAttached(view -> view.showToast("⭐ 已写入个人档案"));
+        if (currentPostId == null) return;
+        interactionRepository.toggleCollect(currentPostId, new InteractionRepository.Callback<CollectResponse>() {
+            @Override
+            public void onSuccess(CollectResponse result) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.updateCollectState(result.isCollected(), result.getCollectCount()));
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.showError("收藏失败: " + message));
+                });
+            }
+        });
     }
 
     @Override

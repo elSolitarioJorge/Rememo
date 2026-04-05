@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.detail;
 
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -8,15 +9,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.widget.NestedScrollView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+import com.bumptech.glide.Glide;
 import com.ggg.rememo.feature.detail.adapter.GalleryAdapter;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
 import com.ggg.rememo.feature.detail.databinding.ActivityMemoryDetailHomeBinding;
 import com.ggg.rememo.feature.detail.presenter.MemoryDetailPresenter;
+
+import java.util.List;
 
 @Route(path = Routes.Detail.HOME)
 public class MemoryDetailHomeActivity extends AppCompatActivity implements MemoryDetailContract.View {
@@ -67,10 +72,18 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
     // ==================== MemoryDetailContract.View 实现 ====================
 
     @Override
-    public void showMemory(MemoryPost post, String authorName) {
+    public void showMemory(MemoryPost post) {
         binding.tvDetailTitle.setText(post.getTitle());
         binding.tvContentBody.setText(post.getContent());
-        binding.tvAuthorName.setText(authorName);
+        String authorName = post.getAuthorNickname();
+        binding.tvAuthorName.setText(authorName != null && !authorName.isEmpty() ? authorName : "匿名用户");
+
+        if (post.getAuthorAvatar() != null && !post.getAuthorAvatar().isEmpty()) {
+            Glide.with(this)
+                    .load(post.getAuthorAvatar())
+                    .circleCrop()
+                    .into(binding.ivAuthorAvatar);
+        }
 
         String season = post.getMemorySeason();
         int year = post.getMemoryYear();
@@ -81,7 +94,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         }
 
         ConstraintLayout.LayoutParams contentParams = (ConstraintLayout.LayoutParams) binding.contentArea.getLayoutParams();
-        java.util.List<MemoryPhoto> images = post.getImages();
+        List<MemoryPhoto> images = post.getImages();
 
         if (images != null && !images.isEmpty()) {
             binding.galleryContainer.setVisibility(View.VISIBLE);
@@ -90,15 +103,41 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
             setupGallery(images);
         } else {
             binding.galleryContainer.setVisibility(View.GONE);
-            contentParams.topMargin = dpToPx(80);
+            contentParams.topMargin = dpToPx(100);
             binding.contentArea.setLayoutParams(contentParams);
         }
+        updateLikeState(post.isLiked(), post.getLikeCount());
+        updateCollectState(post.isCollected(), post.getCollectCount());
     }
 
     @Override
     public void notifyImageFixed(int position) {
         if (galleryAdapter != null) {
             galleryAdapter.notifyItemChanged(position);
+        }
+    }
+
+    @Override
+    public void updateLikeState(boolean isLiked, int likeCount) {
+        binding.iconLike.setImageResource(isLiked
+                ? R.drawable.ic_heart_filled
+                : R.drawable.ic_heart_outline);
+        if (!isLiked) {
+            binding.iconLike.setColorFilter(getColor(R.color.icon_default), PorterDuff.Mode.SRC_IN);
+        } else {
+            binding.iconLike.clearColorFilter();
+        }
+    }
+
+    @Override
+    public void updateCollectState(boolean isCollected, int collectCount) {
+        binding.iconStar.setImageResource(isCollected
+                ? R.drawable.ic_star_filled
+                : R.drawable.ic_star_outline);
+        if (!isCollected) {
+            binding.iconStar.setColorFilter(getColor(R.color.icon_default), PorterDuff.Mode.SRC_IN);
+        } else {
+            binding.iconStar.clearColorFilter();
         }
     }
 
@@ -112,16 +151,15 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    // ==================== UI 辅助方法 ====================
 
-    private void setupGallery(java.util.List<MemoryPhoto> images) {
+    private void setupGallery(List<MemoryPhoto> images) {
         galleryAdapter = new GalleryAdapter();
         galleryAdapter.setPhotos(images);
         galleryAdapter.setOnAiFixClickListener(position -> presenter.onImageAiFix(position));
         binding.vpImageGallery.setAdapter(galleryAdapter);
         updateGalleryIndicator(1, images.size());
 
-        binding.vpImageGallery.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+        binding.vpImageGallery.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);

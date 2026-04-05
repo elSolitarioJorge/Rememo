@@ -1,9 +1,8 @@
 package com.ggg.rememo.feature.detail.adapter;
 
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -74,39 +73,30 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     .load(photo.getDisplayUrl())
                     .into(binding.ivGalleryImage);
 
-            boolean isRepaired = photo.getCurrentState() == MemoryPhoto.PhotoState.RESTORED;
-            applyFilter(binding.ivGalleryImage, isRepaired);
-            updateFixButtonUI(binding, isRepaired);
+            boolean hasRestored = photo.getRestoredUrl() != null && !photo.getRestoredUrl().isEmpty();
 
-            binding.btnAiFix.setOnClickListener(v -> {
-                int currentPos = getAdapterPosition();
-                if (currentPos == RecyclerView.NO_POSITION) return;
-
-                photo.toggleState();
-                if (listener != null) {
-                    listener.onAiFixClick(currentPos);
-                }
-            });
-        }
-
-        private void applyFilter(ImageView imageView, boolean isRepaired) {
-            if (isRepaired) {
-                imageView.clearColorFilter();
+            if (hasRestored) {
+                binding.btnAiFix.setVisibility(View.VISIBLE);
+                updateFixButtonUI(photo.getCurrentState() == MemoryPhoto.PhotoState.RESTORED);
+                binding.btnAiFix.setOnClickListener(v -> {
+                    int currentPos = getAdapterPosition();
+                    if (currentPos == RecyclerView.NO_POSITION) return;
+                    photo.toggleState();
+                    if (listener != null) {
+                        listener.onAiFixClick(currentPos);
+                    }
+                });
             } else {
-                ColorMatrix matrix = new ColorMatrix();
-                matrix.setSaturation(0.2f);
-                ColorMatrix sepiaMatrix = new ColorMatrix();
-                sepiaMatrix.setScale(1.2f, 1.0f, 0.8f, 1.0f);
-                matrix.postConcat(sepiaMatrix);
-                imageView.setColorFilter(new ColorMatrixColorFilter(matrix));
+                binding.btnAiFix.setVisibility(View.GONE);
+                binding.btnAiFix.setOnClickListener(null);
             }
         }
 
-        private void updateFixButtonUI(ItemDetailGalleryBinding binding, boolean isRepaired) {
+        private void updateFixButtonUI(boolean isRestored) {
             TextView tvText = (TextView) binding.btnAiFix.getChildAt(1);
             ImageView ivIcon = (ImageView) binding.btnAiFix.getChildAt(0);
 
-            if (isRepaired) {
+            if (isRestored) {
                 tvText.setText("看原图");
                 tvText.setTextColor(Color.WHITE);
                 ivIcon.setColorFilter(Color.WHITE);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="heart_filled">#E5404F</color>
+    <color name="star_filled">#F5A623</color>
+    <color name="icon_default">#64748B</color>
+</resources>

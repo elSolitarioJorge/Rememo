@@ -43,10 +43,11 @@ dependencies {
     implementation project(":core:map")
     implementation project(":core:ui")
     implementation project(":core:data")
-
+    implementation project(":core:network")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
     implementation libs.glide
+    implementation libs.retrofit
 
     implementation libs.appcompat
     implementation libs.material
