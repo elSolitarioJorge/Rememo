@@ -5,7 +5,9 @@ import android.os.Looper;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.Comment;
+import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+import com.ggg.rememo.core.data.repository.MemoryPointRepository;
 import com.ggg.rememo.core.data.repository.MemoryPostRepository;
 import com.ggg.rememo.core.data.model.network.response.CollectResponse;
 import com.ggg.rememo.core.data.model.network.response.LikeResponse;
@@ -21,6 +23,7 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
     private final MemoryPostRepository postRepository;
     private final InteractionRepository interactionRepository;
     private final CommentRepository commentRepository;
+    private final MemoryPointRepository pointRepository;
     private final Handler mainHandler;
 
     private String currentPostId;
@@ -29,6 +32,7 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
         this.postRepository = new MemoryPostRepository();
         this.interactionRepository = new InteractionRepository();
         this.commentRepository = new CommentRepository();
+        this.pointRepository = new MemoryPointRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -50,6 +54,12 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
                     return;
                 }
                 mainHandler.post(() -> ifViewAttached(view -> view.showMemory(result)));
+
+                // 加载关联的记忆点信息
+                String pointId = result.getPointId();
+                if (pointId != null && !pointId.isEmpty()) {
+                    loadMemoryPoint(pointId);
+                }
             }
 
             @Override
@@ -114,6 +124,20 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
             @Override
             public void onError(String message) {
                 mainHandler.post(() -> ifViewAttached(view -> view.showError("加载评论失败: " + message)));
+            }
+        });
+    }
+
+    private void loadMemoryPoint(String pointId) {
+        pointRepository.getById(pointId, new MemoryPointRepository.Callback<MemoryPoint>() {
+            @Override
+            public void onSuccess(MemoryPoint result) {
+                mainHandler.post(() -> ifViewAttached(view -> view.showMemoryPoint(result)));
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // 记忆点加载失败不影响主流程，静默处理
             }
         });
     }

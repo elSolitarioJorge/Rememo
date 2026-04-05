@@ -2,6 +2,7 @@ package com.ggg.rememo.feature.detail.contract;
 
 import com.ggg.rememo.core.base.BaseView;
 import com.ggg.rememo.core.data.model.entity.Comment;
+import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 
 import java.util.List;
@@ -20,6 +21,11 @@ public interface MemoryDetailContract {
          * 展示记忆详情。
          */
         void showMemory(MemoryPost post);
+
+        /**
+         * 展示记忆点锚点信息。
+         */
+        void showMemoryPoint(MemoryPoint point);
 
         /**
          * 刷新指定图片的 AI 修复状态。
