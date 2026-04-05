@@ -1,6 +1,7 @@
 package com.ggg.rememo.feature.detail;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -22,9 +23,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
+import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.feature.detail.adapter.CommentAdapter;
@@ -239,6 +242,19 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         if (galleryAdapter != null) {
             galleryAdapter.notifyItemChanged(position);
         }
+    }
+
+    @Override
+    public void showMemoryPoint(MemoryPoint point) {
+        binding.tvPointName.setText(point.getPointName() != null ? point.getPointName() : "未知锚点");
+        binding.tvPointAddress.setText(point.getLocationAddress() != null ? point.getLocationAddress() : "未知地址");
+        binding.cardMapEntry.setOnClickListener(v -> {
+            ARouter.getInstance()
+                    .build(Routes.Timeline.HOME)
+                    .withString(Routes.Timeline.EXTRA_POINT_ID, point.getPointId())
+                    .withFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .navigation(this);
+        });
     }
 
     @Override
