@@ -68,29 +68,47 @@ public class TimelinePresenter extends BasePresenter<TimelineContract.View>
             }
         });
 
-        repository.getTimelineByPointId(pointId, new TimelineRepository.Callback<List<TimelineYearModel>>() {
-            @Override
-            public void onSuccess(List<TimelineYearModel> result) {
-                mainHandler.post(() -> {
-                    ifViewAttached(BaseView::hideLoading);
-                    if (result == null || result.isEmpty()) {
-                        ifViewAttached(TimelineContract.View::showEmpty);
-                    } else {
-                        ifViewAttached(view -> view.showTimeline(result));
+        repository.getTimelineByPointId(pointId,
+                // 首次数据回调（本地或网络）
+                new TimelineRepository.Callback<List<TimelineYearModel>>() {
+                    @Override
+                    public void onSuccess(List<TimelineYearModel> result) {
+                        mainHandler.post(() -> {
+                            ifViewAttached(BaseView::hideLoading);
+                            if (result == null || result.isEmpty()) {
+                                ifViewAttached(TimelineContract.View::showEmpty);
+                            } else {
+                                ifViewAttached(view -> view.showTimeline(result));
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        mainHandler.post(() -> {
+                            ifViewAttached(view -> {
+                                view.hideLoading();
+                                view.showError("加载时间线失败: " + e.getMessage());
+                            });
+                        });
+                    }
+                },
+                // 网络刷新完成回调
+                new TimelineRepository.Callback<List<TimelineYearModel>>() {
+                    @Override
+                    public void onSuccess(List<TimelineYearModel> result) {
+                        mainHandler.post(() -> {
+                            if (result != null && !result.isEmpty()) {
+                                ifViewAttached(view -> view.refreshTimeline(result));
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        // 网络刷新失败静默忽略
                     }
                 });
-            }
-
-            @Override
-            public void onError(Exception e) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> {
-                        view.hideLoading();
-                        view.showError("加载时间线失败: " + e.getMessage());
-                    });
-                });
-            }
-        });
     }
 
     /**

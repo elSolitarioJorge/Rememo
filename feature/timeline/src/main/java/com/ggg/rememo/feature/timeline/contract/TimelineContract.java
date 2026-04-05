@@ -35,6 +35,12 @@ public interface TimelineContract {
         void showHeader(String title, String subtitle);
 
         /**
+         * 刷新时间线数据（由网络刷新触发，仅更新数据不显示 loading）
+         * @param timelineYears 最新时间线数据
+         */
+        void refreshTimeline(List<TimelineYearModel> timelineYears);
+
+        /**
          * 跳转到记忆详情页
          * @param postId 记忆ID
          */

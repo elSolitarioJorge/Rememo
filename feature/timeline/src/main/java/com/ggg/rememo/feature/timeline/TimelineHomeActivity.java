@@ -129,6 +129,11 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
     // ==================== TimelineContract.View 实现 ====================
 
     @Override
+    public void refreshTimeline(List<TimelineYearModel> timelineYears) {
+        adapter.refreshYears(timelineYears);
+    }
+
+    @Override
     public void showTimeline(List<TimelineYearModel> timelineYears) {
         adapter.setYears(timelineYears);
         binding.rvTimeline.setVisibility(View.VISIBLE);

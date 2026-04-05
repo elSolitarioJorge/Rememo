@@ -200,10 +200,23 @@ public class MemoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             loadCoverImage(post);
 
-            Glide.with(binding.getRoot().getContext())
-                    .load(R.drawable.avatar_placeholder)
-                    .circleCrop()
-                    .into(binding.ivAvatar);
+            // 用户名：优先使用 API 返回的昵称，回退到"匿名用户"
+            String authorName = post.getAuthorNickname();
+            binding.tvUserName.setText(
+                    authorName != null && !authorName.isEmpty() ? authorName : "匿名用户");
+
+            // 用户头像：优先使用 API 返回的头像 URL，回退到占位图
+            String avatarUrl = post.getAuthorAvatar();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                Glide.with(binding.getRoot().getContext())
+                        .load(avatarUrl)
+                        .placeholder(R.drawable.avatar_placeholder)
+                        .error(R.drawable.avatar_placeholder)
+                        .circleCrop()
+                        .into(binding.ivAvatar);
+            } else {
+                binding.ivAvatar.setImageResource(R.drawable.avatar_placeholder);
+            }
 
             binding.getRoot().setOnClickListener(v -> {
                 int pos = getAdapterPosition();
