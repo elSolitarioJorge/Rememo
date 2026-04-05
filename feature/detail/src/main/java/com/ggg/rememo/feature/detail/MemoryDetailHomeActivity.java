@@ -1,13 +1,22 @@
 package com.ggg.rememo.feature.detail;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -35,7 +44,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         super.onCreate(savedInstanceState);
         binding = ActivityMemoryDetailHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        setupKeyboardListener();
         presenter = new MemoryDetailPresenter();
         presenter.attachView(this);
 
@@ -43,6 +52,39 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
 
         String postId = getIntent().getStringExtra(Routes.Detail.EXTRA_POST_ID);
         presenter.loadMemory(postId);
+    }
+
+    private void setupKeyboardListener() {
+        // 在监听器外部，提前获取并记录下原始的 paddingBottom
+        final int initialPaddingBottom = binding.layoutBottomActionBar.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            // 获取键盘（IME）的高度
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            // 获取系统栏高度
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            // 增加底部视图内边距，适配沉浸式全屏显示
+            binding.layoutBottomActionBar.setPadding(
+                    binding.layoutBottomActionBar.getPaddingStart(),
+                    binding.layoutBottomActionBar.getPaddingTop(),
+                    binding.layoutBottomActionBar.getPaddingEnd(),
+                    initialPaddingBottom + systemBars.bottom);
+
+            // 判断当前键盘是否可见
+            boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            // 动态调整真实输入面板的 BottomMargin
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) binding.layoutRealCommentInput.getLayoutParams();
+            // 底部边距 = 键盘高度
+            layoutParams.bottomMargin = imeInsets.bottom;
+            binding.layoutRealCommentInput.setLayoutParams(layoutParams);
+
+            if (!isKeyboardVisible && binding.layoutRealCommentInput.getVisibility() == View.VISIBLE) {
+                binding.layoutRealCommentContainer.setVisibility(View.GONE);
+                binding.etRealComment.clearFocus();
+            }
+            return insets;
+        });
     }
 
     private void initClickListeners() {
@@ -57,6 +99,72 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
                 float alpha = Math.min(1.0f, (float) scrollY / 300f);
                 binding.viewTopNavSolidBg.setAlpha(alpha);
                 binding.viewGradientOverlay.setAlpha(1.0f - alpha);
+            }
+        });
+
+        // 点击底部的“假”输入框（TextView），唤起真正的输入面板
+        binding.tvCommentInput.setOnClickListener(v -> {
+            // 显示遮罩层和真正的输入面板
+            binding.layoutRealCommentContainer.setVisibility(View.VISIBLE);
+
+            // 获取焦点
+            binding.etRealComment.requestFocus();
+
+            // 弹出软键盘
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(binding.etRealComment, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+
+        // 点击半透明遮罩层 -> 收起输入面板
+        binding.viewKeyboardOverlay.setOnClickListener(v -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(binding.etRealComment.getWindowToken(), 0);
+            }
+        });
+
+        binding.etRealComment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // 输入前调用
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // 输入过程中调用
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // 在文本编辑完成后触发
+                // 过滤掉首尾空格后的文本内容
+                String content = (s != null) ? s.toString().trim() : "";
+
+                // 根据输入内容更新按钮状态
+                if (!content.isEmpty()) {
+                    // 有输入内容 -> 亮色
+                    if (binding.btnSendComment.getBackground() != null) {
+                        binding.btnSendComment.getBackground().setTint(Color.parseColor("#F5A623"));
+                    }
+                    binding.btnSendComment.setTextColor(Color.parseColor("#FFFFFF"));
+                } else {
+                    // 无输入内容 -> 暗色
+                    if (binding.btnSendComment.getBackground() != null) {
+                        binding.btnSendComment.getBackground().setTint(Color.parseColor("#334155"));
+                    }
+                    binding.btnSendComment.setTextColor(Color.parseColor("#94A3B8"));
+                }
+            }
+        });
+
+        binding.btnSendComment.setOnClickListener(v -> {
+            String content = binding.etRealComment.getText().toString().trim();
+            if (!content.isEmpty()) {
+
+            } else {
+                Toast.makeText(this, "有内容才能发送哦🙂", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -127,6 +235,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         } else {
             binding.iconLike.clearColorFilter();
         }
+        binding.tvLikeCount.setText(likeCount + "");
     }
 
     @Override
@@ -139,6 +248,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         } else {
             binding.iconStar.clearColorFilter();
         }
+        binding.tvStarCount.setText(collectCount + "");
     }
 
     @Override
