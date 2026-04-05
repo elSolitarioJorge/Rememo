@@ -33,7 +33,7 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
 
     public interface OnMemoryClickListener {
         void onMemoryClick(MemoryPost post);
-        void onExploreClick(TimelineYearModel yearModel);
+        void onGatewayClick(TimelineYearModel yearModel);
     }
 
     public void setOnMemoryClickListener(OnMemoryClickListener listener) {
@@ -106,21 +106,28 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
             binding.tvYearSubtitle.setText(yearModel.getSubtitle());
             binding.btnExplore.setText(yearModel.getExploreText());
 
-            // 设置点击事件
+            // "探索 N 个记忆" 按钮（年份维度的大入口，和内嵌传送门功能相同，保留 UI 一致性）
             binding.btnExplore.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onExploreClick(yearModel);
+                    listener.onGatewayClick(yearModel);
                 }
             });
 
+            // 卡片点击：记忆卡片跳详情，传送门卡片也走 gateway 回调
             cardAdapter.setOnCardClickListener(post -> {
                 if (listener != null) {
                     listener.onMemoryClick(post);
                 }
             });
+            cardAdapter.setOnGatewayClickListener((year, remaining) -> {
+                if (listener != null) {
+                    listener.onGatewayClick(yearModel);
+                }
+            });
 
-            // 更新卡片数据
-            cardAdapter.setPosts(yearModel.getPosts());
+            // 传入当年全部记忆数，由 MemoryCardAdapter 决定是否追加传送门
+            List<MemoryPost> allPosts = yearModel.getPosts();
+            cardAdapter.setPosts(allPosts, yearModel.getMemoryCount(), yearModel.getYear());
 
             // 启动特效动画
             startAnimations();

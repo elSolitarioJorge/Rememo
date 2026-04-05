@@ -1,10 +1,18 @@
 package com.ggg.rememo.feature.timeline.data;
 
+import androidx.annotation.NonNull;
+
+import com.ggg.rememo.core.data.mapper.MemoryPostMapper;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+import com.ggg.rememo.core.data.model.network.response.MemoryPostListItemResponse;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
 import com.ggg.rememo.core.data.repository.MemoryPostRepository;
+import com.ggg.rememo.core.network.ApiCallback;
+import com.ggg.rememo.core.network.ApiResponse;
+import com.ggg.rememo.core.network.ApiService;
+import com.ggg.rememo.core.network.NetworkClient;
 import com.ggg.rememo.feature.timeline.model.TimelineYearModel;
 
 import java.util.ArrayList;
@@ -14,24 +22,73 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import retrofit2.Call;
+import retrofit2.Response;
+
 /**
  * 时间线模块数据仓库
  * <p>
- * 负责从数据库获取记忆数据，按年份分组转换为 TimelineYearModel。
+ * 负责从网络/数据库获取记忆数据，按年份分组转换为 TimelineYearModel。
  * </p>
  */
 public class TimelineRepository {
 
     private final MemoryPostRepository memoryPostRepository;
     private final MemoryPointRepository memoryPointRepository;
+    private final ApiService apiService;
 
     public TimelineRepository() {
         this.memoryPostRepository = new MemoryPostRepository();
         this.memoryPointRepository = new MemoryPointRepository();
+        this.apiService = NetworkClient.getInstance().getApiService();
     }
 
     /**
-     * 按地点ID加载时间线数据（按年份分组）
+     * 从网络获取某记忆点的所有记忆
+     * @param pointId 地点ID
+     * @param callback 回调
+     */
+    public void fetchPostsByPointId(String pointId, ApiCallback<List<MemoryPost>> callback) {
+        apiService.getPostsByPointId(pointId)
+                .enqueue(new retrofit2.Callback<ApiResponse<List<MemoryPostListItemResponse>>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call,
+                                           @NonNull Response<ApiResponse<List<MemoryPostListItemResponse>>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            List<MemoryPostListItemResponse> responseList = response.body().getData();
+                            if (responseList != null && !responseList.isEmpty()) {
+                                List<MemoryPost> posts = MemoryPostMapper.fromListItem(responseList);
+                                // 保存到本地数据库
+                                memoryPostRepository.insertAll(posts, new MemoryPostRepository.Callback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void result) {
+                                        callback.onSuccess(posts);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        // 即使保存失败也返回数据
+                                        callback.onSuccess(posts);
+                                    }
+                                });
+                            } else {
+                                callback.onSuccess(new ArrayList<>());
+                            }
+                        } else {
+                            callback.onError("获取记忆列表失败");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call,
+                                          @NonNull Throwable t) {
+                        callback.onError("网络异常: " + t.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * 按地点ID加载时间线数据（按年份分组，优先本地）
      * @param pointId 地点ID
      * @param callback 回调
      */
@@ -39,8 +96,24 @@ public class TimelineRepository {
         memoryPostRepository.getByPointId(pointId, new MemoryPostRepository.Callback<List<MemoryPost>>() {
             @Override
             public void onSuccess(List<MemoryPost> result) {
-                List<TimelineYearModel> timelineYears = groupByYear(result);
-                callback.onSuccess(timelineYears);
+                if (result != null && !result.isEmpty()) {
+                    List<TimelineYearModel> timelineYears = groupByYear(result);
+                    callback.onSuccess(timelineYears);
+                } else {
+                    // 本地为空，从网络获取
+                    fetchPostsByPointId(pointId, new ApiCallback<List<MemoryPost>>() {
+                        @Override
+                        public void onSuccess(List<MemoryPost> data) {
+                            List<TimelineYearModel> timelineYears = groupByYear(data);
+                            callback.onSuccess(timelineYears);
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            callback.onError(new Exception(message));
+                        }
+                    });
+                }
             }
 
             @Override
@@ -69,9 +142,6 @@ public class TimelineRepository {
         });
     }
 
-    /**
-     * 按年份分组
-     */
     private List<TimelineYearModel> groupByYear(List<MemoryPost> posts) {
         Map<Integer, List<MemoryPost>> yearMap = new LinkedHashMap<>();
 
