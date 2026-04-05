@@ -1,5 +1,7 @@
 package com.ggg.rememo.feature.timeline.data;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.ggg.rememo.core.data.mapper.MemoryPostMapper;
@@ -88,39 +90,73 @@ public class TimelineRepository {
     }
 
     /**
-     * 按地点ID加载时间线数据（按年份分组，优先本地）
-     * @param pointId 地点ID
-     * @param callback 回调
+     * 按地点ID加载时间线数据（按年份分组，缓存优先 + 网络刷新）
+     * <p>
+     * 策略：先展示本地缓存保证流畅体验，后台静默拉取网络数据，
+     *       网络返回后更新本地 DB 并通过 View 层 DiffUtil 刷新界面。
+     * </p>
+     *
+     * @param pointId     地点ID
+     * @param callback    回调（仅在首次本地数据/网络数据到达时触发）
+     * @param onRefreshed 网络刷新完成回调（带回最新数据，可用于下拉刷新场景）
      */
-    public void getTimelineByPointId(String pointId, Callback<List<TimelineYearModel>> callback) {
+    public void getTimelineByPointId(String pointId,
+                                     Callback<List<TimelineYearModel>> callback,
+                                     Callback<List<TimelineYearModel>> onRefreshed) {
+        // Step 1: 先展示本地缓存
         memoryPostRepository.getByPointId(pointId, new MemoryPostRepository.Callback<List<MemoryPost>>() {
             @Override
-            public void onSuccess(List<MemoryPost> result) {
-                if (result != null && !result.isEmpty()) {
-                    List<TimelineYearModel> timelineYears = groupByYear(result);
-                    callback.onSuccess(timelineYears);
-                } else {
-                    // 本地为空，从网络获取
-                    fetchPostsByPointId(pointId, new ApiCallback<List<MemoryPost>>() {
-                        @Override
-                        public void onSuccess(List<MemoryPost> data) {
-                            List<TimelineYearModel> timelineYears = groupByYear(data);
-                            callback.onSuccess(timelineYears);
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            callback.onError(new Exception(message));
-                        }
-                    });
+            public void onSuccess(List<MemoryPost> localResult) {
+                if (localResult != null && !localResult.isEmpty()) {
+                    callback.onSuccess(groupByYear(localResult));
                 }
+                // Step 2: 后台静默拉取网络数据
+                fetchPostsByPointId(pointId, new ApiCallback<List<MemoryPost>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPost> networkData) {
+                        if (networkData != null && !networkData.isEmpty()) {
+                            // 网络数据已通过 insertAll 更新到本地 DB
+                            // 通过回调通知上层刷新界面（View 层使用 DiffUtil 对比差异）
+                            if (onRefreshed != null) {
+                                onRefreshed.onSuccess(groupByYear(networkData));
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        // 网络失败且本地已有数据：静默忽略，不打扰用户
+                    }
+                });
             }
 
             @Override
             public void onError(Exception e) {
-                callback.onError(e);
+                // 本地读取失败，直接从网络获取
+                fetchPostsByPointId(pointId, new ApiCallback<List<MemoryPost>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPost> data) {
+                        List<TimelineYearModel> timelineYears = groupByYear(data);
+                        callback.onSuccess(timelineYears);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        callback.onError(new Exception(message));
+                    }
+                });
             }
         });
+    }
+
+    /**
+     * 兼容旧签名：只返回首次数据，不主动刷新
+     *
+     * @deprecated 请使用 {@link #getTimelineByPointId(String, Callback, Callback)}
+     */
+    @Deprecated
+    public void getTimelineByPointId(String pointId, Callback<List<TimelineYearModel>> callback) {
+        getTimelineByPointId(pointId, callback, null);
     }
 
     /**

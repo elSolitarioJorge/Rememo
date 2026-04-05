@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,8 +42,45 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
     }
 
     public void setYears(List<TimelineYearModel> years) {
-        this.years = years != null ? years : new ArrayList<>();
-        notifyDataSetChanged();
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return TimelineYearAdapter.this.years.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return years != null ? years.size() : 0;
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                // 按年份 ID 判断是否是同一项
+                return TimelineYearAdapter.this.years.get(oldItemPosition).getYear()
+                        == years.get(newItemPosition).getYear();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                TimelineYearModel oldModel = TimelineYearAdapter.this.years.get(oldItemPosition);
+                TimelineYearModel newModel = years.get(newItemPosition);
+                // 比较记忆列表内容是否变化（转发 DiffUtil 到内层 MemoryCardAdapter）
+                return oldModel.getPosts().equals(newModel.getPosts());
+            }
+        }, false);
+
+        this.years.clear();
+        if (years != null) {
+            this.years.addAll(years);
+        }
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    /**
+     * 用新数据刷新时间线（由网络数据到达触发，增量更新）
+     */
+    public void refreshYears(List<TimelineYearModel> newYears) {
+        setYears(newYears);
     }
 
     public List<TimelineYearModel> getYears() {

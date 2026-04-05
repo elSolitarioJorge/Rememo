@@ -149,8 +149,8 @@
             android:text="128"
             android:textColor="#9CA3AF"
             android:textSize="11sp"
-            app:drawableStartCompat="@drawable/ic_heart"
-            app:drawableTint="#CCF59E0B"
+            app:drawableStartCompat="@drawable/ic_gray_like"
+            app:drawableTint="#9CA3AF"
             app:layout_constraintBottom_toBottomOf="@id/tv_season"
             app:layout_constraintEnd_toStartOf="@id/tv_comments"
             app:layout_constraintTop_toTopOf="@id/tv_season" />
