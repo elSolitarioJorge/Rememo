@@ -195,14 +195,10 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
 
     @Override
     public void navigateToExploreYear(int year, int memoryCount) {
-        Toast.makeText(this,
-                "探索 " + year + " 年的 " + memoryCount + " 个记忆",
-                Toast.LENGTH_SHORT).show();
-        // TODO: 跳转到年份详情页（YearDetailActivity）
-        // ARouter.getInstance()
-        //         .build(Routes.Timeline.YEAR_DETAIL)
-        //         .withInt(Routes.Timeline.EXTRA_YEAR, year)
-        //         .withString(Routes.Timeline.EXTRA_POINT_ID, presenter.getCurrentPointId())
-        //         .navigation(this);
+        ARouter.getInstance()
+                .build(Routes.Timeline.YEAR_ARCHIVE)
+                .withString(Routes.Timeline.EXTRA_POINT_ID, presenter.getCurrentPointId())
+                .withInt(Routes.Timeline.EXTRA_YEAR, year)
+                .navigation(this);
     }
 }

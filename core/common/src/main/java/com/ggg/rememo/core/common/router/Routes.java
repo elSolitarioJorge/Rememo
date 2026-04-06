@@ -54,9 +54,11 @@ public final class Routes {
 
         public static final String HOME = "/timeline/home";
         public static final String HOME_FRAGMENT = "/timeline/home_fragment";
+        public static final String YEAR_ARCHIVE = "/timeline/year_archive";
 
         /** Timeline 模块 Intent 参数 Key */
         public static final String EXTRA_POINT_ID = "extra_point_id";
+        public static final String EXTRA_YEAR = "extra_year";
     }
 
     /** 消息(Message)相关路由 */
