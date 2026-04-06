@@ -27,10 +27,12 @@
 
             <ImageView
                 android:id="@+id/img_cover"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:scaleType="centerCrop"
                 android:src="@drawable/pic_location"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <LinearLayout
@@ -45,7 +47,8 @@
                 android:background="@drawable/bg_ai_fix_dark"
                 android:paddingHorizontal="6dp"
                 android:paddingVertical="3dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:visibility="gone">
 
                 <ImageView
                     android:id="@+id/icon_aiFix"
@@ -92,7 +95,7 @@
                 android:textSize="14sp"
                 android:textColor="#E2E8F0"
                 android:textStyle="bold"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:ellipsize="end"
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginTop="8dp" />

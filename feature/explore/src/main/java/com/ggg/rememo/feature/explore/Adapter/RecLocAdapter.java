@@ -2,63 +2,69 @@ package com.ggg.rememo.feature.explore.Adapter;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.ui.R;
 import com.ggg.rememo.feature.explore.databinding.ItemLocation1Binding;
 import com.ggg.rememo.feature.explore.databinding.ItemLocation2Binding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecLocAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private static final int TYPE_LAST = 0;
-    private static final int TYPE_LOCATION = 1;
+    private static final int TYPE_LOCATION = 0;
+    private static final int TYPE_MAP_ENTRY = 1;
 
-    private List<MemoryPoint> items;
+    private List<MemoryPoint> memoryPoints;
 
-    public RecLocAdapter(List<MemoryPoint> items) {
-        this.items = items;
+    public RecLocAdapter() {
+        this.memoryPoints = new ArrayList<>();
+    }
+
+    public void updateData(List<MemoryPoint> newItems) {
+        this.memoryPoints.clear();
+        if (newItems != null) {
+            for (int i = 0; i < 2 && i < newItems.size(); i++) {
+                this.memoryPoints.add(newItems.get(i));
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == TYPE_LOCATION) {
-            ItemLocation1Binding binding = ItemLocation1Binding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-            return new LocationViewHolder(binding);
-        } else {
+        if (viewType == TYPE_MAP_ENTRY) {
             ItemLocation2Binding binding = ItemLocation2Binding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
             return new MapViewHolder(binding);
+        } else {
+            ItemLocation1Binding binding = ItemLocation1Binding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            return new LocationViewHolder(binding);
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        MemoryPoint item = items.get(position);
-        if (holder instanceof LocationViewHolder) {
-            ((LocationViewHolder) holder).bind(item);
+        if (holder instanceof LocationViewHolder && position < memoryPoints.size()) {
+            ((LocationViewHolder) holder).bind(memoryPoints.get(position));
         }
+        // MapViewHolder 无需数据绑定，布局已是静态样式
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position == items.size() - 1 ? RecLocAdapter.TYPE_LAST : RecLocAdapter.TYPE_LOCATION;
+        return position < 2 ? TYPE_LOCATION : TYPE_MAP_ENTRY;
     }
 
     @Override
     public int getItemCount() {
-        return items == null ? 0 : items.size();
+        return 3;
     }
 
     static class LocationViewHolder extends RecyclerView.ViewHolder {
@@ -69,30 +75,24 @@ public class RecLocAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         private void bind(MemoryPoint item) {
-            Glide.with(binding.getRoot())
-                    .asDrawable()
-                    .load(com.ggg.rememo.feature.explore.R.drawable.pic_location)
-                    // .load(item.getCoverImageUrl())
-                    .placeholder(new ColorDrawable(Color.GRAY))
-                    .error(R.drawable.img_error)
-                    .centerCrop()
-                    .into(new CustomTarget<Drawable>() {
-                        // 当图片加载完成后调用
-                        @Override
-                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                            binding.layoutCover.setBackground(resource);
-                        }
+            if (item == null) {
+                return;
+            }
 
-                        // 当碎片被销毁时调用
-                        @Override
-                        public void onLoadCleared(@Nullable Drawable placeholder) {
-                            // 创建一个纯灰色背景并设置到layout
-                            binding.layoutCover.setBackground(new ColorDrawable(Color.GRAY));
-                        }
-                    });
+            String coverUrl = item.getCoverImageUrl();
+            if (coverUrl != null && !coverUrl.isEmpty()) {
+                Glide.with(binding.getRoot())
+                        .load(coverUrl)
+                        .placeholder(new ColorDrawable(Color.GRAY))
+                        .error(R.drawable.img_error)
+                        .centerCrop()
+                        .into(binding.imgPointCover);
+            } else {
+                binding.imgPointCover.setImageResource(com.ggg.rememo.core.ui.R.drawable.cover_placeholder);
+            }
 
-            binding.textLocationName.setText(item.getPointName());
-            binding.textMemoryCount.setText(item.getMemoryCount() + "条回忆推荐");
+            binding.textLocationName.setText(item.getPointName() != null ? item.getPointName() : "");
+            binding.textMemoryCount.setText(item.getMemoryCount() + "条回忆");
         }
     }
 
@@ -103,5 +103,4 @@ public class RecLocAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             this.binding = binding;
         }
     }
-
 }

@@ -1,10 +1,10 @@
 package com.ggg.rememo.feature.explore.Fragment;
 
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,48 +12,132 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.alibaba.android.arouter.launcher.ARouter;
+import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.ui.Utils.UIUtils;
 import com.ggg.rememo.feature.explore.Adapter.RecLocAdapter;
 import com.ggg.rememo.feature.explore.Adapter.RecPostAdapter;
 import com.ggg.rememo.feature.explore.Utils.HorizontalItemDecoration;
+import com.ggg.rememo.feature.explore.contract.ExploreContract;
 import com.ggg.rememo.feature.explore.databinding.FragmentExploreRecommendationBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
+public class RecFragment extends Fragment implements ExploreContract.RecView {
 
-public class RecFragment extends Fragment {
-    private static final String ARG_POINTS = "points";
-    private static final String ARG_POSTS = "posts";
-    public static RecFragment newInstance(List<MemoryPoint> points, List<MemoryPost> posts) {
-        RecFragment fragment = new RecFragment();
-        Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_POINTS, (ArrayList<? extends Parcelable>) points);
-        args.putParcelableArrayList(ARG_POSTS, (ArrayList<? extends Parcelable>) posts);
-        fragment.setArguments(args);
-        return fragment;
+    private FragmentExploreRecommendationBinding binding;
+    private RecLocAdapter locAdapter;
+    private RecPostAdapter postAdapter;
+    private ExploreContract.Presenter presenter;
+    private boolean hasLoadedOnce = false;
+
+    public interface OnParentAttach {
+        void onRecViewAttached(RecFragment fragment);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        FragmentExploreRecommendationBinding binding = FragmentExploreRecommendationBinding.inflate(inflater, container, false);
-        // 初始化 RecyclerView
+        binding = FragmentExploreRecommendationBinding.inflate(inflater, container, false);
 
-        binding.exploreRecoLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        binding.exploreRecoLocationRecyclerView.addItemDecoration(new HorizontalItemDecoration(UIUtils.dpToPx(getContext(), 4)));
-        binding.exploreRecoContentRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        initRecyclerViews();
 
-        // 获取参数
-        List<MemoryPoint> points = getArguments() != null ? getArguments().getParcelableArrayList(ARG_POINTS) : null;
-        List<MemoryPost> posts = getArguments() != null ? getArguments().getParcelableArrayList(ARG_POSTS) : null;
-
-        // 设置适配器
-        binding.exploreRecoLocationRecyclerView.setAdapter(new RecLocAdapter(points));
-        binding.exploreRecoContentRecyclerView.setAdapter(new RecPostAdapter(posts));
+        if (getParentFragment() instanceof OnParentAttach) {
+            ((OnParentAttach) getParentFragment()).onRecViewAttached(this);
+        }
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (presenter != null && !hasLoadedOnce) {
+            hasLoadedOnce = true;
+            presenter.loadRecData();
+        }
+    }
+
+    private void initRecyclerViews() {
+        binding.exploreRecoLocationRecyclerView.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        binding.exploreRecoLocationRecyclerView.addItemDecoration(
+                new HorizontalItemDecoration(UIUtils.dpToPx(getContext(), 4)));
+        binding.exploreRecoContentRecyclerView.setLayoutManager(
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+
+        locAdapter = new RecLocAdapter();
+        postAdapter = new RecPostAdapter(new ArrayList<>());
+
+        postAdapter.setOnItemClickListener(post -> {
+            ARouter.getInstance()
+                    .build(Routes.Detail.HOME)
+                    .withString(Routes.Detail.EXTRA_POST_ID, post.getPostId())
+                    .navigation();
+        });
+
+        binding.exploreRecoLocationRecyclerView.setAdapter(locAdapter);
+        binding.exploreRecoContentRecyclerView.setAdapter(postAdapter);
+    }
+
+    public void setPresenter(ExploreContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
+
+    @Override
+    public void showLoading() {
+        if (binding == null) return;
+        binding.layoutLoading.getRoot().setVisibility(View.VISIBLE);
+        binding.progressBar.setVisibility(View.GONE);
+        binding.exploreRecoLocationRecyclerView.setVisibility(View.GONE);
+        binding.exploreRecoContentRecyclerView.setVisibility(View.GONE);
+        binding.layoutEmpty.getRoot().setVisibility(View.GONE);
+    }
+
+    @Override
+    public void hideLoading() {
+        if (binding == null) return;
+        binding.layoutLoading.getRoot().setVisibility(View.GONE);
+        binding.exploreRecoLocationRecyclerView.setVisibility(View.VISIBLE);
+        binding.exploreRecoContentRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showError(String msg) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void showRecData(List<MemoryPoint> points, List<MemoryPost> posts) {
+        if (binding == null) return;
+        binding.layoutEmpty.getRoot().setVisibility(View.GONE);
+        binding.exploreRecoLocationRecyclerView.setVisibility(View.VISIBLE);
+        binding.exploreRecoContentRecyclerView.setVisibility(View.VISIBLE);
+
+        locAdapter.updateData(points);
+        postAdapter.updateData(posts);
+    }
+
+    @Override
+    public void showEmpty() {
+        if (binding == null) return;
+        binding.layoutEmpty.getRoot().setVisibility(View.VISIBLE);
+        binding.exploreRecoLocationRecyclerView.setVisibility(View.GONE);
+        binding.exploreRecoContentRecyclerView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void setRefreshing(boolean refreshing) {
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

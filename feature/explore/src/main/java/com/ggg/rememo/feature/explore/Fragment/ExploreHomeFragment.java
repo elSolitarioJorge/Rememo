@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.explore.Fragment;
 
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,20 +16,17 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.ggg.rememo.core.common.router.Routes;
-import com.ggg.rememo.core.data.model.entity.MemoryPoint;
-import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.feature.explore.Adapter.ExplorePageAdapter;
-import com.ggg.rememo.feature.explore.R;
 import com.ggg.rememo.feature.explore.databinding.FragmentExploreHomeBinding;
-import com.google.android.material.tabs.TabLayout;
+import com.ggg.rememo.feature.explore.presenter.ExplorePresenter;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Route(path = Routes.Explore.HOME_FRAGMENT)
-public class ExploreHomeFragment extends Fragment {
+public class ExploreHomeFragment extends Fragment implements RecFragment.OnParentAttach, NearbyFragment.OnParentAttach {
+
     private FragmentExploreHomeBinding binding;
+    private ExplorePageAdapter adapter;
+    private ExplorePresenter presenter;
 
     @Nullable
     @Override
@@ -49,40 +47,19 @@ public class ExploreHomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 添加数据
-        List<MemoryPoint> points = new ArrayList<>();
-        List<MemoryPost> posts = new ArrayList<>();
+        initPresenter();
+        initViewPager();
+    }
 
-        // 锚点列表
-        points.add(new MemoryPoint("西安老火车站", null, 342));
-        points.add(new MemoryPoint("钟楼邮局老信箱", null, 128));
-        points.add(new MemoryPoint("钟楼", null, 122));
+    private void initPresenter() {
+        presenter = new ExplorePresenter();
+    }
 
-        // 帖子列表
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-        posts.add(new MemoryPost("弥巷", "绿皮车上的离别，和那袋橘子", "绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子绿皮车上的离别，和那袋橘子", 1998, 119));
-
-
-        ExplorePageAdapter adapter = new ExplorePageAdapter(this);
-        adapter.setData(points, posts);
-
-        // 设置ViewPager2适配器
+    private void initViewPager() {
+        adapter = new ExplorePageAdapter(this);
         binding.exploreHomeViewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.exploreHomeViewPager2.setAdapter(adapter);
 
-
-        // 绑定TabLayout
         new TabLayoutMediator(binding.exploreHomeTabLayout, binding.exploreHomeViewPager2,
                 (tab, position) -> {
                     switch (position) {
@@ -97,7 +74,18 @@ public class ExploreHomeFragment extends Fragment {
                             break;
                     }
                 }).attach();
+    }
 
+    @Override
+    public void onRecViewAttached(RecFragment fragment) {
+        fragment.setPresenter(presenter);
+        presenter.attachRecView(fragment);
+    }
+
+    @Override
+    public void onNearbyViewAttached(NearbyFragment fragment) {
+        fragment.setPresenter(presenter);
+        presenter.attachNearbyView(fragment);
     }
 
     @Override
