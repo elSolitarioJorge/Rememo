@@ -1,32 +1,51 @@
 package com.ggg.rememo.feature.explore.Adapter;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
-import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.ui.R;
 import com.ggg.rememo.feature.explore.databinding.ItemContentPicBinding;
 import com.ggg.rememo.feature.explore.databinding.ItemContentTextBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final int TYPE_PIC = 0;
-    private final int TYPE_TEXT = 1;
+    private static final int TYPE_PIC = 0;
+    private static final int TYPE_TEXT = 1;
+
     private List<MemoryPost> items;
+    private OnItemClickListener onItemClickListener;
+
+    public interface OnItemClickListener {
+        void onItemClick(MemoryPost post);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
+    }
 
     public RecPostAdapter(List<MemoryPost> items) {
-        this.items = items;
+        this.items = items != null ? items : new ArrayList<>();
+    }
+
+    public void updateData(List<MemoryPost> newItems) {
+        this.items = newItems != null ? newItems : new ArrayList<>();
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -45,9 +64,9 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MemoryPost item = items.get(position);
         if (holder instanceof PicPostViewHolder) {
-            ((PicPostViewHolder) holder).bind(item);
+            ((PicPostViewHolder) holder).bind(item, this);
         } else {
-            ((TextPostViewHolder) holder).bind(item);
+            ((TextPostViewHolder) holder).bind(item, this);
         }
     }
 
@@ -55,19 +74,22 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getItemViewType(int position) {
         MemoryPost item = items.get(position);
         List<MemoryPhoto> photos = item.getImages();
-
-        if (photos != null && !photos.isEmpty()) {
-            // 有图片，返回图片类型
-            return TYPE_PIC;
-        } else {
-            // 无图片
-            return TYPE_TEXT;
-        }
+        return (photos != null && !photos.isEmpty()) ? TYPE_PIC : TYPE_TEXT;
     }
 
     @Override
     public int getItemCount() {
         return items == null ? 0 : items.size();
+    }
+
+    private void notifyClick(MemoryPost post) {
+        if (onItemClickListener != null) {
+            onItemClickListener.onItemClick(post);
+        }
+    }
+
+    void performClick(MemoryPost post) {
+        notifyClick(post);
     }
 
     static class PicPostViewHolder extends RecyclerView.ViewHolder {
@@ -77,33 +99,58 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             this.binding = binding;
         }
 
-        private void bind(MemoryPost item) {
+        private void bind(MemoryPost item, RecPostAdapter adapter) {
+            binding.getRoot().setOnClickListener(v -> adapter.performClick(item));
 
-            // 封面图设置
-            Glide.with(binding.getRoot())
-                    .load(com.ggg.rememo.feature.explore.R.drawable.pic_location)
-//                    .load(item.getImages().get(0).getDisplayUrl())
-                    .placeholder(new ColorDrawable(Color.GRAY))
-                    .error(R.drawable.img_error)
-                    .centerCrop()
-                    .into(binding.imgCover);
+            List<MemoryPhoto> photos = item.getImages();
+            if (photos != null && !photos.isEmpty()) {
+                loadImageWithAspectRatio(photos.get(0).getDisplayUrl(), binding.imgCover);
+            } else {
+                binding.imgCover.setImageResource(R.drawable.ic_no_image);
+            }
 
-            // 用户头像设置
-            /*Glide.with(binding.getRoot())
-                    .load(item.getAuthorId())
-                    .placeholder(new ColorDrawable(Color.GRAY))
-                    .error(R.drawable.img_error)
-                    .centerCrop()
-                    .into(binding.imgPostAvatar);*/
+            String season = item.getMemorySeason();
+            binding.textTimeLabel.setText(item.getMemoryYear() + "年" + (season != null ? season : ""));
+            binding.textPostTitle.setText(item.getTitle() != null ? item.getTitle() : "");
 
-            // 时间标签
-            binding.textTimeLabel.setText(item.getMemoryYear() + "年" + item.getMemorySeason());
-            // 标题
-            binding.textPostTitle.setText(item.getTitle());
-            // 用户名称
-            // binding.textPostUserName.setText(item.getAuthorId());
+            String authorName = item.getAuthorNickname();
+            if (authorName != null && !authorName.isEmpty()) {
+                binding.textPostUserName.setText(authorName);
+                String avatarUrl = item.getAuthorAvatar();
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    Glide.with(binding.getRoot())
+                            .load(avatarUrl)
+                            .placeholder(new ColorDrawable(Color.GRAY))
+                            .error(R.drawable.img_error)
+                            .circleCrop()
+                            .into(binding.imgPostAvatar);
+                }
+            }
 
-            binding.textLikeCount.setText(item.getLikeCount());
+            binding.textLikeCount.setText(String.valueOf(item.getLikeCount()));
+        }
+
+        private void loadImageWithAspectRatio(String imageUrl, ImageView imageView) {
+            imageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    imageView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    int measuredWidth = imageView.getMeasuredWidth();
+                    if (measuredWidth > 0) {
+                        Glide.with(imageView.getContext())
+                                .load(imageUrl)
+                                .override(measuredWidth, 0)
+                                .fitCenter()
+                                .into(imageView);
+                    } else {
+                        Glide.with(imageView.getContext())
+                                .load(imageUrl)
+                                .fitCenter()
+                                .into(imageView);
+                    }
+                    return true;
+                }
+            });
         }
     }
 
@@ -114,11 +161,16 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             this.binding = binding;
         }
 
-        private void bind(MemoryPost item) {
-            binding.textTitle.setText(item.getTitle());
-            binding.textContent.setText(item.getContent());
+        private void bind(MemoryPost item, RecPostAdapter adapter) {
+            binding.getRoot().setOnClickListener(v -> adapter.performClick(item));
+
+            binding.textTitle.setText(item.getTitle() != null ? item.getTitle() : "");
+            binding.textContent.setText(item.getContent() != null ? item.getContent() : "");
             binding.textLikeCount.setText(String.valueOf(item.getLikeCount()));
-            // binding.textUserName.setText(item.getAuthorId());
+            String authorName = item.getAuthorNickname();
+            if (authorName != null && !authorName.isEmpty()) {
+                binding.textUserName.setText(authorName);
+            }
         }
     }
 }

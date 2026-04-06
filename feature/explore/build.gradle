@@ -39,8 +39,10 @@ android {
 
 dependencies {
     implementation project(":core:common")
+    implementation project(":core:base")
     implementation project(":core:ui")
     implementation project(":core:data")
+    implementation project(":core:network")
     implementation project(":core:map")
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
@@ -50,6 +52,8 @@ dependencies {
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
+    implementation libs.retrofit
+    implementation libs.retrofit.converter.gson
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

@@ -52,15 +52,18 @@
 
         <TextView
             android:id="@+id/text_location_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/icon_spark"
-            app:layout_constraintBottom_toTopOf="@id/icon_spark"
             android:layout_marginBottom="2dp"
             android:text="西安老火车站"
             android:textColor="@color/white"
             android:textSize="12sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toTopOf="@id/icon_spark"
+            app:layout_constraintEnd_toEndOf="@+id/img_point_cover"
+            app:layout_constraintStart_toStartOf="@id/icon_spark" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

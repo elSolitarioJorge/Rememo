@@ -27,8 +27,8 @@
 
             <ImageView
                 android:id="@+id/img_post_cover"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:scaleType="centerCrop"
                 android:src="@drawable/pic_location"
                 app:layout_constraintTop_toTopOf="parent"
