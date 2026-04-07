@@ -6,12 +6,15 @@ import android.util.Log;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.common.util.TokenManager;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.NetworkClient;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.data.ProfileRepository;
+
+import java.util.List;
 
 public class ProfilePresenter extends BasePresenter<ProfileContract.View>
         implements ProfileContract.Presenter {
@@ -242,5 +245,43 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
         mainHandler.post(() -> {
             ifViewAttached(view -> view.showUserInfo(userInfo));
         });
+    }
+
+    @Override
+    public void loadUserMemories() {
+        String userId = TokenManager.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            mainHandler.post(() -> {
+                ifViewAttached(view -> view.showMemoriesEmpty());
+            });
+            return;
+        }
+
+        repository.getUserMemories(userId, new ApiCallback<List<MemoryPost>>() {
+            @Override
+            public void onSuccess(List<MemoryPost> data) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> {
+                        if (data != null && !data.isEmpty()) {
+                            view.showMemories(data);
+                        } else {
+                            view.showMemoriesEmpty();
+                        }
+                    });
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.showMemoriesEmpty());
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onMemoryClicked(String postId) {
+        ifViewAttached(view -> view.navigateToMemoryDetail(postId));
     }
 }

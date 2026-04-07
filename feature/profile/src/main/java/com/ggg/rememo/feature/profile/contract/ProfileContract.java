@@ -1,7 +1,10 @@
 package com.ggg.rememo.feature.profile.contract;
 
 import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
+
+import java.util.List;
 
 /**
  * Profile 模块 MVP Contract。
@@ -41,6 +44,25 @@ public interface ProfileContract {
          * 退出登录后跳转到登录页。
          */
         void navigateToLogin();
+
+        /**
+         * 展示用户记忆列表。
+         *
+         * @param posts 记忆列表（已按 createdTime 倒序）
+         */
+        void showMemories(List<MemoryPost> posts);
+
+        /**
+         * 展示空数据状态。
+         */
+        void showMemoriesEmpty();
+
+        /**
+         * 跳转到记忆详情页。
+         *
+         * @param postId 记忆 ID
+         */
+        void navigateToMemoryDetail(String postId);
     }
 
     /**
@@ -73,5 +95,18 @@ public interface ProfileContract {
          * 退出登录。
          */
         void logout();
+
+        /**
+         * 加载当前用户的记忆列表（按用户ID）。
+         */
+        void loadUserMemories();
+
+        /**
+         * 处理记忆卡片点击，跳转到详情页。
+         *
+         * @param postId 记忆 ID
+         */
+        default void onMemoryClicked(String postId) {
+        }
     }
 }

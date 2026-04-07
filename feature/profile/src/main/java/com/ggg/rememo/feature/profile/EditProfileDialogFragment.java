@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
@@ -32,6 +33,9 @@ import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.util.List;
+
 
 public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
 
@@ -344,6 +348,19 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     @Override
     public void navigateToLogin() {
         // 本弹窗不需要实现
+    }
+
+    @Override
+    public void showMemories(List<MemoryPost> posts) {
+
+    }
+    @Override
+    public void showMemoriesEmpty() {
+
+    }
+    @Override
+    public void navigateToMemoryDetail(String postId) {
+
     }
 
     @Override
