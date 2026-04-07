@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.timeline.adapter;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -195,6 +196,14 @@ public class MemoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             binding.tvLikes.setText(String.valueOf(post.getLikeCount()));
             binding.tvComments.setText(String.valueOf(post.getCommentCount()));
+
+            if (post.isLiked()) {
+                binding.ivLikeIcon.setImageResource(R.drawable.ic_heart);
+                binding.ivLikeIcon.setColorFilter(Color.parseColor("#EF4444"));
+            } else {
+                binding.ivLikeIcon.setImageResource(R.drawable.ic_gray_like);
+                binding.ivLikeIcon.setColorFilter(Color.parseColor("#9CA3AF"));
+            }
 
             binding.tvAiTag.setVisibility(hasRestoredImage(post) ? ViewGroup.VISIBLE : ViewGroup.GONE);
 

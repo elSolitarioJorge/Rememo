@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.timeline.adapter;
 
+import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+import com.ggg.rememo.core.ui.R;
 import com.ggg.rememo.feature.timeline.databinding.ItemArchiveMemoryBinding;
 import com.ggg.rememo.feature.timeline.model.SeasonSection;
 
@@ -178,6 +180,14 @@ public class ArchiveAdapter extends RecyclerView.Adapter<ArchiveAdapter.ViewHold
             binding.tvTitle.setText(post.getTitle());
             binding.tvAuthor.setText(post.getAuthorNickname());
             binding.tvLikes.setText(String.valueOf(post.getLikeCount()));
+
+            if (post.isLiked()) {
+                binding.ivLikeIcon.setImageResource(R.drawable.ic_heart);
+                binding.ivLikeIcon.setColorFilter(Color.parseColor("#EF4444"));
+            } else {
+                binding.ivLikeIcon.setImageResource(R.drawable.ic_gray_like);
+                binding.ivLikeIcon.setColorFilter(Color.parseColor("#9CA3AF"));
+            }
 
             // 用户头像
             String avatarUrl = post.getAuthorAvatar();

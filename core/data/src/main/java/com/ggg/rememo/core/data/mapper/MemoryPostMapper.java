@@ -49,6 +49,7 @@ public class MemoryPostMapper {
         post.setMemorySeason(r.getMemorySeason());
         post.setLikeCount(r.getLikeCount());
         post.setCommentCount(r.getCommentCount());
+        post.setLiked(r.getIsLiked());
         post.setCreatedTime(r.getCreatedTime());
         // 列表接口返回封面图 URL，转换为单图实体
         if (r.getCoverImage() != null && !r.getCoverImage().isEmpty()) {

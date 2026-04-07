@@ -56,6 +56,9 @@ public class MemoryPostListItemResponse {
     @SerializedName("commentCount")
     private int commentCount;
 
+    @SerializedName("isLiked")
+    private boolean isLiked;
+
     @SerializedName("createdTime")
     private long createdTime;
 
@@ -161,6 +164,14 @@ public class MemoryPostListItemResponse {
 
     public void setCommentCount(int commentCount) {
         this.commentCount = commentCount;
+    }
+
+    public boolean getIsLiked() {
+        return isLiked;
+    }
+
+    public void setIsLiked(boolean isLiked) {
+        this.isLiked = isLiked;
     }
 
     public long getCreatedTime() {
