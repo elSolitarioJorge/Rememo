@@ -25,7 +25,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.alibaba.android.arouter.facade.annotation.Autowired;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.location.AMapLocation;
@@ -62,6 +61,13 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
     private static final long LOCATION_TIMEOUT_MS = 10000;
     private long locationStartTime = 0;
 
+    // 接收 ARouter 传递的参数
+    private String inputPointId;
+    private double inputLat;
+    private double inputLng;
+    private String inputAddress;
+    private String inputPointName;
+
 
     // 定义选点结果接收器
     private final ActivityResultLauncher<Intent> mapSelectLauncher =
@@ -88,6 +94,20 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // ARouter 参数注入
+        ARouter.getInstance().inject(this);
+
+        // 从 ARouter 获取参数
+        Bundle args = getIntent().getExtras();
+        if (args != null) {
+            inputPointId = args.getString(Routes.Publish.EXTRA_POINT_ID, null);
+            inputLat = args.getDouble(Routes.Publish.EXTRA_LAT, 0.0);
+            inputLng = args.getDouble(Routes.Publish.EXTRA_LNG, 0.0);
+            inputAddress = args.getString(Routes.Publish.EXTRA_ADDRESS, null);
+            inputPointName = args.getString(Routes.Publish.EXTRA_POINT_NAME, null);
+        }
+
         binding = ActivityPublishHomeBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
         setContentView(binding.getRoot());
@@ -103,8 +123,25 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         setupRecyclerView();
         setupListeners();
 
-        // 启动定位，获取当前位置信息
-        initLocationAndStart();
+        // 如果有传入位置信息，使用传入的位置；否则启动定位
+        if (inputLat != 0.0 && inputLng != 0.0) {
+            currentLat = inputLat;
+            currentLng = inputLng;
+            currentAddress = (inputAddress != null) ? inputAddress : "";
+            if (!currentAddress.isEmpty()) {
+                binding.tvPhysicalLocationText.setText(currentAddress);
+                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
+                binding.btnSelectLocation.setEnabled(false);
+            }
+            if (inputPointName != null && !inputPointName.isEmpty()) {
+                binding.etAnchorName.setText(inputPointName);
+                binding.etAnchorName.setFocusable(false);
+                binding.etAnchorName.setFocusableInTouchMode(false);
+            }
+        } else {
+            // 启动定位，获取当前位置信息
+            initLocationAndStart();
+        }
     }
 
     private void setupRecyclerView() {
@@ -134,8 +171,34 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
             @Override
             public void onAddMoreClicked() {
-                // 点击列表最后的加号，继续添加图片
                 launchPhotoPicker();
+            }
+
+            @Override
+            public void onPhotoDeleted(MemoryPhoto removed, int newSelectedPosition) {
+                if (photoAdapter.getPhotos().isEmpty()) {
+                    currentSelectedPhoto = null;
+                    binding.btnRunAiRepair.setVisibility(View.VISIBLE);
+                    binding.btnSwitch.setVisibility(View.GONE);
+                    binding.ivDemoImage.setImageDrawable(null);
+                } else if (currentSelectedPhoto == removed) {
+                    if (!photoAdapter.getPhotos().isEmpty()) {
+                        currentSelectedPhoto = photoAdapter.getPhotos()
+                                .get(Math.min(newSelectedPosition, photoAdapter.getPhotos().size() - 1));
+                        Glide.with(PublishHomeActivity.this)
+                                .load(currentSelectedPhoto.getDisplayUrl())
+                                .into(binding.ivDemoImage);
+                        if (currentSelectedPhoto.getRestoredUrl() != null
+                                && !currentSelectedPhoto.getRestoredUrl().isEmpty()) {
+                            binding.btnRunAiRepair.setVisibility(View.GONE);
+                            binding.btnSwitch.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.btnRunAiRepair.setVisibility(View.VISIBLE);
+                            binding.btnSwitch.setVisibility(View.GONE);
+                        }
+                        updateSwitchButtonUI();
+                    }
+                }
             }
         });
     }
@@ -147,6 +210,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                 launchPhotoPicker();
             }
         });
+
+        // 开启跑马灯
+        binding.tvPhysicalLocationText.setSelected(true);
 
         // 启动 AI 修复
         binding.btnRunAiRepair.setOnClickListener(v -> {
@@ -366,11 +432,11 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         // View 层：只负责收集 UI 数据，调用 Presenter
         String title = binding.etMemoryTitle.getText().toString().trim();
         String content = binding.etMemoryContent.getText().toString().trim();
-        String address = binding.tvPhysicalLocationText.getText().toString().trim();
         List<MemoryPhoto> photos = photoAdapter.getPhotos();
+        String pointName = binding.etAnchorName.getText().toString().trim();
 
         // 调用 Presenter 处理发布
-        presenter.publish(title, content, photos, currentLat, currentLng);
+        presenter.publish(title, content, photos, currentLat, currentLng, inputPointId, pointName);
     }
 
     // ========== 位置相关方法 ==========
@@ -442,11 +508,6 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         // TODO: 实现发布成功后的 UI 反馈
         Toast.makeText(this, "发布成功", Toast.LENGTH_SHORT).show();
         finish();
-    }
-
-    @Override
-    public void showLocation(String address, double lat, double lng) {
-        // TODO: 更新 UI 显示位置信息
     }
 
     // ========== View 接口实现 - 供 Presenter 调用 ==========

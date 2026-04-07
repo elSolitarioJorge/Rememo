@@ -30,6 +30,7 @@ public class MemoryPost implements Parcelable {
     // 记忆发生时间
     private int memoryYear;  // 发生年份
     private String memorySeason; // 季节
+    private String address;      // 详细地址
 
 
     // 互动数据
@@ -136,6 +137,14 @@ public class MemoryPost implements Parcelable {
         this.memorySeason = memorySeason;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public int getLikeCount() {
         return likeCount;
     }
@@ -203,6 +212,7 @@ public class MemoryPost implements Parcelable {
         dest.writeTypedList(images);
         dest.writeInt(memoryYear);
         dest.writeString(memorySeason);
+        dest.writeString(address);
         dest.writeInt(likeCount);
         dest.writeInt(commentCount);
         dest.writeInt(collectCount);
@@ -220,8 +230,9 @@ public class MemoryPost implements Parcelable {
         title = in.readString();
         content = in.readString();
         images = in.createTypedArrayList(MemoryPhoto.CREATOR);
-        memoryYear = in.readInt();
+        memoryYear = Integer.parseInt(in.readString());
         memorySeason = in.readString();
+        address = in.readString();
         likeCount = in.readInt();
         commentCount = in.readInt();
         collectCount = in.readInt();

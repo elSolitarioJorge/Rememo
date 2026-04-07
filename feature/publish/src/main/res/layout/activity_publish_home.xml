@@ -39,6 +39,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_top_title" />
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scrollbars="none"
@@ -306,8 +307,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
+                            android:ellipsize="marquee"
+                            android:singleLine="true"
+                            android:marqueeRepeatLimit="marquee_forever"
+                            android:focusable="true"
+                            android:focusableInTouchMode="true"
+                            android:scrollHorizontally="true"
                             android:text="正在获取当前坐标..."
                             android:textColor="#9CA3AF"
                             android:textSize="12sp"

@@ -55,6 +55,9 @@ public class LocationPickerActivity extends AppCompatActivity implements AMap.On
         initMap();
         // 设置监听器
         setupListeners();
+
+        // 开启跑马灯
+        binding.tvSelectedAddress.setSelected(true);
     }
 
     private void initMap() {

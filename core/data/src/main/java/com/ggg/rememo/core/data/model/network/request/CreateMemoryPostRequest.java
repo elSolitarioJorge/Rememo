@@ -1,7 +1,9 @@
 package com.ggg.rememo.core.data.model.network.request;
 
+import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -156,6 +158,25 @@ public class CreateMemoryPostRequest {
             this.originalUrl = originalUrl;
             this.restoredUrl = restoredUrl;
             this.displayState = displayState;
+        }
+
+        public static MemoryPhotoRequest fromEntity(MemoryPhoto photo) {
+            if (photo == null) return null;
+            return new MemoryPhotoRequest(
+                    photo.getPhotoId(),
+                    photo.getOriginalUrl(),
+                    photo.getRestoredUrl(),
+                    photo.getCurrentState() != null ? photo.getCurrentState().name() : null
+            );
+        }
+
+        public static List<MemoryPhotoRequest> fromEntities(List<MemoryPhoto> photos) {
+            if (photos == null || photos.isEmpty()) return null;
+            List<MemoryPhotoRequest> requests = new ArrayList<>(photos.size());
+            for (MemoryPhoto photo : photos) {
+                requests.add(fromEntity(photo));
+            }
+            return requests;
         }
 
         public String getPhotoId() {

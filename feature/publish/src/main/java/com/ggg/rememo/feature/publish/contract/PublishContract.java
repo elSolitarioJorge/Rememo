@@ -20,14 +20,6 @@ public interface PublishContract {
         void showPublishSuccess();
 
         /**
-         * 显示位置信息
-         * @param address 地址名称
-         * @param lat 纬度
-         * @param lng 经度
-         */
-        void showLocation(String address, double lat, double lng);
-
-        /**
          * 获取地址 - 供 Presenter 调用
          * @return 地址字符串
          */
@@ -51,14 +43,9 @@ public interface PublishContract {
          * @param images 图片列表
          * @param lat 纬度
          * @param lng 经度
+         * @param pointId 记忆点ID
+         * @param pointName 记忆点名称
          */
-        void publish(String title, String content, List<MemoryPhoto> images, double lat, double lng);
-
-        /**
-         * 设置当前位置
-         * @param lat 纬度
-         * @param lng 经度
-         */
-        void setLocation(double lat, double lng);
+        void publish(String title, String content, List<MemoryPhoto> images, double lat, double lng, String pointId, String pointName);
     }
 }

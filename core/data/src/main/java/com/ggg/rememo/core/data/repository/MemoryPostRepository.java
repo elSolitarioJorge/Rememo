@@ -26,12 +26,12 @@ public class MemoryPostRepository {
         void onError(Exception e);
     }
 
-    public void insert(MemoryPost post, Callback<Void> callback) {
+    public void insert(MemoryPost post, Callback<Boolean> callback) {
         executorService.execute(() -> {
             try {
                 memoryPostDao.insert(post);
                 if (callback != null) {
-                    callback.onSuccess(null);
+                    callback.onSuccess(true);
                 }
             } catch (Exception e) {
                 if (callback != null) {

@@ -26,10 +26,35 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
     public interface OnPhotoClickListener {
         void onPhotoSelected(MemoryPhoto photo);
         void onAddMoreClicked();
+        void onPhotoDeleted(MemoryPhoto photo, int position);
     }
 
     public void setOnPhotoClickListener(OnPhotoClickListener listener) {
         this.listener = listener;
+    }
+
+    public void removePhoto(int position) {
+        if (position < 0 || position >= photos.size()) return;
+        MemoryPhoto removed = photos.remove(position);
+        int previousSelected = selectedPosition;
+        if (position == selectedPosition) {
+            selectedPosition = Math.min(position, photos.size() - 1);
+        } else if (position < selectedPosition) {
+            selectedPosition--;
+        }
+        notifyDataSetChanged();
+        if (removed != null && listener != null) {
+            listener.onPhotoDeleted(removed, selectedPosition);
+        }
+        if (!photos.isEmpty() && previousSelected == position) {
+            listener.onPhotoSelected(photos.get(selectedPosition));
+        }
+    }
+
+    public void clearPhotos() {
+        photos.clear();
+        selectedPosition = 0;
+        notifyDataSetChanged();
     }
 
     // 更新数据并刷新
@@ -78,7 +103,8 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
             holder.binding.ivThumbnail.setVisibility(View.GONE);
             holder.binding.ivAddMore.setVisibility(View.VISIBLE);
             holder.binding.viewSelectedMask.setVisibility(View.GONE);
-            holder.binding.getRoot().setStrokeWidth(0); // 加号不需要边框
+            holder.binding.ivDelete.setVisibility(View.GONE);
+            holder.binding.cardImageContainer.setStrokeWidth(0);
 
             holder.itemView.setOnClickListener(v -> {
                 if (listener != null) listener.onAddMoreClicked();
@@ -86,16 +112,16 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
         } else {
             holder.binding.ivThumbnail.setVisibility(View.VISIBLE);
             holder.binding.ivAddMore.setVisibility(View.GONE);
+            holder.binding.ivDelete.setVisibility(View.VISIBLE);
             MemoryPhoto photo = photos.get(position);
 
             Glide.with(holder.itemView.getContext())
                     .load(photo.getOriginalUrl())
                     .into(holder.binding.ivThumbnail);
 
-            // 处理选中状态
             boolean isSelected = (position == selectedPosition);
             holder.binding.viewSelectedMask.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-            holder.binding.getRoot().setStrokeWidth(isSelected ? 4 : 0); // 选中时显示主题色边框
+            holder.binding.cardImageContainer.setStrokeWidth(isSelected ? 4 : 0);
 
             holder.itemView.setOnClickListener(v -> {
                 int previousSelected = selectedPosition;
@@ -103,6 +129,13 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
                 notifyItemChanged(previousSelected);
                 notifyItemChanged(selectedPosition);
                 if (listener != null) listener.onPhotoSelected(photo);
+            });
+
+            holder.binding.ivDelete.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    removePhoto(pos);
+                }
             });
         }
     }
