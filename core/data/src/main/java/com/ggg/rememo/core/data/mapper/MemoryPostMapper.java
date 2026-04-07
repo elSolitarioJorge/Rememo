@@ -87,6 +87,10 @@ public class MemoryPostMapper {
     // ==================== MemoryPostResponse ====================
 
     public static MemoryPost fromPostResponse(MemoryPostResponse r) {
+        return fromPostResponse(r, null);
+    }
+
+    public static MemoryPost fromPostResponse(MemoryPostResponse r, String address) {
         if (r == null) return null;
         MemoryPost post = new MemoryPost();
         post.setPostId(r.getPostId());
@@ -103,6 +107,9 @@ public class MemoryPostMapper {
         post.setCommentCount(r.getCommentCount());
         post.setCollectCount(r.getCollectCount());
         post.setCreatedTime(r.getCreatedTime());
+        if (address != null) {
+            post.setAddress(address);
+        }
         return post;
     }
 

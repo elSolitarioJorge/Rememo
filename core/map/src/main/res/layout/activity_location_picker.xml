@@ -104,8 +104,12 @@
                 android:layout_marginTop="8dp"
                 android:text="正在获取位置信息..."
                 android:textColor="#E2E8F0"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 

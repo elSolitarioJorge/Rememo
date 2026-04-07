@@ -41,6 +41,7 @@ dependencies {
     implementation project(":core:base")
     implementation project(":core:common")
     implementation project(":core:data")
+    implementation project(":core:network")
     implementation project(":core:map")
     implementation project(":core:ui")
     implementation libs.arouter.api
@@ -49,6 +50,7 @@ dependencies {
     implementation libs.glide
     implementation libs.gson
     implementation libs.okhttp
+    implementation libs.retrofit
 
     implementation libs.appcompat
     implementation libs.material
