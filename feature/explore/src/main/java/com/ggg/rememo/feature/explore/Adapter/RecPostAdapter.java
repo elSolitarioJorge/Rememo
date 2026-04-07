@@ -128,6 +128,14 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
 
             binding.textLikeCount.setText(String.valueOf(item.getLikeCount()));
+
+            if (item.isLiked()) {
+                binding.iconLike.setImageResource(R.drawable.ic_heart);
+                binding.iconLike.setColorFilter(Color.parseColor("#EF4444"));
+            } else {
+                binding.iconLike.setImageResource(R.drawable.ic_gray_like);
+                binding.iconLike.setColorFilter(Color.parseColor("#64748B"));
+            }
         }
 
         private void loadImageWithAspectRatio(String imageUrl, ImageView imageView) {

@@ -37,10 +37,12 @@
         app:layout_constraintStart_toEndOf="@id/view_time_dot"
         app:layout_constraintTop_toTopOf="@id/view_time_dot" />
 
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_memory_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         app:cardBackgroundColor="#16192B"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
@@ -68,12 +70,12 @@
                 android:id="@+id/iv_quote_icon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginEnd="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="12dp"
                 android:alpha="0.3"
                 android:src="@drawable/ic_double_quotes"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#64748B" />
 
@@ -88,8 +90,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/iv_cover" />
@@ -134,20 +134,24 @@
                 app:layout_constraintStart_toEndOf="@id/iv_avatar"
                 app:layout_constraintTop_toTopOf="@+id/iv_avatar" />
 
+            <ImageView
+                android:id="@+id/iv_like_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginEnd="4dp"
+                app:layout_constraintTop_toTopOf="@id/tv_likes"
+                app:layout_constraintBottom_toBottomOf="@id/tv_likes"
+                app:layout_constraintEnd_toStartOf="@id/tv_likes" />
+
             <TextView
                 android:id="@+id/tv_likes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:background="@drawable/bg_tag_overlay_dark"
-                android:drawablePadding="4dp"
-                android:paddingHorizontal="6dp"
+                android:paddingHorizontal="2dp"
                 android:paddingVertical="2dp"
-                android:text="49"
                 android:textColor="#9CA3AF"
                 android:textSize="9sp"
-                app:drawableStartCompat="@drawable/ic_gray_like"
-                app:drawableTint="#9CA3AF"
                 app:layout_constraintBottom_toBottomOf="@id/tv_author"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tv_author" />
