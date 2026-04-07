@@ -4,9 +4,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.ggg.rememo.core.common.util.TokenManager;
+import com.ggg.rememo.core.data.mapper.MemoryPostMapper;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.request.UpdateUserRequest;
 import com.ggg.rememo.core.data.model.network.response.ImageUploadResponse;
+import com.ggg.rememo.core.data.model.network.response.MemoryPostListItemResponse;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.data.repository.UserRepository;
 import com.ggg.rememo.core.network.ApiCallback;
@@ -16,6 +18,7 @@ import com.ggg.rememo.core.network.NetworkClient;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
@@ -195,6 +198,43 @@ public class ProfileRepository {
                     }
                 }
         );
+    }
+
+    /**
+     * 获取当前用户的记忆列表（按用户ID）。
+     *
+     * @param userId   用户ID
+     * @param callback 回调
+     */
+    public void getUserMemories(String userId, ApiCallback<List<com.ggg.rememo.core.data.model.entity.MemoryPost>> callback) {
+        apiService.getPostsByUserId(userId).enqueue(new Callback<ApiResponse<List<MemoryPostListItemResponse>>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call,
+                                   @NonNull Response<ApiResponse<List<MemoryPostListItemResponse>>> response) {
+                handleMemoryListResponse(response, callback);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call, @NonNull Throwable t) {
+                callback.onError("网络异常: " + t.getMessage());
+            }
+        });
+    }
+
+    private <T> void handleMemoryListResponse(Response<ApiResponse<List<MemoryPostListItemResponse>>> response,
+                                               ApiCallback<List<com.ggg.rememo.core.data.model.entity.MemoryPost>> callback) {
+        if (response.isSuccessful() && response.body() != null) {
+            ApiResponse<List<MemoryPostListItemResponse>> body = response.body();
+            if (body.isSuccess() && body.getData() != null) {
+                List<com.ggg.rememo.core.data.model.entity.MemoryPost> posts =
+                        MemoryPostMapper.fromListItem(body.getData());
+                callback.onSuccess(posts);
+            } else {
+                callback.onError(body.getMessage());
+            }
+        } else {
+            callback.onError("请求失败: " + response.code());
+        }
     }
 
     private <T> void handleResponse(Response<ApiResponse<T>> response, ApiCallback<T> callback) {

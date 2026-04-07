@@ -14,22 +14,30 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.network.ApiCallback;
+import com.ggg.rememo.feature.profile.adapter.ProfileMemoryAdapter;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.FragmentProfileHomeBinding;
+import com.ggg.rememo.feature.profile.decoration.ProfileTimelineDecoration;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
+
+import java.util.List;
 
 @Route(path = Routes.Profile.HOME_FRAGMENT)
 public class ProfileHomeFragment extends Fragment implements ProfileContract.View {
 
     private FragmentProfileHomeBinding binding;
     private ProfilePresenter presenter;
+    private ProfileMemoryAdapter memoryAdapter;
 
     @Nullable
     @Override
@@ -47,12 +55,17 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         handleWindowInsets();
         initScrollEffect();
         initClickListeners();
+        initRecyclerView();
 
         presenter = new ProfilePresenter();
         presenter.attachView(this);
 
         // 立即尝试从本地缓存加载，避免闪烁
         loadAvatarFromCache();
+
+        // 记忆列表和用户信息只在初始化时加载一次，后续由 Glide 缓存直接命中
+        presenter.loadUserInfo();
+        presenter.loadUserMemories();
     }
 
     /**
@@ -93,9 +106,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     @Override
     public void onResume() {
         super.onResume();
-        if (presenter != null) {
-            presenter.loadUserInfo();
-        }
+        // 用户信息和记忆列表已在 onViewCreated 加载一次，编辑后由 showUserInfoDirectly 刷新，无需每次刷新
     }
 
     private void initClickListeners() {
@@ -177,6 +188,21 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         });
     }
 
+    /**
+     * 初始化"我的时光"RecyclerView：LinearLayoutManager + SpineDecoration + Adapter
+     */
+    private void initRecyclerView() {
+        memoryAdapter = new ProfileMemoryAdapter();
+        memoryAdapter.setOnItemClickListener(post -> {
+            if (presenter != null) {
+                presenter.onMemoryClicked(post.getPostId());
+            }
+        });
+        binding.rvMemories.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvMemories.addItemDecoration(new ProfileTimelineDecoration(requireContext()));
+        binding.rvMemories.setAdapter(memoryAdapter);
+    }
+
 
 
     @Override
@@ -243,5 +269,27 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // ========== "我的时光" View 实现 ==========
+
+    @Override
+    public void showMemories(List<MemoryPost> posts) {
+        if (binding == null || memoryAdapter == null) return;
+        memoryAdapter.setData(posts);
+    }
+
+    @Override
+    public void showMemoriesEmpty() {
+        if (binding == null || memoryAdapter == null) return;
+        memoryAdapter.clear();
+    }
+
+    @Override
+    public void navigateToMemoryDetail(String postId) {
+        ARouter.getInstance()
+                .build(Routes.Detail.HOME)
+                .withString(Routes.Detail.EXTRA_POST_ID, postId)
+                .navigation();
     }
 }

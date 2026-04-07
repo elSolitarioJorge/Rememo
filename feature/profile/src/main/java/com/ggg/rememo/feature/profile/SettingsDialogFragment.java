@@ -12,12 +12,15 @@ import androidx.annotation.Nullable;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogSettingsBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.List;
 
 public class SettingsDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
 
@@ -105,6 +108,19 @@ public class SettingsDialogFragment extends BottomSheetDialogFragment implements
         if (getActivity() != null) {
             getActivity().finish();
         }
+    }
+
+    @Override
+    public void showMemories(List<MemoryPost> posts) {
+
+    }
+    @Override
+    public void showMemoriesEmpty() {
+
+    }
+    @Override
+    public void navigateToMemoryDetail(String postId) {
+
     }
 
     @Override
