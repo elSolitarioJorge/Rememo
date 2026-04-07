@@ -76,6 +76,9 @@ public class MemoryPostMapper {
         post.setMemorySeason(r.getMemorySeason());
         post.setLikeCount(r.getLikeCount());
         post.setCommentCount(r.getCommentCount());
+        post.setCollectCount(r.getCollectCount());
+        post.setLiked(r.getIsLiked());
+        post.setCollected(r.getIsCollected());
         post.setCreatedTime(r.getCreatedTime());
         return post;
     }

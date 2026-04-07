@@ -8,19 +8,19 @@ import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
-import com.ggg.rememo.core.data.repository.MemoryPostRepository;
 import com.ggg.rememo.core.data.model.network.response.CollectResponse;
 import com.ggg.rememo.core.data.model.network.response.LikeResponse;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
 import com.ggg.rememo.feature.detail.data.CommentRepository;
 import com.ggg.rememo.feature.detail.data.InteractionRepository;
+import com.ggg.rememo.feature.detail.data.MemoryDetailRepository;
 
 import java.util.List;
 
 public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.View>
         implements MemoryDetailContract.Presenter {
 
-    private final MemoryPostRepository postRepository;
+    private final MemoryDetailRepository memoryDetailRepository;
     private final InteractionRepository interactionRepository;
     private final CommentRepository commentRepository;
     private final MemoryPointRepository pointRepository;
@@ -29,7 +29,7 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
     private String currentPostId;
 
     public MemoryDetailPresenter() {
-        this.postRepository = new MemoryPostRepository();
+        this.memoryDetailRepository = new MemoryDetailRepository();
         this.interactionRepository = new InteractionRepository();
         this.commentRepository = new CommentRepository();
         this.pointRepository = new MemoryPointRepository();
@@ -44,27 +44,22 @@ public class MemoryDetailPresenter extends BasePresenter<MemoryDetailContract.Vi
         }
         this.currentPostId = postId;
 
-        postRepository.getById(postId, new MemoryPostRepository.Callback<MemoryPost>() {
+        memoryDetailRepository.loadMemory(postId, new MemoryDetailRepository.Callback<MemoryPost>() {
             @Override
             public void onSuccess(MemoryPost result) {
-                if (result == null) {
-                    mainHandler.post(() -> {
-                        ifViewAttached(view -> view.showError("记忆不存在"));
-                    });
-                    return;
-                }
-                mainHandler.post(() -> ifViewAttached(view -> view.showMemory(result)));
+                mainHandler.post(() -> {
+                    ifViewAttached(view -> view.showMemory(result));
 
-                // 加载关联的记忆点信息
-                String pointId = result.getPointId();
-                if (pointId != null && !pointId.isEmpty()) {
-                    loadMemoryPoint(pointId);
-                }
+                    String pointId = result.getPointId();
+                    if (pointId != null && !pointId.isEmpty()) {
+                        loadMemoryPoint(pointId);
+                    }
+                });
             }
 
             @Override
-            public void onError(Exception e) {
-                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载失败: " + e.getMessage())));
+            public void onError(String message) {
+                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载失败: " + message)));
             }
         });
     }
