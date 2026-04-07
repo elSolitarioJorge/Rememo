@@ -80,4 +80,60 @@ public class InteractionRepository {
             }
         });
     }
+
+    /**
+     * 获取点赞状态（不改变状态）。
+     */
+    public void getLikeStatus(String postId, Callback<LikeResponse> callback) {
+        apiService.getLikeStatus(postId).enqueue(new retrofit2.Callback<ApiResponse<LikeResponse>>() {
+            @Override
+            public void onResponse(retrofit2.Call<ApiResponse<LikeResponse>> call,
+                                   retrofit2.Response<ApiResponse<LikeResponse>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    if (callback != null) {
+                        callback.onSuccess(response.body().getData());
+                    }
+                } else {
+                    if (callback != null) {
+                        callback.onError(response.body() != null ? response.body().getMessage() : "获取点赞状态失败");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<ApiResponse<LikeResponse>> call, Throwable t) {
+                if (callback != null) {
+                    callback.onError(t.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取收藏状态（不改变状态）。
+     */
+    public void getCollectStatus(String postId, Callback<CollectResponse> callback) {
+        apiService.getCollectStatus(postId).enqueue(new retrofit2.Callback<ApiResponse<CollectResponse>>() {
+            @Override
+            public void onResponse(retrofit2.Call<ApiResponse<CollectResponse>> call,
+                                   retrofit2.Response<ApiResponse<CollectResponse>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    if (callback != null) {
+                        callback.onSuccess(response.body().getData());
+                    }
+                } else {
+                    if (callback != null) {
+                        callback.onError(response.body() != null ? response.body().getMessage() : "获取收藏状态失败");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<ApiResponse<CollectResponse>> call, Throwable t) {
+                if (callback != null) {
+                    callback.onError(t.getMessage());
+                }
+            }
+        });
+    }
 }

@@ -235,6 +235,7 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         }
         updateLikeState(post.isLiked(), post.getLikeCount());
         updateCollectState(post.isCollected(), post.getCollectCount());
+        binding.tvCommentCount.setText(post.getCommentCount() == 0 ? "评论" : post.getCommentCount() + "");
     }
 
     @Override
@@ -303,7 +304,6 @@ public class MemoryDetailHomeActivity extends AppCompatActivity implements Memor
         } else {
             binding.layoutEmptyComments.setVisibility(View.VISIBLE);
             binding.rvComments.setVisibility(View.GONE);
-            binding.tvCommentCount.setText("评论");
         }
     }
 

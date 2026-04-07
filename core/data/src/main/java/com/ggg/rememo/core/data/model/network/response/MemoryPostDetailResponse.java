@@ -52,6 +52,15 @@ public class MemoryPostDetailResponse {
     @SerializedName("commentCount")
     private int commentCount;
 
+    @SerializedName("collectCount")
+    private int collectCount;
+
+    @SerializedName("isLiked")
+    private boolean isLiked;
+
+    @SerializedName("isCollected")
+    private boolean isCollected;
+
     @SerializedName("createdTime")
     private long createdTime;
 
@@ -149,6 +158,30 @@ public class MemoryPostDetailResponse {
 
     public void setCommentCount(int commentCount) {
         this.commentCount = commentCount;
+    }
+
+    public int getCollectCount() {
+        return collectCount;
+    }
+
+    public void setCollectCount(int collectCount) {
+        this.collectCount = collectCount;
+    }
+
+    public boolean getIsLiked() {
+        return isLiked;
+    }
+
+    public void setIsLiked(boolean isLiked) {
+        this.isLiked = isLiked;
+    }
+
+    public boolean getIsCollected() {
+        return isCollected;
+    }
+
+    public void setIsCollected(boolean isCollected) {
+        this.isCollected = isCollected;
     }
 
     public long getCreatedTime() {
