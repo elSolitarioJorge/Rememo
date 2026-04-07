@@ -38,6 +38,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     private FragmentProfileHomeBinding binding;
     private ProfilePresenter presenter;
     private ProfileMemoryAdapter memoryAdapter;
+    private UserInfo currentUserInfo;
 
     @Nullable
     @Override
@@ -111,14 +112,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
 
     private void initClickListeners() {
         binding.btnEditProfile.setOnClickListener(v -> {
-            String avatar = "";
-            if (binding.ivAvatar.getDrawable() != null) {
-                Object tag = binding.ivAvatar.getTag();
-                if (tag instanceof String && !((String) tag).isEmpty()) {
-                    avatar = (String) tag;
-                }
-            }
-            EditProfileDialogFragment.newInstance(avatar, updatedUserInfo -> {
+            EditProfileDialogFragment.newInstance(currentUserInfo, updatedUserInfo -> {
                 if (updatedUserInfo != null && presenter != null) {
                     // 直接使用更新后的数据刷新 UI，避免重新请求
                     presenter.showUserInfoDirectly(updatedUserInfo);
@@ -227,6 +221,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     @Override
     public void showUserInfo(UserInfo userInfo) {
         if (binding == null || userInfo == null) return;
+        currentUserInfo = userInfo;
         binding.tvName.setText(userInfo.getNickname() != null ? userInfo.getNickname() : "");
         binding.tvBio.setText(userInfo.getBio() != null ? userInfo.getBio() : "");
         if (userInfo.getAvatar() != null && !userInfo.getAvatar().isEmpty()) {
@@ -256,6 +251,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     @Override
     public void showUpdateSuccessWithData(UserInfo userInfo) {
         if (binding == null || userInfo == null) return;
+        currentUserInfo = userInfo;
         showUserInfo(userInfo);
     }
 

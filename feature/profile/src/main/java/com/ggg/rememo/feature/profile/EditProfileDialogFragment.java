@@ -40,11 +40,11 @@ import java.util.List;
 public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
 
     private static final String TAG = "EditProfile";
-    private static final String ARG_AVATAR = "arg_avatar";
+    private static final String ARG_USER_INFO = "arg_user_info";
 
     private DialogEditProfileBinding binding;
     private ProfilePresenter presenter;
-    private String currentAvatar = "";
+    private UserInfo currentUserInfo;
     private String selectedAvatarPath = "";
     private OnProfileUpdateListener updateListener;
 
@@ -62,11 +62,11 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         void onProfileUpdated(UserInfo updatedUserInfo);
     }
 
-    public static EditProfileDialogFragment newInstance(String currentAvatar, OnProfileUpdateListener listener) {
+    public static EditProfileDialogFragment newInstance(UserInfo userInfo, OnProfileUpdateListener listener) {
         EditProfileDialogFragment fragment = new EditProfileDialogFragment();
         fragment.updateListener = listener;
         Bundle args = new Bundle();
-        args.putString(ARG_AVATAR, currentAvatar != null ? currentAvatar : "");
+        args.putParcelable(ARG_USER_INFO, userInfo);
         fragment.setArguments(args);
         return fragment;
     }
@@ -76,7 +76,7 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, R.style.BottomSheetTheme);
         if (getArguments() != null) {
-            currentAvatar = getArguments().getString(ARG_AVATAR, "");
+            currentUserInfo = getArguments().getParcelable(ARG_USER_INFO);
         }
     }
 
@@ -108,16 +108,49 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
         presenter = new ProfilePresenter();
         presenter.attachView(this);
 
-        loadCurrentAvatar();
+        loadCurrentUserInfo();
         initClickListeners();
     }
 
-    private void loadCurrentAvatar() {
-        if (currentAvatar != null && !currentAvatar.isEmpty()) {
+    private void loadCurrentUserInfo() {
+        if (currentUserInfo == null) {
+            return;
+        }
+
+        // 头像
+        String avatar = currentUserInfo.getAvatar();
+        if (avatar != null && !avatar.isEmpty()) {
             Glide.with(this)
-                    .load(currentAvatar)
+                    .load(avatar)
                     .placeholder(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
                     .into(binding.ivEditAvatar);
+        }
+
+        // 昵称
+        String nickname = currentUserInfo.getNickname();
+        if (nickname != null) {
+            binding.etNickname.setText(nickname);
+        }
+
+        // 个性签名
+        String bio = currentUserInfo.getBio();
+        if (bio != null) {
+            binding.etBio.setText(bio);
+        }
+
+        // 性别（API值 -> 显示值）
+        String gender = currentUserInfo.getGender();
+        binding.etGender.setText(mapGenderToDisplay(gender));
+    }
+
+    private String mapGenderToDisplay(String apiGender) {
+        if (apiGender == null) {
+            return "保密";
+        }
+        switch (apiGender) {
+            case "male":   return "男";
+            case "female": return "女";
+            default:        return "保密";
         }
     }
 
@@ -224,7 +257,8 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
             );
         } else {
             // 未选择新头像，直接更新其他信息
-            presenter.updateProfile(nickname, currentAvatar, gender, bio);
+            String existingAvatar = currentUserInfo != null ? currentUserInfo.getAvatar() : "";
+            presenter.updateProfile(nickname, existingAvatar, gender, bio);
         }
     }
 
