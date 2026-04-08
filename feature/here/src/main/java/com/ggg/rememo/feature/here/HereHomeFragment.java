@@ -54,15 +54,15 @@ import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.map.MapLifecycleHelper;
 import com.ggg.rememo.feature.here.chat.AiChatFragment;
-import com.ggg.rememo.feature.here.contract.HereContract;
+import com.ggg.rememo.feature.here.contract.HereHomeContract;
 import com.ggg.rememo.feature.here.data.HereRepository;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
-import com.ggg.rememo.feature.here.presenter.HerePresenter;
+import com.ggg.rememo.feature.here.presenter.HereHomePresenter;
 
 import java.util.List;
 
 @Route(path = Routes.Here.HOME_FRAGMENT)
-public class HereHomeFragment extends Fragment implements HereContract.View, AMapLocationListener, LocationSource {
+public class HereHomeFragment extends Fragment implements HereHomeContract.View, AMapLocationListener, LocationSource {
 
     private static final String TAG = "HereHomeFragment";
     private static final float DEFAULT_ZOOM_LEVEL = 16f;
@@ -70,7 +70,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
     private FragmentHereHomeBinding binding;
     private AMap aMap;
     private AMapLocationClient locationClient;
-    private HerePresenter presenter;
+    private HereHomePresenter presenter;
 
     private OnLocationChangedListener mLocationChangedListener;
     private boolean isLocationInitialized = false;
@@ -110,7 +110,7 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
         binding = FragmentHereHomeBinding.inflate(inflater, container, false);
         MapLifecycleHelper.bindTo(this, binding.mapView, savedInstanceState);
 
-        presenter = new HerePresenter(new HereRepository());
+        presenter = new HereHomePresenter(new HereRepository());
         presenter.attachView(this);
 
         initMap();
@@ -232,7 +232,16 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
 
     @Override
     public void showMemoryPoints(List<MemoryPoint> points) {
-        if (aMap == null) return;
+        if (aMap == null || points == null || points.isEmpty()) return;
+        aMap.clear();
+        for (MemoryPoint point : points) {
+            addMarkerForMemoryPoint(point);
+        }
+    }
+
+    @Override
+    public void refreshMemoryPoints(List<MemoryPoint> points) {
+        if (aMap == null || points == null || points.isEmpty()) return;
         aMap.clear();
         for (MemoryPoint point : points) {
             addMarkerForMemoryPoint(point);
@@ -293,19 +302,9 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
     }
 
     @Override
-    public void navigateToTimeline(String pointId) {
-        // TODO: 实现跳转到时间线页面
-    }
-
-    @Override
     public void showMemoryPointBottomSheet(MemoryPoint point) {
         MemoryPointBottomSheetFragment bottomSheet = MemoryPointBottomSheetFragment.newInstance(point);
         bottomSheet.show(getChildFragmentManager(), "MemoryPointBottomSheet");
-    }
-
-    @Override
-    public Context getViewContext() {
-        return requireContext();
     }
 
     @Override
@@ -473,7 +472,6 @@ public class HereHomeFragment extends Fragment implements HereContract.View, AMa
     @Override
     public void onResume() {
         super.onResume();
-        presenter.resumeLocation();
         presenter.loadMemoryPoints();
         if (isLocationInitialized) {
             if (locationClient != null) {
