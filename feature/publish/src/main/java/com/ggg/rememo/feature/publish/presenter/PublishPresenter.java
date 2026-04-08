@@ -41,6 +41,10 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
             ifViewAttached(view -> view.showError("请为回忆之地命名"));
             return;
         }
+        if (pointName.length() > 15) {
+            ifViewAttached(view -> view.showError("精简的名称更利于珍藏，请控制在15字以内"));
+            return;
+        }
 
         if (title == null || title.trim().isEmpty()) {
             ifViewAttached(view -> view.showError("标题不能为空"));

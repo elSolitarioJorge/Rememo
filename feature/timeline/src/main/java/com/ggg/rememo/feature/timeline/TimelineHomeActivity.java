@@ -55,11 +55,17 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
         // 从 ARouter 参数或 Intent 获取地点ID
         String pointId = getIntent().getStringExtra(Routes.Timeline.EXTRA_POINT_ID);
         presenter.loadTimeline(pointId);
+        binding.tvSubtitle.setSelected(true);
     }
 
     private void initInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            binding.headerLayout.setPadding(
+                    binding.headerLayout.getPaddingLeft(),
+                    systemBars.top, 
+                    binding.headerLayout.getPaddingRight(),
+                    binding.headerLayout.getPaddingBottom());
             return insets;
         });
     }

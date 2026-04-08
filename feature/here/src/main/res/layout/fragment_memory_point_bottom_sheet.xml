@@ -72,7 +72,7 @@
 
             <TextView
                 android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:text="父亲送我的月台"
@@ -96,11 +96,16 @@
 
                 <TextView
                     android:id="@+id/tv_location"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="西安市碑林区老火车站"
                     android:textColor="#9CA3AF"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"/>
             </LinearLayout>
         </LinearLayout>
 
