@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -505,9 +506,23 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
     @Override
     public void showPublishSuccess() {
-        // TODO: 实现发布成功后的 UI 反馈
+        // 隐藏进度 UI
+        if (binding.layoutUploadProgress != null) {
+            binding.layoutUploadProgress.setVisibility(View.GONE);
+        }
+        binding.btnPublish.setEnabled(true);
         Toast.makeText(this, "发布成功", Toast.LENGTH_SHORT).show();
         finish();
+    }
+
+    @Override
+    public void showUploadProgress(int current, int total) {
+        if (binding.layoutUploadProgress == null) return;
+        binding.layoutUploadProgress.setVisibility(View.VISIBLE);
+        binding.tvUploadProgress.setText("正在上传第 " + current + "/" + total + " 张...");
+        binding.progressBarUpload.setMax(total);
+        binding.progressBarUpload.setProgress(current);
+        binding.btnPublish.setEnabled(false);
     }
 
     // ========== View 接口实现 - 供 Presenter 调用 ==========
@@ -525,7 +540,10 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
     @Override
     public void showError(String message) {
-        // TODO: 实现错误信息的 UI 展示
+        if (binding.layoutUploadProgress != null) {
+            binding.layoutUploadProgress.setVisibility(View.GONE);
+        }
+        binding.btnPublish.setEnabled(true);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 

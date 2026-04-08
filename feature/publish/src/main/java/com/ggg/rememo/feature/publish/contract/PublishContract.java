@@ -20,6 +20,13 @@ public interface PublishContract {
         void showPublishSuccess();
 
         /**
+         * 显示图片上传进度。
+         * @param current 当前已完成的图片数量
+         * @param total 图片总数量
+         */
+        void showUploadProgress(int current, int total);
+
+        /**
          * 获取地址 - 供 Presenter 调用
          * @return 地址字符串
          */

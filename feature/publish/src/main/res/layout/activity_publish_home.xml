@@ -498,11 +498,44 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <LinearLayout
+                android:id="@+id/layout_upload_progress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:background="@drawable/bg_upload_progress"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_story_container">
+
+                <TextView
+                    android:id="@+id/tv_upload_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="正在上传第 1/9 张..."
+                    android:textColor="#F5A623"
+                    android:textSize="12sp" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_upload"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:progressTint="#F5A623"
+                    android:progressBackgroundTint="#33F5A623"
+                    android:max="9"
+                    android:progress="0" />
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_publish"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="20dp"
                 android:backgroundTint="#F5A623"
                 android:text="发布记忆"
@@ -513,7 +546,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/card_story_container" />
+                app:layout_constraintTop_toBottomOf="@id/layout_upload_progress" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
