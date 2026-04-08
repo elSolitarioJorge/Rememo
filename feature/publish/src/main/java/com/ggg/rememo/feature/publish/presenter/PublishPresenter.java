@@ -73,8 +73,13 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
                 return;
             }
 
-            // 先上传所有图片，获取服务器 photoId 和公网 URL
-            repository.uploadPhotos(images, new ApiCallback<List<MemoryPhoto>>() {
+            // 先并行上传所有图片，获取服务器 photoId 和公网 URL
+            repository.uploadPhotosInParallel(images, new PublishRepository.UploadProgressCallback() {
+                @Override
+                public void onProgress(int completed, int total) {
+                    mainHandler.post(() -> ifViewAttached(view1 -> view1.showUploadProgress(completed, total)));
+                }
+            }, new ApiCallback<List<MemoryPhoto>>() {
                 @Override
                 public void onSuccess(List<MemoryPhoto> uploadedPhotos) {
                     Log.d(TAG, "所有图片上传成功，开始发布记忆");

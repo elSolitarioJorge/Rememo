@@ -1,5 +1,7 @@
 package com.ggg.rememo.feature.publish.data;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
 
@@ -13,6 +15,7 @@ import com.ggg.rememo.core.data.model.network.response.ImageUploadResponse;
 import com.ggg.rememo.core.data.model.network.response.MemoryPostResponse;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
 import com.ggg.rememo.core.data.repository.MemoryPostRepository;
+import com.ggg.rememo.core.data.util.ImageCompressUtil;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
@@ -20,8 +23,11 @@ import com.ggg.rememo.core.network.NetworkClient;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -49,13 +55,33 @@ public class PublishRepository {
     }
 
     /**
+     * 图片上传进度回调接口。
+     */
+    public interface UploadProgressCallback {
+        /**
+         * 每张图片上传完成时触发。
+         * @param completed 已完成的数量
+         * @param total 总数量
+         */
+        void onProgress(int completed, int total);
+    }
+
+    /**
      * 上传单张图片到服务器，并回填 photoId 和服务器 URL。
      * 如果图片已经是服务器 URL（不是本地路径），则跳过上传。
+     * 上传前自动压缩本地图片，并根据真实文件类型设置 MIME。
      *
      * @param photo 要上传的照片
      * @param callback 上传结果回调，回调中的 photo 已回填 photoId + 服务器 URL
      */
     public void uploadPhoto(MemoryPhoto photo, ApiCallback<MemoryPhoto> callback) {
+        uploadPhotoWithCompress(photo, callback);
+    }
+
+    /**
+     * 上传单张图片（支持压缩版），内部使用。
+     */
+    private void uploadPhotoWithCompress(MemoryPhoto photo, ApiCallback<MemoryPhoto> callback) {
         Log.d(TAG, "uploadPhoto: photoId=" + photo.getPhotoId() + ", originalUrl=" + photo.getOriginalUrl());
 
         // 如果 originalUrl 不是本地路径（已经是服务器 URL），跳过上传
@@ -72,21 +98,32 @@ public class PublishRepository {
             return;
         }
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("image/jpeg"), originalFile);
-        MultipartBody.Part part = MultipartBody.Part.createFormData("file", originalFile.getName(), requestBody);
+        // 压缩图片
+        String compressedPath = ImageCompressUtil.compressForUpload(photo.getOriginalUrl());
+        File uploadFile = new File(compressedPath);
+        boolean isCompressed = !compressedPath.equals(photo.getOriginalUrl());
+
+        // 动态获取 MIME 类型
+        String mimeType = ImageCompressUtil.getMimeType(uploadFile.getAbsolutePath());
+        RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), uploadFile);
+        MultipartBody.Part part = MultipartBody.Part.createFormData("file", uploadFile.getName(), requestBody);
         RequestBody typeBody = RequestBody.create(MediaType.parse("text/plain"), "memory");
 
         apiService.uploadImage(part, typeBody).enqueue(new Callback<ApiResponse<ImageUploadResponse>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<ImageUploadResponse>> call,
                                    @NonNull Response<ApiResponse<ImageUploadResponse>> response) {
+                // 清理压缩临时文件
+                if (isCompressed) {
+                    cleanupCompressedFile(compressedPath);
+                }
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     ImageUploadResponse uploadResp = response.body().getData();
                     photo.setPhotoId(uploadResp.getImageId());
                     photo.setOriginalUrl(uploadResp.getOriginalUrl());
                     Log.d(TAG, "uploadPhoto 原始图上传成功: imageId=" + uploadResp.getImageId() + ", url=" + uploadResp.getOriginalUrl());
 
-                    // 如果有修复图，也需要上传
                     uploadRestoredIfNeeded(photo, callback);
                 } else {
                     String msg = response.body() != null ? response.body().getMessage() : "上传失败: " + response.code();
@@ -97,6 +134,9 @@ public class PublishRepository {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<ImageUploadResponse>> call, @NonNull Throwable t) {
+                if (isCompressed) {
+                    cleanupCompressedFile(compressedPath);
+                }
                 Log.e(TAG, "uploadPhoto 原始图上传异常", t);
                 callback.onError("网络异常: " + t.getMessage());
             }
@@ -105,31 +145,39 @@ public class PublishRepository {
 
     /**
      * 如果修复图是本地路径，上传修复图到服务器并回填 restoredUrl。
+     * 注意：修复图上传失败不影响整体流程，原图已上传成功即可。
      */
     private void uploadRestoredIfNeeded(MemoryPhoto photo, ApiCallback<MemoryPhoto> callback) {
         String restoredUrl = photo.getRestoredUrl();
         if (restoredUrl == null || restoredUrl.isEmpty()
                 || (!restoredUrl.startsWith("/data/") && !restoredUrl.startsWith("/storage/"))) {
-            // 没有修复图或已是服务器 URL，直接成功
             callback.onSuccess(photo);
             return;
         }
 
         File restoredFile = new File(restoredUrl);
         if (!restoredFile.exists()) {
-            // 修复图文件不存在，原图已上传成功，视为成功
             callback.onSuccess(photo);
             return;
         }
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("image/jpeg"), restoredFile);
-        MultipartBody.Part part = MultipartBody.Part.createFormData("file", restoredFile.getName(), requestBody);
+        String compressedPath = ImageCompressUtil.compressForUpload(restoredUrl);
+        File uploadFile = new File(compressedPath);
+        boolean isCompressed = !compressedPath.equals(restoredUrl);
+
+        String mimeType = ImageCompressUtil.getMimeType(uploadFile.getAbsolutePath());
+        RequestBody requestBody = RequestBody.create(MediaType.parse(mimeType), uploadFile);
+        MultipartBody.Part part = MultipartBody.Part.createFormData("file", uploadFile.getName(), requestBody);
         RequestBody typeBody = RequestBody.create(MediaType.parse("text/plain"), "memory");
 
         apiService.uploadImage(part, typeBody).enqueue(new Callback<ApiResponse<ImageUploadResponse>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<ImageUploadResponse>> call,
                                    @NonNull Response<ApiResponse<ImageUploadResponse>> response) {
+                if (isCompressed) {
+                    cleanupCompressedFile(compressedPath);
+                }
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     ImageUploadResponse uploadResp = response.body().getData();
                     photo.setRestoredUrl(uploadResp.getOriginalUrl());
@@ -137,15 +185,18 @@ public class PublishRepository {
                     callback.onSuccess(photo);
                 } else {
                     String msg = response.body() != null ? response.body().getMessage() : "修复图上传失败: " + response.code();
-                    Log.e(TAG, "uploadRestoredIfNeeded 修复图上传失败: " + msg);
-                    callback.onError(msg);
+                    Log.e(TAG, "uploadRestoredIfNeeded 修复图上传失败（不阻断）: " + msg);
+                    callback.onSuccess(photo);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<ImageUploadResponse>> call, @NonNull Throwable t) {
-                Log.e(TAG, "uploadRestoredIfNeeded 修复图上传异常", t);
-                callback.onError("修复图上传失败: " + t.getMessage());
+                if (isCompressed) {
+                    cleanupCompressedFile(compressedPath);
+                }
+                Log.e(TAG, "uploadRestoredIfNeeded 修复图上传异常（不阻断）", t);
+                callback.onSuccess(photo);
             }
         });
     }
@@ -191,6 +242,89 @@ public class PublishRepository {
                 callback.onError("第 " + (index[0] + 1) + " 张图片上传失败: " + message);
             }
         });
+    }
+
+    /**
+     * 并行上传多张图片。
+     * 所有图片同时上传，每张完成后通过进度回调通知上层。
+     * 只有全部图片都成功时才返回成功列表；任意一张失败则触发错误回调。
+     *
+     * @param photos           图片列表
+     * @param progressCallback 进度回调（可为 null）
+     * @param callback         上传结果回调
+     */
+    public void uploadPhotosInParallel(List<MemoryPhoto> photos,
+                                        UploadProgressCallback progressCallback,
+                                        ApiCallback<List<MemoryPhoto>> callback) {
+        if (photos == null || photos.isEmpty()) {
+            callback.onSuccess(new ArrayList<>());
+            return;
+        }
+
+        final List<MemoryPhoto> uploadedPhotos = Collections.synchronizedList(new ArrayList<>());
+        final int total = photos.size();
+        final CountDownLatch latch = new CountDownLatch(total);
+        final AtomicInteger completed = new AtomicInteger(0);
+        final AtomicInteger failedCount = new AtomicInteger(0);
+        final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        for (MemoryPhoto photo : photos) {
+            uploadPhotoWithCompress(photo, new ApiCallback<MemoryPhoto>() {
+                @Override
+                public void onSuccess(MemoryPhoto result) {
+                    uploadedPhotos.add(result);
+                    int done = completed.incrementAndGet();
+                    if (progressCallback != null) {
+                        int progress = done;
+                        mainHandler.post(() -> progressCallback.onProgress(progress, total));
+                    }
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(String message) {
+                    failedCount.incrementAndGet();
+                    int done = completed.incrementAndGet();
+                    if (progressCallback != null) {
+                        int progress = done;
+                        mainHandler.post(() -> progressCallback.onProgress(progress, total));
+                    }
+                    latch.countDown();
+                }
+            });
+        }
+
+        new Thread(() -> {
+            try {
+                latch.await();
+                mainHandler.post(() -> {
+                    if (failedCount.get() > 0) {
+                        callback.onError(failedCount.get() + " 张图片上传失败");
+                    } else {
+                        callback.onSuccess(new ArrayList<>(uploadedPhotos));
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                mainHandler.post(() -> callback.onError("上传被中断"));
+            }
+        }).start();
+    }
+
+    /**
+     * 清理上传过程中产生的压缩临时文件。
+     */
+    private void cleanupCompressedFile(String path) {
+        if (path != null && path.contains("_compressed_")) {
+            File f = new File(path);
+            if (f.exists()) {
+                if (f.delete()) {
+                    Log.d(TAG, "cleanupCompressedFile: 已删除临时文件 " + path);
+                } else {
+                    Log.w(TAG, "cleanupCompressedFile: 删除临时文件失败 " + path);
+                }
+            }
+        }
     }
 
     /**
