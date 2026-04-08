@@ -105,6 +105,7 @@ public class MemoryPointBottomSheetFragment extends BottomSheetDialogFragment
             binding.ivHeroImage.setImageResource(R.drawable.pic_old);
         }
 
+        binding.tvLocation.setSelected(true);
         binding.tvMemoryCount.setText(point.getMemoryCount() + " 记忆");
         binding.tvTitle.setText(point.getPointName() != null ? point.getPointName() : "未命名地点");
         binding.tvLocation.setText(point.getLocationAddress() != null ? point.getLocationAddress() : "");

@@ -25,10 +25,10 @@ public class SeasonSection {
         this.posts = posts != null ? posts : new ArrayList<>();
     }
 
-    public static final String SEASON_WINTER = "冬";
-    public static final String SEASON_AUTUMN = "秋";
-    public static final String SEASON_SUMMER = "夏";
-    public static final String SEASON_SPRING = "春";
+    public static final String SEASON_WINTER = "冬｜岁暮忆昔";
+    public static final String SEASON_AUTUMN = "秋｜霜天晓梦";
+    public static final String SEASON_SUMMER = "夏｜流金岁月";
+    public static final String SEASON_SPRING = "春｜韶光淑气";
 
     /** 季节显示顺序：冬秋夏春 */
     public static final String[] SEASON_ORDER = {

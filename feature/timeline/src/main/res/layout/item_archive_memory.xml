@@ -28,7 +28,7 @@
         android:id="@+id/tv_season_node"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="18dp"
         android:text="冬季"
         android:textColor="#F5A623"
         android:textSize="14sp"

@@ -81,6 +81,7 @@ public class YearArchiveActivity extends AppCompatActivity implements ArchiveCon
 
     private void initViews() {
         binding.btnBack.setOnClickListener(v -> finish());
+        binding.tvLocationSubtitle.setSelected(true);
 
         // 切换监听
         binding.tabHot.setOnClickListener(v -> switchMode(true));
