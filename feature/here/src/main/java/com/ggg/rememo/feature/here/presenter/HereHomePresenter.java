@@ -7,13 +7,15 @@ import com.amap.api.location.AMapLocation;
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.repository.MemoryPointRepository;
-import com.ggg.rememo.feature.here.contract.HereContract;
+import com.ggg.rememo.feature.here.contract.HereHomeContract;
 import com.ggg.rememo.feature.here.data.HereRepository;
 
 import java.util.List;
 
-public class HerePresenter extends BasePresenter<HereContract.View>
-        implements HereContract.Presenter {
+public class HereHomePresenter extends BasePresenter<HereHomeContract.View>
+        implements HereHomeContract.Presenter {
+
+    private static final String TAG = "HerePresenter";
 
     private final HereRepository repository;
     private final Handler mainHandler;
@@ -21,7 +23,7 @@ public class HerePresenter extends BasePresenter<HereContract.View>
     private boolean isFollowing = true;
     private boolean isLocationInitialized = false;
 
-    public HerePresenter(HereRepository repository) {
+    public HereHomePresenter(HereRepository repository) {
         this.repository = repository;
         this.mainHandler = new Handler(Looper.getMainLooper());
     }
@@ -39,22 +41,19 @@ public class HerePresenter extends BasePresenter<HereContract.View>
     }
 
     @Override
-    public void resumeLocation() {
-    }
-
-    @Override
     public void pauseLocation() {
         double[] cached = repository.getCachedLocation();
         if (cached != null) {
             repository.saveCachedLocation(cached[0], cached[1]);
         }
     }
+
     @Override
     public void checkLocationPermission() {
         if (isLocationInitialized) {
             return;
         }
-        ifViewAttached(HereContract.View::requestLocationPermission);
+        ifViewAttached(HereHomeContract.View::requestLocationPermission);
     }
 
     @Override
@@ -67,9 +66,10 @@ public class HerePresenter extends BasePresenter<HereContract.View>
         if (location == null) {
             return;
         }
-
         if (location.getErrorCode() != AMapLocation.LOCATION_SUCCESS) {
-            ifViewAttached(view -> view.showLocationError(location.getErrorInfo()));
+            String errorInfo = "定位失败 errorCode=" + location.getErrorCode()
+                    + ", " + location.getErrorInfo();
+            ifViewAttached(view -> view.showLocationError(errorInfo));
             return;
         }
 
@@ -82,17 +82,37 @@ public class HerePresenter extends BasePresenter<HereContract.View>
 
     @Override
     public void loadMemoryPoints() {
-        repository.loadAllMemoryPoints(new MemoryPointRepository.Callback<List<MemoryPoint>>() {
-            @Override
-            public void onSuccess(List<MemoryPoint> result) {
-                mainHandler.post(() -> ifViewAttached(view -> view.showMemoryPoints(result)));
-            }
+        // 缓存优先：先展示本地缓存数据（立即），后台拉取网络最新数据（异步）
+        repository.loadWithCacheFirst(
+                // 缓存回调：立即展示，无 loading 遮罩
+                new MemoryPointRepository.Callback<List<MemoryPoint>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPoint> cachedData) {
+                        mainHandler.post(() -> {
+                            ifViewAttached(view -> view.showMemoryPoints(cachedData));
+                        });
+                    }
 
-            @Override
-            public void onError(Exception e) {
-                mainHandler.post(() -> ifViewAttached(view -> view.showError("加载记忆点失败: " + e.getMessage())));
-            }
-        });
+                    @Override
+                    public void onError(Exception e) {
+                        // 缓存读取失败，静默处理，等网络回调即可
+                    }
+                },
+                // 网络回调：后台拉取成功后静默更新地图，不显示 loading
+                new MemoryPointRepository.Callback<List<MemoryPoint>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPoint> networkData) {
+                        mainHandler.post(() -> {
+                            ifViewAttached(view -> view.refreshMemoryPoints(networkData));
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        // 网络失败时静默处理，缓存数据已展示
+                    }
+                }
+        );
     }
 
     @Override

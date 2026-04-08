@@ -38,19 +38,6 @@
                 android:layout_margin="2dp"
                 android:scaleType="centerCrop" />
 
-            <TextView
-                android:id="@+id/tv_marker_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="2dp"
-                android:background="#CC000000"
-                android:paddingHorizontal="4dp"
-                android:paddingVertical="2dp"
-                android:text="1 记忆"
-                android:textColor="#F5A623"
-                android:textSize="9sp"
-                android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
     </RelativeLayout>
 
@@ -61,7 +48,6 @@
         android:layout_marginTop="-15dp"
         android:background="@drawable/bg_holo_beam" />
 
-    <!-- 3. 地面发光坐标点 (带透视感) -->
     <View
         android:id="@+id/view_holo_dot"
         android:layout_width="20dp"
