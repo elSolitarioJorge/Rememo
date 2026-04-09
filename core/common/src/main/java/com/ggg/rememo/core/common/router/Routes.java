@@ -40,6 +40,13 @@ public final class Routes {
         public static final String AI_CHAT = "/here/ai_chat";
     }
 
+    /** AR（时空透镜）相关路由 */
+    public static final class Ar {
+        private Ar() { throw new AssertionError("No instances."); }
+
+        public static final String TIME_LENS = "/ar/time_lens";
+    }
+
     /** 探索页相关路由 */
     public static final class Explore {
         private Explore() { throw new AssertionError("No instances."); }

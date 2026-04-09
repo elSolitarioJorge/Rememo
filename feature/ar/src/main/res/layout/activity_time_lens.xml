@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="#000000">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/iv_old_photo_overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.0"
+        android:scaleType="centerCrop"
+        android:src="@drawable/pic_2024"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_vignette" />
+
+    <View
+        android:id="@+id/scanline"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@drawable/bg_scanline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/btn_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_panel_dark"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="← EXIT"
+            android:textColor="#F5A623"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:shadowColor="#80F5A623"
+            android:shadowRadius="8"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
+            <TextView
+                android:id="@+id/tv_azimuth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AZ: --°"
+                android:textColor="#00E5FF"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:shadowColor="#8000E5FF"
+                android:shadowRadius="5"/>
+            <TextView
+                android:id="@+id/tv_pitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PT: --°"
+                android:textColor="#00E5FF"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:shadowColor="#8000E5FF"
+                android:shadowRadius="5"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_year_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/center_reticle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/tv_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2024"
+            android:textColor="#FFFFFF"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:shadowColor="#80FFFFFF"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="15" />
+
+        <TextView
+            android:id="@+id/tv_era_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CURRENT ERA"
+            android:textColor="#F5A623"
+            android:textSize="11sp"
+            android:letterSpacing="0.2"
+            android:shadowColor="#80F5A623"
+            android:shadowRadius="8"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/center_reticle"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ring_outer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_reticle_outer" />
+
+        <ImageView
+            android:id="@+id/ring_inner"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_reticle_inner" />
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_reticle_dot" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_ar_anchor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:visibility="invisible"
+        android:layout_marginStart="-20dp"
+        android:layout_marginBottom="-56dp"
+        app:layout_constraintBottom_toTopOf="@+id/center_reticle"
+        app:layout_constraintStart_toStartOf="@+id/center_reticle">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_panel_dark"
+            android:padding="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView
+                android:id="@+id/iv_anchor_image"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/pic_2024"
+                android:scaleType="centerCrop"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <TextView
+                    android:id="@+id/tv_anchor_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="长安邮政老局"
+                    android:textColor="#F5A623"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_anchor_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1998年 影像切片"
+                    android:textColor="#A0A0A0"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="8dp"
+                android:src="@android:drawable/ic_media_play"
+                app:tint="#00E5FF" />
+        </LinearLayout>
+        <View android:layout_width="1dp" android:layout_height="30dp" android:background="#F5A623" />
+        <View android:layout_width="6dp" android:layout_height="6dp" android:background="@drawable/bg_dot_gold" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/seekbar_container"
+        android:layout_width="40dp"
+        android:layout_height="300dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <SeekBar
+            android:id="@+id/seekbar_time"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:rotation="270"
+            android:max="126"
+            android:progress="126"
+            android:minHeight="4dp"
+            android:maxHeight="4dp"
+            android:splitTrack="false"
+            android:progressDrawable="@drawable/custom_seekbar_progress"
+            android:thumb="@drawable/bg_slider_thumb" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_hud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_ai_hint_gradient">
+            <View
+                android:layout_width="3dp"
+                android:layout_height="match_parent"
+                android:background="#00E5FF" />
+            <TextView
+                android:id="@+id/tv_ai_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="滑动右侧时间轴，检索历史影像共鸣"
+                android:textColor="#00E5FF"
+                android:textSize="12sp"
+                android:shadowColor="#8000E5FF"
+                android:shadowRadius="5"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="bottom">
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="end">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RESONANCE"
+                    android:textColor="#A0A0A0"
+                    android:textSize="10sp" />
+                <TextView
+                    android:id="@+id/tv_resonance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12%"
+                    android:textColor="#F5A623"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#80F5A623"
+                    android:shadowRadius="10"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_fusion_hud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="48dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="◀ 现实空间 — 影像融合度 — 历史空间 ▶"
+            android:textColor="#00E5FF"
+            android:textSize="10sp"
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="12dp"
+            android:shadowColor="#8000E5FF"
+            android:shadowRadius="5"/>
+
+        <SeekBar
+            android:id="@+id/seekbar_fusion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0"
+            android:splitTrack="false"
+            android:progressDrawable="@drawable/custom_seekbar_progress_horizontal"
+            android:thumb="@drawable/bg_slider_thumb_horizontal" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

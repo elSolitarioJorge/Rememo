@@ -83,6 +83,7 @@ dependencies {
     implementation project(":feature:message")
     implementation project(":feature:auth")
     implementation project(":feature:detail")
+    implementation project(":feature:ar")
 
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
