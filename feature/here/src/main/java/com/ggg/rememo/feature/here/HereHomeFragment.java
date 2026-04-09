@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -128,7 +129,7 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
         startScanLineAnimation();
         startARGlowAnimation();
 
-        binding.btnArLab.setOnClickListener(v -> {
+        binding.btnAiLab.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .setCustomAnimations(
@@ -138,6 +139,12 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
                     .addToBackStack(null)
                     .commit();
         });
+
+        binding.btnArLab.setOnClickListener(v ->
+                ARouter.getInstance()
+                        .build(Routes.Ar.TIME_LENS)
+                        .navigation()
+        );
     }
 
     private void initMap() {
