@@ -54,6 +54,7 @@ include ':feature:timeline'
 include ':feature:message'
 include ':feature:auth'
 include ':feature:detail'
+include ':feature:ar'
 
 // 决定是否启用调试模块
 def enableDebugModules = providers.gradleProperty("enableDebugModules")
