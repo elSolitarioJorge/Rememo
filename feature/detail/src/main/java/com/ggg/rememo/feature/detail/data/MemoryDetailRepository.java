@@ -53,17 +53,12 @@ public class MemoryDetailRepository {
         localRepository.getById(postId, new MemoryPostRepository.Callback<MemoryPost>() {
             @Override
             public void onSuccess(MemoryPost localResult) {
-                // 本地有数据 → 先展示，后台刷新
-                if (localResult != null) {
-                    if (callback != null) {
-                        callback.onSuccess(localResult);
-                    }
-                    // 后台静默刷新数据（不覆盖当前 UI）
-                    fetchFromNetwork(postId, null);
-                } else {
-                    // 本地无数据 → 直接走网络
-                    fetchFromNetwork(postId, callback);
+                // 先显示本地数据（如果有）
+                if (localResult != null && callback != null) {
+                    callback.onSuccess(localResult);
                 }
+                // 始终发起网络请求，网络返回后更新 UI（确保显示完整内容）
+                fetchFromNetwork(postId, callback);
             }
 
             @Override

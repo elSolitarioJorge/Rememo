@@ -104,11 +104,19 @@ public class ArchivePresenter extends BasePresenter<ArchiveContract.View>
         }
         for (MemoryPost post : posts) {
             String season = post.getMemorySeason();
+            if ("春".equals(season)) {
+                season = SeasonSection.SEASON_SPRING;
+            } else if ("夏".equals(season)) {
+                season = SeasonSection.SEASON_SUMMER;
+            } else if ("秋".equals(season)) {
+                season = SeasonSection.SEASON_AUTUMN;
+            } else {
+                season = SeasonSection.SEASON_WINTER;
+            }
             List<MemoryPost> list = seasonMap.get(season);
             if (list != null) {
                 list.add(post);
             } else {
-                // 未知季节兜底到"冬"
                 seasonMap.get(SeasonSection.SEASON_WINTER).add(post);
             }
         }
