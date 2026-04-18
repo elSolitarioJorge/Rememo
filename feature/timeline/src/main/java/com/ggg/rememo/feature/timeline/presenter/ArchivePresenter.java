@@ -1,12 +1,16 @@
 package com.ggg.rememo.feature.timeline.presenter;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.feature.timeline.contract.ArchiveContract;
 import com.ggg.rememo.feature.timeline.data.TimelineRepository;
-import com.ggg.rememo.feature.timeline.model.SeasonSection;
+import com.ggg.rememo.feature.timeline.data.model.SeasonSection;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,8 +28,8 @@ public class ArchivePresenter extends BasePresenter<ArchiveContract.View>
         implements ArchiveContract.Presenter {
 
     private final TimelineRepository repository;
-    private int currentYear;
     private String currentPointId;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public ArchivePresenter() {
         this.repository = new TimelineRepository();
@@ -33,35 +37,31 @@ public class ArchivePresenter extends BasePresenter<ArchiveContract.View>
 
     @Override
     public void loadData(int year, String pointId) {
-        this.currentYear = year;
         this.currentPointId = pointId;
-
-
         repository.fetchPostsByPointId(pointId, new ApiCallback<List<MemoryPost>>() {
             @Override
             public void onSuccess(List<MemoryPost> allPosts) {
+
                 List<MemoryPost> filteredPosts = filterByYear(allPosts, year);
                 List<SeasonSection> sections = groupBySeason(filteredPosts);
-
-                ifViewAttached(view -> {
-                    view.hideLoading();
-                    if (sections.isEmpty()) {
-                        view.showError("该年份暂无记忆");
-                    } else {
+                mainHandler.post(() ->
+                    ifViewAttached(view -> {
+                        view.hideLoading();
                         view.showData(sections);
-                    }
-                });
-
+                    })
+                );
                 // 加载记忆点信息（与列表数据并行请求）
                 loadPointInfo(filteredPosts.size());
             }
 
             @Override
             public void onError(String message) {
-                ifViewAttached(view -> {
-                    view.hideLoading();
-                    view.showError(message);
-                });
+                mainHandler.post(() ->
+                    ifViewAttached(view -> {
+                        view.hideLoading();
+                        view.showError(message);
+                    })
+                );
                 // 网络失败时仍尝试加载点信息
                 loadPointInfo(0);
             }
@@ -125,7 +125,7 @@ public class ArchivePresenter extends BasePresenter<ArchiveContract.View>
         List<SeasonSection> sections = new ArrayList<>();
         for (String season : SeasonSection.SEASON_ORDER) {
             List<MemoryPost> seasonPosts = seasonMap.get(season);
-            if (!seasonPosts.isEmpty()) {
+            if (seasonPosts != null && !seasonPosts.isEmpty()) {
                 sections.add(new SeasonSection(season, seasonPosts));
             }
         }

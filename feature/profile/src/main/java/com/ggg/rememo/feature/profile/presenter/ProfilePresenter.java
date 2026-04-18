@@ -5,7 +5,9 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.ggg.rememo.core.base.BasePresenter;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.common.util.TokenManager;
+import com.ggg.rememo.core.data.mapper.UserMapper;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
@@ -30,18 +32,17 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
 
     @Override
     public void loadUserInfo() {
-        ifViewAttached(view -> view.showLoading());
+        ifViewAttached(IBaseView::showLoading);
 
         // 立即从本地缓存加载（同步），避免闪烁
         repository.getLocalUser(new ApiCallback<User>() {
             @Override
             public void onSuccess(User localUser) {
                 if (localUser != null) {
-                    UserInfo userInfo = convertToUserInfo(localUser);
                     mainHandler.post(() -> {
                         ifViewAttached(view -> {
                             view.hideLoading();
-                            view.showUserInfo(userInfo);
+                            view.showUserInfo(localUser);
                         });
                     });
                 }
@@ -69,18 +70,18 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
                 repository.getLocalUser(new ApiCallback<User>() {
                     @Override
                     public void onSuccess(User localUser) {
+                        User networkUser = UserMapper.toEntity(networkData);
                         boolean hasChanges = localUser == null ||
-                                !equalsOrBothEmpty(localUser.getNickname(), networkData.getNickname()) ||
-                                !equalsOrBothEmpty(localUser.getAvatar(), networkData.getAvatar()) ||
-                                !equalsOrBothEmpty(localUser.getGender(), networkData.getGender()) ||
-                                !equalsOrBothEmpty(localUser.getBio(), networkData.getBio());
+                                !equalsOrBothEmpty(localUser.getNickname(), networkUser.getNickname()) ||
+                                !equalsOrBothEmpty(localUser.getAvatar(), networkUser.getAvatar()) ||
+                                !equalsOrBothEmpty(localUser.getGender(), networkUser.getGender()) ||
+                                !equalsOrBothEmpty(localUser.getBio(), networkUser.getBio());
 
                         mainHandler.post(() -> {
                             if (hasChanges) {
-                                // 数据有变化，更新 UI 和本地缓存
                                 ifViewAttached(view -> {
                                     view.hideLoading();
-                                    view.showUserInfo(networkData);
+                                    view.showUserInfo(networkUser);
                                 });
                                 saveToLocalCache(networkData);
                             } else {
@@ -92,10 +93,11 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
                     @Override
                     public void onError(String message) {
                         // 本地读取失败，仍显示网络数据
+                        User networkUser = UserMapper.toEntity(networkData);
                         mainHandler.post(() -> {
                             ifViewAttached(view -> {
                                 view.hideLoading();
-                                view.showUserInfo(networkData);
+                                view.showUserInfo(networkUser);
                             });
                             saveToLocalCache(networkData);
                         });
@@ -120,18 +122,6 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
         return aa.equals(bb);
     }
 
-    private UserInfo convertToUserInfo(User user) {
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUserId(user.getUserId());
-        userInfo.setPhone(user.getPhone());
-        userInfo.setNickname(user.getNickname());
-        userInfo.setAvatar(user.getAvatar());
-        userInfo.setGender(user.getGender());
-        userInfo.setBio(user.getBio());
-        userInfo.setCreatedAt(user.getCreatedAt());
-        return userInfo;
-    }
-
     private void saveToLocalCache(UserInfo userInfo) {
         repository.saveUserInfo(userInfo, new ApiCallback<Void>() {
             @Override
@@ -153,13 +143,12 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
             @Override
             public void onSuccess(UserInfo data) {
                 Log.d(TAG, "updateProfile 成功，直接更新 UI 和本地缓存");
+                User user = UserMapper.toEntity(data);
                 mainHandler.post(() -> {
-                    // 保存到本地缓存
                     saveToLocalCache(data);
-                    // 直接使用新数据更新 UI，避免重新请求
                     ifViewAttached(view -> {
                         view.hideLoading();
-                        view.showUpdateSuccessWithData(data);
+                        view.showUpdateSuccessWithData(user);
                     });
                 });
             }
@@ -198,11 +187,12 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
                     @Override
                     public void onSuccess(UserInfo data) {
                         Log.d(TAG, "用户信息更新成功");
+                        User user = UserMapper.toEntity(data);
                         mainHandler.post(() -> {
                             saveToLocalCache(data);
                             ifViewAttached(view -> {
                                 view.hideLoading();
-                                view.showUpdateSuccessWithData(data);
+                                view.showUpdateSuccessWithData(user);
                             });
                         });
                     }
@@ -236,14 +226,13 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
     @Override
     public void logout() {
         TokenManager.logout();
-        NetworkClient.clearAuthToken();
         ifViewAttached(view -> view.navigateToLogin());
     }
 
     @Override
-    public void showUserInfoDirectly(UserInfo userInfo) {
+    public void showUserInfoDirectly(User user) {
         mainHandler.post(() -> {
-            ifViewAttached(view -> view.showUserInfo(userInfo));
+            ifViewAttached(view -> view.showUserInfo(user));
         });
     }
 

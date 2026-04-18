@@ -22,6 +22,7 @@ okhttp = "5.3.2"
 retrofit = "3.0.0"
 room = "2.8.4"
 markwon = "4.6.2"
+eventbus = "3.3.1"
 
 camera = "1.6.0"
 guava = "33.5.0-android"
@@ -54,7 +55,7 @@ camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cam
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
 camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-
+eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }

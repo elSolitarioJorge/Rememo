@@ -1,6 +1,6 @@
 package com.ggg.rememo.feature.detail.contract;
 
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
@@ -15,7 +15,7 @@ public interface MemoryDetailContract {
     /**
      * View 接口。
      */
-    interface View extends BaseView {
+    interface View extends IBaseView {
 
         /**
          * 展示记忆详情。

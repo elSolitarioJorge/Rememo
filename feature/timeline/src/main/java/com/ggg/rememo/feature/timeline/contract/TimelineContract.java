@@ -1,9 +1,7 @@
 package com.ggg.rememo.feature.timeline.contract;
 
-import android.content.Intent;
-
-import com.ggg.rememo.core.base.BaseView;
-import com.ggg.rememo.feature.timeline.model.TimelineYearModel;
+import com.ggg.rememo.core.base.IBaseView;
+import com.ggg.rememo.feature.timeline.data.model.TimelineYearModel;
 
 import java.util.List;
 
@@ -15,7 +13,7 @@ public interface TimelineContract {
     /**
      * View 接口
      */
-    interface View extends BaseView {
+    interface View extends IBaseView {
         /**
          * 显示时间线数据
          * @param timelineYears 按年份分组的时间线数据
@@ -58,9 +56,10 @@ public interface TimelineContract {
 
         /**
          * 跳转系统分享
-         * @param shareIntent 分享意图
+         * @param subject 分享标题
+         * @param text 分享内容
          */
-        void navigateToShare(Intent shareIntent);
+        void navigateToShare(String subject, String text);
 
         /**
          * 跳转年份探索页（时空传送门/探索更多入口）

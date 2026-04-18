@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.explore.presenter;
 
+import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.network.ApiCallback;
@@ -16,7 +17,7 @@ import java.util.List;
  * 职责：加载推荐数据（记忆点 + 帖子）和附近数据（帖子 + Mock 距离）
  * </p>
  */
-public class ExplorePresenter implements ExploreContract.Presenter {
+public class ExplorePresenter extends BasePresenter<ExploreContract.HomeView> implements ExploreContract.Presenter {
 
     private final ExploreRepository exploreRepository;
     private final NearbyRepository nearbyRepository;
@@ -29,7 +30,6 @@ public class ExplorePresenter implements ExploreContract.Presenter {
         this.nearbyRepository = new NearbyRepository();
     }
 
-    @Override
     public void attachView(ExploreContract.RecView recView, ExploreContract.NearbyView nearbyView) {
         this.recView = recView;
         this.nearbyView = nearbyView;
@@ -42,14 +42,11 @@ public class ExplorePresenter implements ExploreContract.Presenter {
     public void attachNearbyView(ExploreContract.NearbyView nearbyView) {
         this.nearbyView = nearbyView;
     }
-
-    @Override
     public void detachView() {
         this.recView = null;
         this.nearbyView = null;
     }
 
-    @Override
     public void loadRecData() {
         if (recView != null) {
             recView.showLoading();
@@ -94,7 +91,6 @@ public class ExplorePresenter implements ExploreContract.Presenter {
         });
     }
 
-    @Override
     public void loadNearbyData() {
         if (nearbyView != null) {
             nearbyView.showLoading();
@@ -124,7 +120,6 @@ public class ExplorePresenter implements ExploreContract.Presenter {
         });
     }
 
-    @Override
     public void onRefresh() {
         loadRecData();
         loadNearbyData();

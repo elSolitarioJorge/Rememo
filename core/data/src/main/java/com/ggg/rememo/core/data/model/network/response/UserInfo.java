@@ -1,26 +1,12 @@
 package com.ggg.rememo.core.data.model.network.response;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.gson.annotations.SerializedName;
 
 /**
  * 用户信息数据模型。
+ * 仅负责网络请求响应，不参与 Intent 传参和本地存储。
  */
-public class UserInfo implements Parcelable {
-
-    public static final Creator<UserInfo> CREATOR = new Creator<UserInfo>() {
-        @Override
-        public UserInfo createFromParcel(Parcel in) {
-            return new UserInfo(in);
-        }
-
-        @Override
-        public UserInfo[] newArray(int size) {
-            return new UserInfo[size];
-        }
-    };
+public class UserInfo {
 
     @SerializedName("userId")
     private String userId;
@@ -44,32 +30,6 @@ public class UserInfo implements Parcelable {
     private long createdAt;
 
     public UserInfo() {
-    }
-
-    protected UserInfo(Parcel in) {
-        userId = in.readString();
-        phone = in.readString();
-        nickname = in.readString();
-        avatar = in.readString();
-        gender = in.readString();
-        bio = in.readString();
-        createdAt = in.readLong();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(userId);
-        dest.writeString(phone);
-        dest.writeString(nickname);
-        dest.writeString(avatar);
-        dest.writeString(gender);
-        dest.writeString(bio);
-        dest.writeLong(createdAt);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
     }
 
     public String getUserId() {

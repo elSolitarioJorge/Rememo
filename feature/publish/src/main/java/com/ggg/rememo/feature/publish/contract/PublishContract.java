@@ -1,6 +1,6 @@
 package com.ggg.rememo.feature.publish.contract;
 
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public interface PublishContract {
     /**
      * View 接口
      */
-    interface View extends BaseView {
+    interface View extends IBaseView {
         /**
          * 显示发布成功
          */

@@ -1,6 +1,6 @@
 package com.ggg.rememo.feature.explore.contract;
 
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 
@@ -11,32 +11,31 @@ import java.util.List;
  */
 public interface ExploreContract {
 
+    interface HomeView extends IBaseView {
+
+    }
+
     /**
      * 推荐标签页 View 接口
      */
-    interface RecView extends BaseView {
+    interface RecView extends IBaseView {
         void showRecData(List<MemoryPoint> points, List<MemoryPost> posts);
         void showEmpty();
-        void setRefreshing(boolean refreshing);
     }
 
     /**
      * 附近标签页 View 接口
      */
-    interface NearbyView extends BaseView {
+    interface NearbyView extends IBaseView {
         void showNearbyData(List<MemoryPost> posts, List<String> distances);
         void showEmpty();
-        void setRefreshing(boolean refreshing);
     }
 
     /**
      * Presenter 接口
      */
     interface Presenter {
-        void attachView(RecView recView, NearbyView nearbyView);
-        void detachView();
         void loadRecData();
         void loadNearbyData();
-        void onRefresh();
     }
 }

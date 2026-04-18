@@ -55,36 +55,6 @@ public class UserRepository {
         });
     }
 
-    public void update(User user, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                userDao.update(user);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void delete(User user, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                userDao.delete(user);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
     public void deleteById(String userId, Callback<Void> callback) {
         executorService.execute(() -> {
             try {
@@ -115,55 +85,10 @@ public class UserRepository {
         });
     }
 
-    public void getAll(Callback<List<User>> callback) {
-        executorService.execute(() -> {
-            try {
-                List<User> result = userDao.getAll();
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void getRecent(int limit, Callback<List<User>> callback) {
-        executorService.execute(() -> {
-            try {
-                List<User> result = userDao.getRecent(limit);
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
     public void searchByNickName(String keyword, Callback<List<User>> callback) {
         executorService.execute(() -> {
             try {
                 List<User> result = userDao.searchByNickName(keyword);
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void getCount(Callback<Integer> callback) {
-        executorService.execute(() -> {
-            try {
-                int result = userDao.getCount();
                 if (callback != null) {
                     callback.onSuccess(result);
                 }

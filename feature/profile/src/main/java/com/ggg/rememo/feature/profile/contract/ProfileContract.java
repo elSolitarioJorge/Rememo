@@ -1,8 +1,8 @@
 package com.ggg.rememo.feature.profile.contract;
 
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
-import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.core.data.model.entity.User;
 
 import java.util.List;
 
@@ -16,14 +16,14 @@ public interface ProfileContract {
      * Profile 模块 View 接口。
      * 由 ProfileHomeFragment、EditProfileDialogFragment、SettingsDialogFragment 共同实现。
      */
-    interface View extends BaseView {
+    interface View extends IBaseView {
 
         /**
          * 展示用户信息到主页。
          *
          * @param userInfo 用户信息
          */
-        void showUserInfo(UserInfo userInfo);
+        void showUserInfo(User userInfo);
 
         /**
          * 保存成功后关闭编辑弹窗并刷新主页。
@@ -35,7 +35,7 @@ public interface ProfileContract {
          *
          * @param userInfo 更新后的用户信息
          */
-        default void showUpdateSuccessWithData(UserInfo userInfo) {
+        default void showUpdateSuccessWithData(User userInfo) {
             // 默认实现兼容旧逻辑
             showUpdateSuccess();
         }
@@ -78,7 +78,7 @@ public interface ProfileContract {
         /**
          * 直接显示用户信息（不触发网络请求，用于编辑成功后刷新）。
          */
-        default void showUserInfoDirectly(UserInfo userInfo) {
+        default void showUserInfoDirectly(User userInfo) {
         }
 
         /**

@@ -9,6 +9,7 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity(tableName = "memory_posts")
 public class MemoryPost implements Parcelable {
@@ -222,7 +223,7 @@ public class MemoryPost implements Parcelable {
     }
 
     protected MemoryPost(Parcel in) {
-        postId = in.readString();
+        postId = Objects.requireNonNull(in.readString());
         pointId = in.readString();
         authorId = in.readString();
         authorNickname = in.readString();
@@ -230,7 +231,7 @@ public class MemoryPost implements Parcelable {
         title = in.readString();
         content = in.readString();
         images = in.createTypedArrayList(MemoryPhoto.CREATOR);
-        memoryYear = Integer.parseInt(in.readString());
+        memoryYear = Integer.parseInt(Objects.requireNonNull(in.readString()));
         memorySeason = in.readString();
         address = in.readString();
         likeCount = in.readInt();

@@ -1,12 +1,9 @@
 package com.ggg.rememo.core.data.local.dao;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
-
 
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 
@@ -14,79 +11,43 @@ import java.util.List;
 
 @Dao
 public interface MemoryPostDao {
-
+    /** 插入记忆帖子 */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(MemoryPost post);
-
+    /** 批量插入记忆 */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<MemoryPost> posts);
-
-    @Update
-    void update(MemoryPost post);
-
-    @Delete
-    void delete(MemoryPost post);
-
+    /** 根据 ID 删除记忆 */
     @Query("DELETE FROM memory_posts WHERE postId = :postId")
     void deleteById(String postId);
-
+    /** 根据 ID 获取记忆 */
     @Query("SELECT * FROM memory_posts WHERE postId = :postId")
     MemoryPost getById(String postId);
-
+    /** 获取所有记忆 */
     @Query("SELECT * FROM memory_posts ORDER BY createdTime DESC")
     List<MemoryPost> getAll();
-
+    /** 获取最近的记忆 */
     @Query("SELECT * FROM memory_posts ORDER BY createdTime DESC LIMIT :limit")
     List<MemoryPost> getRecent(int limit);
-
+    /** 根据 记忆点ID 获取记忆列表 */
     @Query("SELECT * FROM memory_posts WHERE pointId = :pointId ORDER BY memoryYear DESC")
     List<MemoryPost> getByPointId(String pointId);
-
+    /** 根据 用户ID 获取记忆列表 */
     @Query("SELECT * FROM memory_posts WHERE authorId = :authorId ORDER BY createdTime DESC")
     List<MemoryPost> getByAuthorId(String authorId);
-
-    @Query("SELECT * FROM memory_posts WHERE title LIKE '%' || :keyword || '%' OR content LIKE '%' || :keyword || '%'")
-    List<MemoryPost> search(String keyword);
-
-    @Query("SELECT * FROM memory_posts WHERE memoryYear = :year ORDER BY createdTime DESC")
-    List<MemoryPost> getByYear(int year);
-
-    @Query("SELECT * FROM memory_posts WHERE memoryYear BETWEEN :startYear AND :endYear ORDER BY memoryYear DESC")
-    List<MemoryPost> getByYearRange(int startYear, int endYear);
-
-    @Query("SELECT COUNT(*) FROM memory_posts")
-    int getCount();
-
-    @Query("SELECT COUNT(*) FROM memory_posts WHERE pointId = :pointId")
-    int getCountByPointId(String pointId);
-
+    /** 更新点赞数量 */
     @Query("UPDATE memory_posts SET likeCount = :count WHERE postId = :postId")
     void updateLikeCount(String postId, int count);
-
+    /** 更新评论数量 */
     @Query("UPDATE memory_posts SET commentCount = :count WHERE postId = :postId")
     void updateCommentCount(String postId, int count);
-
-    @Query("SELECT * FROM memory_posts WHERE pointId = :pointId ORDER BY memoryYear DESC LIMIT :limit OFFSET :offset")
-    List<MemoryPost> getByPointIdPaged(String pointId, int limit, int offset);
-
-    @Query("SELECT COUNT(*) FROM memory_posts WHERE pointId = :pointId")
-    int getCountByPointIdPaged(String pointId);
-
-    @Query("SELECT * FROM memory_posts WHERE memoryYear = :year ORDER BY createdTime DESC LIMIT :limit OFFSET :offset")
-    List<MemoryPost> getByYearPaged(int year, int limit, int offset);
-
-    @Query("SELECT * FROM memory_posts WHERE authorId = :authorId ORDER BY createdTime DESC LIMIT :limit OFFSET :offset")
-    List<MemoryPost> getByAuthorIdPaged(String authorId, int limit, int offset);
-
-    @Query("SELECT * FROM memory_posts WHERE authorId = :authorId AND memoryYear BETWEEN :startYear AND :endYear ORDER BY memoryYear DESC")
-    List<MemoryPost> getByAuthorIdAndYearRange(String authorId, int startYear, int endYear);
-
+    /** 更新收藏数量 */
     @Query("UPDATE memory_posts SET collectCount = :count WHERE postId = :postId")
     void updateCollectCount(String postId, int count);
-
+    /** 更新点赞状态 */
     @Query("UPDATE memory_posts SET isLiked = :isLiked, likeCount = :likeCount WHERE postId = :postId")
     void updateLikeStatus(String postId, boolean isLiked, int likeCount);
-
+    /** 更新收藏状态 */
     @Query("UPDATE memory_posts SET isCollected = :isCollected, collectCount = :collectCount WHERE postId = :postId")
     void updateCollectStatus(String postId, boolean isCollected, int collectCount);
 }

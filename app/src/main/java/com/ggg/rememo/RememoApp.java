@@ -25,7 +25,6 @@ public class RememoApp extends Application {
 
         MapsInitializer.updatePrivacyShow(this, true, true);
         MapsInitializer.updatePrivacyAgree(this, true);
-
         if (BuildConfig.DEBUG) {
             ARouter.openLog();
             ARouter.openDebug();

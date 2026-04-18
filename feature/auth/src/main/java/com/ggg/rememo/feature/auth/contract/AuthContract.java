@@ -1,9 +1,9 @@
 package com.ggg.rememo.feature.auth.contract;
 
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 
 public interface AuthContract {
-    interface View extends BaseView {
+    interface View extends IBaseView {
         /**
          * 显示登录成功
          * @param userId 登录用户的 ID

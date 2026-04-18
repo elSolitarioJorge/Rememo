@@ -36,8 +36,6 @@ public final class Routes {
 
         public static final String HOME = "/here/home";
         public static final String HOME_FRAGMENT = "/here/home_fragment";
-        public static final String DETAIL = "/here/detail";
-        public static final String AI_CHAT = "/here/ai_chat";
     }
 
     /** AR（时空透镜）相关路由 */
@@ -60,7 +58,6 @@ public final class Routes {
         private Timeline() { throw new AssertionError("No instances."); }
 
         public static final String HOME = "/timeline/home";
-        public static final String HOME_FRAGMENT = "/timeline/home_fragment";
         public static final String YEAR_ARCHIVE = "/timeline/year_archive";
 
         /** Timeline 模块 Intent 参数 Key */
@@ -118,7 +115,6 @@ public final class Routes {
         private Auth() { throw new AssertionError("No instances."); }
 
         public static final String LOGIN = "/auth/login";
-        public static final String REGISTER = "/auth/register";
     }
 
     /** 主页面相关路由 */

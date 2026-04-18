@@ -54,7 +54,7 @@
                 app:tint="#64748B" />
         </LinearLayout>
 
-        <com.ggg.rememo.feature.explore.Utils.NestedScrollableHost
+        <com.ggg.rememo.feature.explore.view.util.NestedScrollableHost
             android:id="@+id/explore_reco_location_nested_host"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="11dp" />
 
-        </com.ggg.rememo.feature.explore.Utils.NestedScrollableHost>
+        </com.ggg.rememo.feature.explore.view.util.NestedScrollableHost>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/explore_reco_content_recyclerView"

@@ -56,35 +56,6 @@ public class CommentRepository {
         });
     }
 
-    public void update(Comment comment, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                commentDao.update(comment);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void delete(Comment comment, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                commentDao.delete(comment);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
 
     public void deleteById(String commentId, Callback<Void> callback) {
         executorService.execute(() -> {
@@ -101,35 +72,6 @@ public class CommentRepository {
         });
     }
 
-    public void getById(String commentId, Callback<Comment> callback) {
-        executorService.execute(() -> {
-            try {
-                Comment result = commentDao.getById(commentId);
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void getAll(Callback<List<Comment>> callback) {
-        executorService.execute(() -> {
-            try {
-                List<Comment> result = commentDao.getAll();
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
 
     public void getByPostId(String postId, Callback<List<Comment>> callback) {
         executorService.execute(() -> {
