@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
-import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogSettingsBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -90,7 +90,7 @@ public class SettingsDialogFragment extends BottomSheetDialogFragment implements
     // ========== ProfileContract.View 实现 ==========
 
     @Override
-    public void showUserInfo(UserInfo userInfo) {
+    public void showUserInfo(User user) {
         // 设置页不需要展示用户信息
     }
 

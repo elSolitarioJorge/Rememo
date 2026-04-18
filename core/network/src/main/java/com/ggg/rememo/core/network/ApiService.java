@@ -115,28 +115,6 @@ public interface ApiService {
     @GET("/api/posts/{postId}/collect")
     Call<ApiResponse<CollectResponse>> getCollectStatus(@Path("postId") String postId);
 
-    /**
-     * 获取用户点赞列表
-     * @param page 页码（从 1 开始）
-     * @param size 每页数量
-     */
-    @GET("/api/user/likes")
-    Call<ApiResponse<List<MemoryPostListItemResponse>>> getUserLikes(
-            @Query("page") int page,
-            @Query("size") int size
-    );
-
-    /**
-     * 获取用户收藏列表
-     * @param page 页码（从 1 开始）
-     * @param size 每页数量
-     */
-    @GET("/api/user/collects")
-    Call<ApiResponse<List<MemoryPostListItemResponse>>> getUserCollects(
-            @Query("page") int page,
-            @Query("size") int size
-    );
-
     // ==================== 记忆模块 ====================
 
     /**
@@ -159,15 +137,6 @@ public interface ApiService {
     @GET("/api/memory-points/{pointId}/posts")
     Call<ApiResponse<List<MemoryPostListItemResponse>>> getPostsByPointId(
             @Path("pointId") String pointId
-    );
-
-    /**
-     * 获取记忆列表（按年份）
-     * @param year 年份
-     */
-    @GET("/api/posts/by-year")
-    Call<ApiResponse<List<MemoryPostListItemResponse>>> getPostsByYear(
-            @Query("year") int year
     );
 
     /**

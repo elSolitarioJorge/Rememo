@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.mapper.MemoryPostMapper;
+import com.ggg.rememo.core.data.mapper.UserMapper;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.request.UpdateUserRequest;
 import com.ggg.rememo.core.data.model.network.response.ImageUploadResponse;
@@ -151,14 +152,7 @@ public class ProfileRepository {
      * 将 UserInfo 缓存到本地数据库。
      */
     public void saveUserInfo(UserInfo userInfo, ApiCallback<Void> callback) {
-        User user = new User();
-        user.setUserId(userInfo.getUserId());
-        user.setPhone(userInfo.getPhone());
-        user.setNickname(userInfo.getNickname());
-        user.setAvatar(userInfo.getAvatar());
-        user.setGender(userInfo.getGender());
-        user.setBio(userInfo.getBio());
-        user.setCreatedAt(userInfo.getCreatedAt());
+        User user = UserMapper.toEntity(userInfo);
         userRepository.insert(user, new UserRepository.Callback<Void>() {
             @Override
             public void onSuccess(Void result) {

@@ -26,7 +26,7 @@ import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.common.util.AppContext;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
-import com.ggg.rememo.core.data.model.network.response.UserInfo;
+import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.DialogEditProfileBinding;
 import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
@@ -38,13 +38,11 @@ import java.util.List;
 
 
 public class EditProfileDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
-
-    private static final String TAG = "EditProfile";
     private static final String ARG_USER_INFO = "arg_user_info";
 
     private DialogEditProfileBinding binding;
     private ProfilePresenter presenter;
-    private UserInfo currentUserInfo;
+    private User currentUserInfo;
     private String selectedAvatarPath = "";
     private OnProfileUpdateListener updateListener;
 
@@ -59,14 +57,14 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
             });
 
     public interface OnProfileUpdateListener {
-        void onProfileUpdated(UserInfo updatedUserInfo);
+        void onProfileUpdated(User updatedUserInfo);
     }
 
-    public static EditProfileDialogFragment newInstance(UserInfo userInfo, OnProfileUpdateListener listener) {
+    public static EditProfileDialogFragment newInstance(User user, OnProfileUpdateListener listener) {
         EditProfileDialogFragment fragment = new EditProfileDialogFragment();
         fragment.updateListener = listener;
         Bundle args = new Bundle();
-        args.putParcelable(ARG_USER_INFO, userInfo);
+        args.putParcelable(ARG_USER_INFO, user);
         fragment.setArguments(args);
         return fragment;
     }
@@ -353,7 +351,7 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     // ========== ProfileContract.View 实现 ==========
 
     @Override
-    public void showUserInfo(com.ggg.rememo.core.data.model.network.response.UserInfo userInfo) {
+    public void showUserInfo(User userInfo) {
         // 由主页 Fragment 调用，编辑弹窗不需要实现
     }
 
@@ -369,7 +367,7 @@ public class EditProfileDialogFragment extends BottomSheetDialogFragment impleme
     }
 
     @Override
-    public void showUpdateSuccessWithData(UserInfo userInfo) {
+    public void showUpdateSuccessWithData(User userInfo) {
         Toast.makeText(requireContext(), "保存成功", Toast.LENGTH_SHORT).show();
         binding.btnSave.setEnabled(true);
         binding.btnSave.setText("保存");

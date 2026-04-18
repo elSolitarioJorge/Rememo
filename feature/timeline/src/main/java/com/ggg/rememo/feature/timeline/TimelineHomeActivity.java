@@ -4,13 +4,10 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -18,12 +15,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
+import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
-import com.ggg.rememo.feature.timeline.adapter.TimelineYearAdapter;
+import com.ggg.rememo.feature.timeline.view.adapter.TimelineYearAdapter;
 import com.ggg.rememo.feature.timeline.contract.TimelineContract;
 import com.ggg.rememo.feature.timeline.databinding.ActivityTimelineHomeBinding;
-import com.ggg.rememo.feature.timeline.model.TimelineYearModel;
+import com.ggg.rememo.feature.timeline.data.model.TimelineYearModel;
 import com.ggg.rememo.feature.timeline.presenter.TimelinePresenter;
 
 import java.util.List;
@@ -32,47 +30,54 @@ import java.util.List;
  * 时光隧道 Activity
  */
 @Route(path = Routes.Timeline.HOME)
-public class TimelineHomeActivity extends AppCompatActivity implements TimelineContract.View {
+public class TimelineHomeActivity extends BaseActivity<
+        ActivityTimelineHomeBinding,
+        TimelineContract.View,
+        TimelinePresenter>
+        implements TimelineContract.View {
 
-    private ActivityTimelineHomeBinding binding;
-    private TimelinePresenter presenter;
     private TimelineYearAdapter adapter;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected ActivityTimelineHomeBinding inflateBinding(@NonNull LayoutInflater inflater) {
+        return ActivityTimelineHomeBinding.inflate(inflater);
+    }
 
-        binding = ActivityTimelineHomeBinding.inflate(getLayoutInflater());
-        EdgeToEdge.enable(this);
-        setContentView(binding.getRoot());
+    @Override
+    protected TimelinePresenter createPresenter() {
+        return new TimelinePresenter();
+    }
 
-        initInsets();
-        initPresenter();
+    @Override
+    protected TimelineContract.View getViewContract() {
+        return this;
+    }
+
+    @Override
+    protected void initView() {
         initRecyclerView();
         initClickListeners();
         startAnimations();
+        getBinding().tvSubtitle.setSelected(true);
+    }
 
-        // 从 ARouter 参数或 Intent 获取地点ID
+    @Override
+    protected void initData() {
         String pointId = getIntent().getStringExtra(Routes.Timeline.EXTRA_POINT_ID);
         presenter.loadTimeline(pointId);
-        binding.tvSubtitle.setSelected(true);
     }
 
-    private void initInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+    @Override
+    protected void applySystemBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            binding.headerLayout.setPadding(
-                    binding.headerLayout.getPaddingLeft(),
-                    systemBars.top, 
-                    binding.headerLayout.getPaddingRight(),
-                    binding.headerLayout.getPaddingBottom());
+            getBinding().headerLayout.setPadding(
+                    getBinding().headerLayout.getPaddingLeft(),
+                    systemBars.top,
+                    getBinding().headerLayout.getPaddingRight(),
+                    getBinding().headerLayout.getPaddingBottom());
             return insets;
         });
-    }
-
-    private void initPresenter() {
-        presenter = new TimelinePresenter();
-        presenter.attachView(this);
     }
 
     private void initRecyclerView() {
@@ -89,24 +94,24 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
             }
         });
 
-        binding.rvTimeline.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvTimeline.setAdapter(adapter);
-        binding.rvTimeline.setNestedScrollingEnabled(false);
+        getBinding().rvTimeline.setLayoutManager(new LinearLayoutManager(this));
+        getBinding().rvTimeline.setAdapter(adapter);
+        getBinding().rvTimeline.setNestedScrollingEnabled(false);
     }
 
     private void initClickListeners() {
         // 返回按钮
-        binding.btnBack.setOnClickListener(v -> finish());
+        getBinding().btnBack.setOnClickListener(v -> finish());
 
         // 分享按钮
-        binding.btnShare.setOnClickListener(v -> presenter.onShareClicked());
+        getBinding().btnShare.setOnClickListener(v -> presenter.onShareClicked());
 
         // 添加记忆 FAB
-        binding.fabAdd.setOnClickListener(v -> presenter.onAddMemoryClicked());
+        getBinding().fabAdd.setOnClickListener(v -> presenter.onAddMemoryClicked());
     }
 
     private void startAnimations() {
-        View glowView = binding.viewFabGlow;
+        View glowView = getBinding().viewFabGlow;
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(glowView, "scaleX", 0.8f, 1.1f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(glowView, "scaleY", 0.8f, 1.1f);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(glowView, "alpha", 0.5f, 1f);
@@ -124,14 +129,6 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
         animatorSet.start();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (presenter != null) {
-            presenter.detachView();
-        }
-    }
-
     // ==================== TimelineContract.View 实现 ====================
 
     @Override
@@ -142,7 +139,13 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
     @Override
     public void showTimeline(List<TimelineYearModel> timelineYears) {
         adapter.setYears(timelineYears);
-        binding.rvTimeline.setVisibility(View.VISIBLE);
+        getBinding().rvTimeline.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showHeader(String title, String subtitle) {
+        getBinding().tvTitle.setText(title);
+        getBinding().tvSubtitle.setText(subtitle);
     }
 
     @Override
@@ -151,11 +154,11 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
     }
 
     @Override
-    public void showHeader(String title, String subtitle) {
-        binding.tvTitle.setText(title);
-        binding.tvSubtitle.setText(subtitle);
+    public void showError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
+    /** 跳转到帖子详情页面 */
     @Override
     public void navigateToMemoryDetail(String postId) {
         ARouter.getInstance()
@@ -179,26 +182,17 @@ public class TimelineHomeActivity extends AppCompatActivity implements TimelineC
                 .navigation(this);
     }
 
+    /** 跳转分享 */
     @Override
-    public void navigateToShare(Intent shareIntent) {
+    public void navigateToShare(String subject, String text) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(shareIntent, "分享记忆"));
     }
 
-    @Override
-    public void showLoading() {
-        // TODO: 显示加载状态
-    }
-
-    @Override
-    public void hideLoading() {
-        // TODO: 隐藏加载状态
-    }
-
-    @Override
-    public void showError(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
+    /** 跳转年份探索页 */
     @Override
     public void navigateToExploreYear(int year, int memoryCount) {
         ARouter.getInstance()

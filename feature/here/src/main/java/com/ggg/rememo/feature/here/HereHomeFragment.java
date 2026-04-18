@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
@@ -51,6 +50,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.ggg.rememo.core.base.BaseFragment;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.map.MapLifecycleHelper;
@@ -63,15 +63,16 @@ import com.ggg.rememo.feature.here.presenter.HereHomePresenter;
 import java.util.List;
 
 @Route(path = Routes.Here.HOME_FRAGMENT)
-public class HereHomeFragment extends Fragment implements HereHomeContract.View, AMapLocationListener, LocationSource {
+public class HereHomeFragment extends BaseFragment<
+        FragmentHereHomeBinding,
+        HereHomeContract.View,
+        HereHomePresenter>
+        implements HereHomeContract.View, AMapLocationListener, LocationSource {
 
     private static final String TAG = "HereHomeFragment";
     private static final float DEFAULT_ZOOM_LEVEL = 16f;
-
-    private FragmentHereHomeBinding binding;
     private AMap aMap;
     private AMapLocationClient locationClient;
-    private HereHomePresenter presenter;
 
     private OnLocationChangedListener mLocationChangedListener;
     private boolean isLocationInitialized = false;
@@ -103,52 +104,47 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
                 }
             });
 
+    @Override
+    protected FragmentHereHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentHereHomeBinding.inflate(inflater, container, false);
+    }
+
+    @Override
+    protected HereHomePresenter createPresenter() {
+        return new HereHomePresenter(new HereRepository());
+    }
+
+    @Override
+    protected HereHomeContract.View getViewContract() {
+        return this;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentHereHomeBinding.inflate(inflater, container, false);
-        MapLifecycleHelper.bindTo(this, binding.mapView, savedInstanceState);
-
-        presenter = new HereHomePresenter(new HereRepository());
-        presenter.attachView(this);
-
-        initMap();
-        initLocationButton();
-
-        return binding.getRoot();
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        MapLifecycleHelper.bindTo(this, getBinding().mapView, savedInstanceState);
+        return view;
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        presenter.initLocation();
-        presenter.checkLocationPermission();
-
+    protected void initView() {
+        initMap();
+        initListeners();
         startScanLineAnimation();
         startARGlowAnimation();
+    }
 
-        binding.btnAiLab.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .setCustomAnimations(
-                            android.R.anim.fade_in, android.R.anim.fade_out,
-                            android.R.anim.fade_in, android.R.anim.fade_out)
-                    .add(android.R.id.content, AiChatFragment.newInstance())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        binding.btnArLab.setOnClickListener(v ->
-                ARouter.getInstance()
-                        .build(Routes.Ar.TIME_LENS)
-                        .navigation()
-        );
+    @Override
+    protected void initData() {
+        presenter.initLocation();
+        presenter.checkLocationPermission();
     }
 
     private void initMap() {
-        aMap = binding.mapView.getMap();
+        aMap = getBinding().mapView.getMap();
         aMap.setMapType(AMap.MAP_TYPE_NIGHT);
 
         aMap.getUiSettings().setScaleControlsEnabled(false);
@@ -185,8 +181,8 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
         });
     }
 
-    private void initLocationButton() {
-        binding.btnMyLocation.setOnClickListener(v -> {
+    private void initListeners() {
+        getBinding().btnMyLocation.setOnClickListener(v -> {
             presenter.onLocationButtonClicked();
             if (latestLocation != null) {
                 aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latestLocation, DEFAULT_ZOOM_LEVEL));
@@ -197,6 +193,23 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
                 locationClient.startLocation();
             }
         });
+
+        getBinding().btnAiLab.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            android.R.anim.fade_in, android.R.anim.fade_out,
+                            android.R.anim.fade_in, android.R.anim.fade_out)
+                    .add(android.R.id.content, AiChatFragment.newInstance())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        getBinding().btnArLab.setOnClickListener(v ->
+                ARouter.getInstance()
+                        .build(Routes.Ar.TIME_LENS)
+                        .navigation()
+        );
     }
 
     private void initLocationAndStart() {
@@ -287,8 +300,7 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
 
     @Override
     public void updateFollowModeIcon(boolean isFollowing) {
-        if (binding == null) return;
-        binding.btnMyLocation.setImageResource(isFollowing ? R.drawable.ic_location_follow : R.drawable.ic_location_unfollow);
+        getBinding().btnMyLocation.setImageResource(isFollowing ? R.drawable.ic_location_follow : R.drawable.ic_location_unfollow);
         if (aMap != null && aMap.getMyLocationStyle() != null) {
             MyLocationStyle style = aMap.getMyLocationStyle();
             style.myLocationType(
@@ -441,7 +453,7 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
      */
     private void startScanLineAnimation() {
         int height = getResources().getDisplayMetrics().heightPixels;    // 剩下的动画逻辑保持不变
-        ObjectAnimator scanAnim = ObjectAnimator.ofFloat(binding.viewScanLine, "translationY", -100f, height + 100f);
+        ObjectAnimator scanAnim = ObjectAnimator.ofFloat(getBinding().viewScanLine, "translationY", -100f, height + 100f);
         scanAnim.setDuration(5000);
         scanAnim.setRepeatCount(ValueAnimator.INFINITE);
         scanAnim.start();
@@ -455,23 +467,23 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
         alphaAnimation.setDuration(1200);
         alphaAnimation.setRepeatMode(Animation.REVERSE);
         alphaAnimation.setRepeatCount(Animation.INFINITE);
-        binding.viewArGlow.startAnimation(alphaAnimation);
+        getBinding().viewArGlow.startAnimation(alphaAnimation);
     }
 
     /**
      * 更新 HUD
      */
     private void updateHudWithRealData(AMapLocation aMapLocation) {
-        if (binding == null || aMapLocation == null) return;
+        if (aMapLocation == null) return;
 
-        binding.tvHudLat.setText(String.format("LAT: %.4f° N", aMapLocation.getLatitude()));
-        binding.tvHudLng.setText(String.format("LNG: %.4f° E", aMapLocation.getLongitude()));
+        getBinding().tvHudLat.setText(String.format("LAT: %.4f° N", aMapLocation.getLatitude()));
+        getBinding().tvHudLng.setText(String.format("LNG: %.4f° E", aMapLocation.getLongitude()));
 
         String address = aMapLocation.getDistrict() + aMapLocation.getStreet() + aMapLocation.getStreetNum();
         if (address.isEmpty()) {
             address = aMapLocation.getAddress();
         }
-        binding.tvHudAddress.setText("LOC: " + address);
+        getBinding().tvHudAddress.setText("LOC: " + address);
     }
 
     // ==================== Fragment 生命周期 ====================
@@ -502,17 +514,14 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (binding != null) {
-            MapLifecycleHelper.onHiddenChanged(binding.mapView, hidden);
-        }
+        MapLifecycleHelper.onHiddenChanged(getBinding().mapView, hidden);
+
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (binding != null) {
-            MapLifecycleHelper.onSaveInstanceState(binding.mapView, outState);
-        }
+        MapLifecycleHelper.onSaveInstanceState(getBinding().mapView, outState);
     }
 
     @Override
@@ -529,10 +538,6 @@ public class HereHomeFragment extends Fragment implements HereHomeContract.View,
         }
 
         super.onDestroyView();
-        if (presenter != null) {
-            presenter.detachView();
-        }
-        binding = null;
     }
 
     @Override

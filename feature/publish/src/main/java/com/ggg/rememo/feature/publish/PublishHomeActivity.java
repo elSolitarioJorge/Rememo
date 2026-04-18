@@ -10,17 +10,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -33,22 +32,27 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.map.LocationPickerActivity;
+import com.ggg.rememo.feature.publish.adapter.PhotoThumbnailAdapter;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
 import com.ggg.rememo.feature.publish.databinding.DialogTimeSelectionBinding;
 import com.ggg.rememo.feature.publish.presenter.PublishPresenter;
+import com.ggg.rememo.feature.publish.util.BaiduAiUtils;
+
 import java.util.List;
 
 @Route(path = Routes.Publish.HOME)
-public class PublishHomeActivity extends AppCompatActivity implements PublishContract.View {
+public class PublishHomeActivity extends BaseActivity<
+        ActivityPublishHomeBinding,
+        PublishContract.View,
+        PublishPresenter>
+        implements PublishContract.View {
     private static final String TAG = "PublishHomeActivity1";
-
-    private ActivityPublishHomeBinding binding;
-    private PublishPresenter presenter;
     private PhotoThumbnailAdapter photoAdapter;
     private MemoryPhoto currentSelectedPhoto;    // 记录当前选中的照片
     private String currentSelectedSeason = "冬"; // 记录当前选中的季节
@@ -80,8 +84,8 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                     currentLng = result.getData().getDoubleExtra("lng", 0.0);
 
                     // 更新 UI
-                    binding.tvPhysicalLocationText.setText(selectedAddress);
-                    binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706")); // 变高亮
+                    getBinding().tvPhysicalLocationText.setText(selectedAddress);
+                    getBinding().tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706")); // 变高亮
                 }
             });
 
@@ -92,10 +96,31 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                 }
             });
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
+    @Override
+    protected ActivityPublishHomeBinding inflateBinding(@NonNull LayoutInflater inflater) {
+        return ActivityPublishHomeBinding.inflate(getLayoutInflater());
+    }
+
+    @Override
+    protected PublishPresenter createPresenter() {
+        return new PublishPresenter();
+    }
+
+    @Override
+    protected PublishContract.View getViewContract() {
+        return this;
+    }
+
+
+    @Override
+    protected void initView() {
+        initRecyclerView();
+        initListeners();
+    }
+
+    @Override
+    protected void initData() {
         // ARouter 参数注入
         ARouter.getInstance().inject(this);
 
@@ -108,36 +133,20 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             inputAddress = args.getString(Routes.Publish.EXTRA_ADDRESS, null);
             inputPointName = args.getString(Routes.Publish.EXTRA_POINT_NAME, null);
         }
-
-        binding = ActivityPublishHomeBinding.inflate(getLayoutInflater());
-        EdgeToEdge.enable(this);
-        setContentView(binding.getRoot());
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // 初始化 Presenter 并绑定 View
-        presenter = new PublishPresenter();
-        presenter.attachView(this);
-        setupRecyclerView();
-        setupListeners();
-
         // 如果有传入位置信息，使用传入的位置；否则启动定位
         if (inputLat != 0.0 && inputLng != 0.0) {
             currentLat = inputLat;
             currentLng = inputLng;
             currentAddress = (inputAddress != null) ? inputAddress : "";
             if (!currentAddress.isEmpty()) {
-                binding.tvPhysicalLocationText.setText(currentAddress);
-                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
-                binding.btnSelectLocation.setEnabled(false);
+                getBinding().tvPhysicalLocationText.setText(currentAddress);
+                getBinding().tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
+                getBinding().btnSelectLocation.setEnabled(false);
             }
             if (inputPointName != null && !inputPointName.isEmpty()) {
-                binding.etAnchorName.setText(inputPointName);
-                binding.etAnchorName.setFocusable(false);
-                binding.etAnchorName.setFocusableInTouchMode(false);
+                getBinding().etAnchorName.setText(inputPointName);
+                getBinding().etAnchorName.setFocusable(false);
+                getBinding().etAnchorName.setFocusableInTouchMode(false);
             }
         } else {
             // 启动定位，获取当前位置信息
@@ -145,10 +154,19 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         }
     }
 
-    private void setupRecyclerView() {
+    @Override
+    protected void applySystemBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+
+    private void initRecyclerView() {
         photoAdapter = new PhotoThumbnailAdapter();
-        binding.rvPhotoThumbnails.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        binding.rvPhotoThumbnails.setAdapter(photoAdapter);
+        getBinding().rvPhotoThumbnails.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        getBinding().rvPhotoThumbnails.setAdapter(photoAdapter);
 
         photoAdapter.setOnPhotoClickListener(new PhotoThumbnailAdapter.OnPhotoClickListener() {
             @Override
@@ -156,18 +174,18 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                 currentSelectedPhoto = photo;
 
                 if (photo.getRestoredUrl() != null && !photo.getRestoredUrl().isEmpty()) {
-                    binding.btnRunAiRepair.setVisibility(View.GONE);
-                    binding.btnSwitch.setVisibility(View.VISIBLE);
+                    getBinding().btnRunAiRepair.setVisibility(View.GONE);
+                    getBinding().btnSwitch.setVisibility(View.VISIBLE);
                 } else {
-                    binding.btnRunAiRepair.setVisibility(View.VISIBLE);
-                    binding.btnSwitch.setVisibility(View.GONE);
+                    getBinding().btnRunAiRepair.setVisibility(View.VISIBLE);
+                    getBinding().btnSwitch.setVisibility(View.GONE);
                 }
 
                 updateSwitchButtonUI();
 
                 Glide.with(PublishHomeActivity.this)
                         .load(photo.getDisplayUrl())
-                        .into(binding.ivDemoImage);
+                        .into(getBinding().ivDemoImage);
             }
 
             @Override
@@ -179,23 +197,23 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             public void onPhotoDeleted(MemoryPhoto removed, int newSelectedPosition) {
                 if (photoAdapter.getPhotos().isEmpty()) {
                     currentSelectedPhoto = null;
-                    binding.btnRunAiRepair.setVisibility(View.VISIBLE);
-                    binding.btnSwitch.setVisibility(View.GONE);
-                    binding.ivDemoImage.setImageDrawable(null);
+                    getBinding().btnRunAiRepair.setVisibility(View.VISIBLE);
+                    getBinding().btnSwitch.setVisibility(View.GONE);
+                    getBinding().ivDemoImage.setImageDrawable(null);
                 } else if (currentSelectedPhoto == removed) {
                     if (!photoAdapter.getPhotos().isEmpty()) {
                         currentSelectedPhoto = photoAdapter.getPhotos()
                                 .get(Math.min(newSelectedPosition, photoAdapter.getPhotos().size() - 1));
                         Glide.with(PublishHomeActivity.this)
                                 .load(currentSelectedPhoto.getDisplayUrl())
-                                .into(binding.ivDemoImage);
+                                .into(getBinding().ivDemoImage);
                         if (currentSelectedPhoto.getRestoredUrl() != null
                                 && !currentSelectedPhoto.getRestoredUrl().isEmpty()) {
-                            binding.btnRunAiRepair.setVisibility(View.GONE);
-                            binding.btnSwitch.setVisibility(View.VISIBLE);
+                            getBinding().btnRunAiRepair.setVisibility(View.GONE);
+                            getBinding().btnSwitch.setVisibility(View.VISIBLE);
                         } else {
-                            binding.btnRunAiRepair.setVisibility(View.VISIBLE);
-                            binding.btnSwitch.setVisibility(View.GONE);
+                            getBinding().btnRunAiRepair.setVisibility(View.VISIBLE);
+                            getBinding().btnSwitch.setVisibility(View.GONE);
                         }
                         updateSwitchButtonUI();
                     }
@@ -204,23 +222,23 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         });
     }
 
-    private void setupListeners() {
+    private void initListeners() {
         // 点击上传卡片
-        binding.cardRepairContainer.setOnClickListener(v -> {
+        getBinding().cardRepairContainer.setOnClickListener(v -> {
             if (photoAdapter.getPhotos().isEmpty()) {
                 launchPhotoPicker();
             }
         });
 
         // 开启跑马灯
-        binding.tvPhysicalLocationText.setSelected(true);
+        getBinding().tvPhysicalLocationText.setSelected(true);
 
         // 启动 AI 修复
-        binding.btnRunAiRepair.setOnClickListener(v -> {
+        getBinding().btnRunAiRepair.setOnClickListener(v -> {
             if (currentSelectedPhoto == null) return;
 
-            binding.btnRunAiRepair.setText("AI 引擎处理中...");
-            binding.btnRunAiRepair.setEnabled(false);
+            getBinding().btnRunAiRepair.setText("AI 引擎处理中...");
+            getBinding().btnRunAiRepair.setEnabled(false);
 
             // 开启子线程进行网络请求
             new Thread(() -> {
@@ -240,17 +258,17 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                         }
 
                         // 更新 UI
-                        binding.btnRunAiRepair.setText("启动 AI 修复与上色");
-                        binding.btnRunAiRepair.setEnabled(true);
-                        binding.btnRunAiRepair.setVisibility(View.GONE);
+                        getBinding().btnRunAiRepair.setText("启动 AI 修复与上色");
+                        getBinding().btnRunAiRepair.setEnabled(true);
+                        getBinding().btnRunAiRepair.setVisibility(View.GONE);
 
-                        binding.btnSwitch.setVisibility(View.VISIBLE);
+                        getBinding().btnSwitch.setVisibility(View.VISIBLE);
                         updateSwitchButtonUI();
 
                         // Glide 能够直接加载本地的 File 路径
                         Glide.with(PublishHomeActivity.this)
                                 .load(currentSelectedPhoto.getDisplayUrl())
-                                .into(binding.ivDemoImage);
+                                .into(getBinding().ivDemoImage);
 
                         Toast.makeText(PublishHomeActivity.this, "记忆重绘完成！", Toast.LENGTH_SHORT).show();
                     });
@@ -259,8 +277,8 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                     e.printStackTrace();
                     // 发生错误时，也要切回主线程恢复按钮状态并提示用户
                     new Handler(Looper.getMainLooper()).post(() -> {
-                        binding.btnRunAiRepair.setText("启动 AI 修复与上色");
-                        binding.btnRunAiRepair.setEnabled(true);
+                        getBinding().btnRunAiRepair.setText("启动 AI 修复与上色");
+                        getBinding().btnRunAiRepair.setEnabled(true);
                         Toast.makeText(PublishHomeActivity.this, "修复失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
                 }
@@ -268,26 +286,26 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         });
 
         // 切换视图按钮
-        binding.btnSwitch.setOnClickListener(v -> {
+        getBinding().btnSwitch.setOnClickListener(v -> {
             if (currentSelectedPhoto == null) return;
 
             currentSelectedPhoto.toggleState();
 
             Glide.with(PublishHomeActivity.this)
                     .load(currentSelectedPhoto.getDisplayUrl())
-                    .into(binding.ivDemoImage);
+                    .into(getBinding().ivDemoImage);
 
             updateSwitchButtonUI();
         });
 
         // 退出按钮
-        binding.btnBack.setOnClickListener(v -> finish());
+        getBinding().btnBack.setOnClickListener(v -> finish());
 
         // 选择时间
-        binding.layoutSelectTime.setOnClickListener(v -> showTimeSelectionDialog());
+        getBinding().layoutSelectTime.setOnClickListener(v -> showTimeSelectionDialog());
 
         // 选择位置按钮
-        binding.btnSelectLocation.setOnClickListener(v -> {
+        getBinding().btnSelectLocation.setOnClickListener(v -> {
             // 跳转到选点页面，传入当前已选位置作为初始位置
             Intent intent = new Intent(PublishHomeActivity.this, LocationPickerActivity.class);
             // 把当前的经纬度传过去，让地图打开时中心点就是当前位置
@@ -297,7 +315,7 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         });
 
         // 发布按钮
-        binding.btnPublish.setOnClickListener(v -> handlePublish());
+        getBinding().btnPublish.setOnClickListener(v -> handlePublish());
     }
 
     private void launchPhotoPicker() {
@@ -313,9 +331,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
     private void handleImagesSelected(List<Uri> uris) {
         // 隐藏占位符，显示大图和底部列表
-        binding.layoutUploadPlaceholder.setVisibility(View.GONE);
-        binding.ivDemoImage.setVisibility(View.VISIBLE);
-        binding.rvPhotoThumbnails.setVisibility(View.VISIBLE);
+        getBinding().layoutUploadPlaceholder.setVisibility(View.GONE);
+        getBinding().ivDemoImage.setVisibility(View.VISIBLE);
+        getBinding().rvPhotoThumbnails.setVisibility(View.VISIBLE);
 
         photoAdapter.addPhotos(this, uris);
     }
@@ -324,9 +342,9 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
         if (currentSelectedPhoto == null) return;
 
         if (currentSelectedPhoto.getCurrentState() == MemoryPhoto.PhotoState.RESTORED) {
-            binding.btnSwitch.setText("看原图");
+            getBinding().btnSwitch.setText("看原图");
         } else {
-            binding.btnSwitch.setText("看修复图");
+            getBinding().btnSwitch.setText("看修复图");
         }
     }
 
@@ -398,10 +416,10 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
 
             // 组装结果并更新外部 Activity UI
             String finalTime = yearInput + " · " + currentSelectedSeason;
-            binding.tvTimeText.setText(finalTime);
-            binding.tvTimeText.setTextColor(Color.parseColor("#F5A623"));
-            binding.tvTimeText.setTypeface(null, Typeface.BOLD);
-            binding.tvTimeText.setTextSize(14f);
+            getBinding().tvTimeText.setText(finalTime);
+            getBinding().tvTimeText.setTextColor(Color.parseColor("#F5A623"));
+            getBinding().tvTimeText.setTypeface(null, Typeface.BOLD);
+            getBinding().tvTimeText.setTextSize(14f);
 
             dialog.dismiss();
         });
@@ -431,10 +449,10 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
     // ========== 发布相关方法 ==========
     private void handlePublish() {
         // View 层：只负责收集 UI 数据，调用 Presenter
-        String title = binding.etMemoryTitle.getText().toString().trim();
-        String content = binding.etMemoryContent.getText().toString().trim();
+        String title = getBinding().etMemoryTitle.getText().toString().trim();
+        String content = getBinding().etMemoryContent.getText().toString().trim();
         List<MemoryPhoto> photos = photoAdapter.getPhotos();
-        String pointName = binding.etAnchorName.getText().toString().trim();
+        String pointName = getBinding().etAnchorName.getText().toString().trim();
 
         // 调用 Presenter 处理发布
         presenter.publish(title, content, photos, currentLat, currentLng, inputPointId, pointName);
@@ -460,8 +478,8 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                             Log.d(TAG, "onLocationChanged: " + currentAddress);
                             // 有地址，直接显示
                             new Handler(Looper.getMainLooper()).post(() -> {
-                                binding.tvPhysicalLocationText.setText(currentAddress);
-                                binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
+                                getBinding().tvPhysicalLocationText.setText(currentAddress);
+                                getBinding().tvPhysicalLocationText.setTextColor(Color.parseColor("#D97706"));
                             });
                             // 停止定位
                             locationClient.stopLocation();
@@ -475,9 +493,8 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
                                 // 超时了，停止定位
                                 locationClient.stopLocation();
                                 new Handler(Looper.getMainLooper()).post(() -> {
-                                    if (binding == null) return;
-                                    binding.tvPhysicalLocationText.setText("地址获取失败，请手动选点");
-                                    binding.tvPhysicalLocationText.setTextColor(Color.parseColor("#EF4444"));
+                                    getBinding().tvPhysicalLocationText.setText("地址获取失败，请手动选点");
+                                    getBinding().tvPhysicalLocationText.setTextColor(Color.parseColor("#EF4444"));
                                 });
                             }
                         }
@@ -497,53 +514,47 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             locationClient.startLocation();
 
             // 更新UI显示
-            binding.tvPhysicalLocationText.setText("正在获取当前位置...");
+            getBinding().tvPhysicalLocationText.setText("正在获取当前位置...");
         } catch (Exception e) {
             e.printStackTrace();
-            binding.tvPhysicalLocationText.setText("定位失败");
+            getBinding().tvPhysicalLocationText.setText("定位失败");
         }
     }
 
     @Override
     public void showPublishSuccess() {
-        // 隐藏进度 UI
-        if (binding.layoutUploadProgress != null) {
-            binding.layoutUploadProgress.setVisibility(View.GONE);
-        }
-        binding.btnPublish.setEnabled(true);
+        getBinding().layoutUploadProgress.setVisibility(View.GONE);
+        getBinding().btnPublish.setEnabled(true);
         Toast.makeText(this, "发布成功", Toast.LENGTH_SHORT).show();
         finish();
     }
 
     @Override
     public void showUploadProgress(int current, int total) {
-        if (binding.layoutUploadProgress == null) return;
-        binding.layoutUploadProgress.setVisibility(View.VISIBLE);
-        binding.tvUploadProgress.setText("正在上传第 " + current + "/" + total + " 张...");
-        binding.progressBarUpload.setMax(total);
-        binding.progressBarUpload.setProgress(current);
-        binding.btnPublish.setEnabled(false);
+        getBinding().layoutUploadProgress.setVisibility(View.VISIBLE);
+        getBinding().tvUploadProgress.setText("正在上传第 " + current + "/" + total + " 张...");
+        getBinding().progressBarUpload.setMax(total);
+        getBinding().progressBarUpload.setProgress(current);
+        getBinding().btnPublish.setEnabled(false);
     }
 
     // ========== View 接口实现 - 供 Presenter 调用 ==========
     @Override
     public String getAddress() {
-        return binding.tvPhysicalLocationText.getText().toString().trim();
+        return getBinding().tvPhysicalLocationText.getText().toString().trim();
     }
 
     @Override
     public String getTimeDisplayText() {
-        return binding.tvTimeText.getText().toString();
+        return getBinding().tvTimeText.getText().toString();
     }
 
     // ========== BaseView 默认实现 ==========
 
     @Override
     public void showError(String message) {
-        if (binding.layoutUploadProgress != null) {
-            binding.layoutUploadProgress.setVisibility(View.GONE);
-        }
-        binding.btnPublish.setEnabled(true);
+        getBinding().layoutUploadProgress.setVisibility(View.GONE);
+        getBinding().btnPublish.setEnabled(true);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
@@ -554,12 +565,6 @@ public class PublishHomeActivity extends AppCompatActivity implements PublishCon
             locationClient.stopLocation();
             locationClient.onDestroy();
         }
-
         super.onDestroy();
-        binding = null;
-        // 解绑 Presenter，防止内存泄漏
-        if (presenter != null) {
-            presenter.detachView();
-        }
     }
 }

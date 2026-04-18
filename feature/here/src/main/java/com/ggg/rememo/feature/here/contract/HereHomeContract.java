@@ -1,14 +1,14 @@
 package com.ggg.rememo.feature.here.contract;
 
 import com.amap.api.location.AMapLocation;
-import com.ggg.rememo.core.base.BaseView;
+import com.ggg.rememo.core.base.IBaseView;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 
 import java.util.List;
 
 public interface HereHomeContract {
 
-    interface View extends BaseView {
+    interface View extends IBaseView {
 
         void showMemoryPoints(List<MemoryPoint> points);
         void refreshMemoryPoints(List<MemoryPoint> points);

@@ -11,7 +11,7 @@ import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.data.repository.UserRepository;
-import com.ggg.rememo.core.data.service.UserService;
+import com.ggg.rememo.core.data.service.IUserService;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.feature.profile.data.ProfileRepository;
 
@@ -20,7 +20,7 @@ import com.ggg.rememo.feature.profile.data.ProfileRepository;
  * 通过 ARouter 暴露给其他模块。
  */
 @Route(path = Routes.Profile.USER_SERVICE)
-public class UserServiceImpl implements UserService, IProvider {
+public class UserServiceImpl implements IUserService, IProvider {
 
     private static final String TAG = "UserServiceImpl";
     private final ProfileRepository profileRepository;

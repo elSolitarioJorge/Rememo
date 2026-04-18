@@ -9,15 +9,14 @@ import java.lang.ref.WeakReference;
  * 负责管理 View 的生命周期，防止内存泄漏。
  * </p>
  *
- * @param <V> 关联的 View 类型，必须实现 {@link BaseView} 接口
+ * @param <V> 关联的 View 类型，必须实现 {@link IBaseView} 接口
  */
-public abstract class BasePresenter<V extends BaseView> {
+public abstract class BasePresenter<V extends IBaseView> {
 
     /**
      * View 的弱引用，使用弱引用避免内存泄漏。
      */
     private WeakReference<V> viewRef;
-
     /**
      * 绑定 View，在 Fragment.onCreateView 或 Activity.onCreate 中调用。
      *
@@ -25,6 +24,7 @@ public abstract class BasePresenter<V extends BaseView> {
      */
     public void attachView(V view) {
         viewRef = new WeakReference<>(view);
+        onViewAttached();
     }
 
     /**
@@ -32,6 +32,7 @@ public abstract class BasePresenter<V extends BaseView> {
      * 调用后 View 引用将被清除。
      */
     public void detachView() {
+        onViewDetached();
         if (viewRef != null) {
             viewRef.clear();
             viewRef = null;
@@ -84,6 +85,16 @@ public abstract class BasePresenter<V extends BaseView> {
         if (view != null) {
             callback.call(view);
         }
+    }
+
+
+    // 钩子方法，子类可覆盖实现自定义逻辑
+    protected void onViewAttached() {
+
+    }
+
+    protected void onViewDetached() {
+
     }
 
     /**

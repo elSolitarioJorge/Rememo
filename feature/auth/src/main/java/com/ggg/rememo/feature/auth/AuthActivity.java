@@ -9,6 +9,7 @@ import android.os.CountDownTimer;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
 import android.transition.TransitionManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -16,12 +17,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
+import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.databinding.ActivityAuthBinding;
@@ -29,34 +32,41 @@ import com.ggg.rememo.feature.auth.presenter.AuthPresenter;
 
 
 @Route(path = Routes.Auth.LOGIN)
-public class AuthActivity extends AppCompatActivity implements AuthContract.View {
-
-    private ActivityAuthBinding binding;
-    private AuthPresenter presenter;
+public class AuthActivity extends BaseActivity<
+        ActivityAuthBinding,
+        AuthContract.View,
+        AuthPresenter>
+        implements AuthContract.View {
     private CountDownTimer loginCodeTimer;
     private CountDownTimer regCodeTimer;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+    protected ActivityAuthBinding inflateBinding(@NonNull LayoutInflater inflater) {
+        return ActivityAuthBinding.inflate(inflater);
+    }
 
-        binding = ActivityAuthBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    @Override
+    protected AuthPresenter createPresenter() {
+        return new AuthPresenter();
+    }
 
-        presenter = new AuthPresenter();
-        presenter.attachView(this);
+    @Override
+    protected AuthContract.View getViewContract() {
+        return this;
+    }
 
+    @Override
+    protected void initView() {
         initAnimations();
         initListeners();
     }
 
     private void initAnimations() {
         // 背景漫游 (缓慢平移+放大)
-        ObjectAnimator bgScaleX = ObjectAnimator.ofFloat(binding.ivBgLayer, "scaleX", 1f, 1.05f);
-        ObjectAnimator bgScaleY = ObjectAnimator.ofFloat(binding.ivBgLayer, "scaleY", 1f, 1.05f);
-        ObjectAnimator bgTransX = ObjectAnimator.ofFloat(binding.ivBgLayer, "translationX", 0f, -30f);
-        ObjectAnimator bgTransY = ObjectAnimator.ofFloat(binding.ivBgLayer, "translationY", 0f, -30f);
+        ObjectAnimator bgScaleX = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "scaleX", 1f, 1.05f);
+        ObjectAnimator bgScaleY = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "scaleY", 1f, 1.05f);
+        ObjectAnimator bgTransX = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "translationX", 0f, -30f);
+        ObjectAnimator bgTransY = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "translationY", 0f, -30f);
 
         AnimatorSet bgAnimSet = new AnimatorSet();
         bgAnimSet.playTogether(bgScaleX, bgScaleY, bgTransX, bgTransY);
@@ -73,16 +83,16 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
         bgAnimSet.start();
 
         // 罗盘旋转雷达
-        ObjectAnimator compassSpin = ObjectAnimator.ofFloat(binding.ivCompassRing, "rotation", 0f, 360f);
+        ObjectAnimator compassSpin = ObjectAnimator.ofFloat(getBinding().ivCompassRing, "rotation", 0f, 360f);
         compassSpin.setDuration(120000);
         compassSpin.setRepeatCount(ObjectAnimator.INFINITE);
         compassSpin.setInterpolator(new LinearInterpolator());
         compassSpin.start();
 
         // 坐标标呼吸灯特效
-        ObjectAnimator pingScaleX = ObjectAnimator.ofFloat(binding.vPingDot, "scaleX", 1f, 3f);
-        ObjectAnimator pingScaleY = ObjectAnimator.ofFloat(binding.vPingDot, "scaleY", 1f, 3f);
-        ObjectAnimator pingAlpha = ObjectAnimator.ofFloat(binding.vPingDot, "alpha", 1f, 0f);
+        ObjectAnimator pingScaleX = ObjectAnimator.ofFloat(getBinding().vPingDot, "scaleX", 1f, 3f);
+        ObjectAnimator pingScaleY = ObjectAnimator.ofFloat(getBinding().vPingDot, "scaleY", 1f, 3f);
+        ObjectAnimator pingAlpha = ObjectAnimator.ofFloat(getBinding().vPingDot, "alpha", 1f, 0f);
 
         AnimatorSet pingAnim = new AnimatorSet();
         pingAnim.playTogether(pingScaleX, pingScaleY, pingAlpha);
@@ -93,12 +103,12 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
         pingAnim.start();
 
         // 岁月流沙上升特效
-        startParticleAnim(binding.vParticle1, 15000, 0);
-        startParticleAnim(binding.vParticle2, 22000, 4000);
+        startParticleAnim(getBinding().vParticle1, 15000, 0);
+        startParticleAnim(getBinding().vParticle2, 22000, 4000);
 
         // 悬浮玻璃卡片抖动
-        ObjectAnimator driftY = ObjectAnimator.ofFloat(binding.vFloatingCard, "translationY", 0f, -40f);
-        ObjectAnimator driftRot = ObjectAnimator.ofFloat(binding.vFloatingCard, "rotation", 15f, 25f);
+        ObjectAnimator driftY = ObjectAnimator.ofFloat(getBinding().vFloatingCard, "translationY", 0f, -40f);
+        ObjectAnimator driftRot = ObjectAnimator.ofFloat(getBinding().vFloatingCard, "rotation", 15f, 25f);
         driftY.setRepeatCount(ObjectAnimator.INFINITE);
         driftY.setRepeatMode(ObjectAnimator.REVERSE);
         driftRot.setRepeatCount(ObjectAnimator.INFINITE);
@@ -130,22 +140,22 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
 
     private void initListeners() {
         // Tab 切换
-        binding.tvTabPwd.setOnClickListener(v -> handleTabSwitch(true));
-        binding.tvTabCode.setOnClickListener(v -> handleTabSwitch(false));
+        getBinding().tvTabPwd.setOnClickListener(v -> handleTabSwitch(true));
+        getBinding().tvTabCode.setOnClickListener(v -> handleTabSwitch(false));
 
         // 面板切换
-        binding.tvSwitchRegister.setOnClickListener(v -> switchToRegisterPanel());
-        binding.tvBackLogin.setOnClickListener(v -> switchToLoginPanel());
+        getBinding().tvSwitchRegister.setOnClickListener(v -> switchToRegisterPanel());
+        getBinding().tvBackLogin.setOnClickListener(v -> switchToLoginPanel());
 
         // 登录按钮
-        binding.btnLogin.setOnClickListener(v -> presenter.login());
+        getBinding().btnLogin.setOnClickListener(v -> presenter.login());
 
         // 注册按钮
-        binding.btnRegister.setOnClickListener(v -> presenter.register());
+        getBinding().btnRegister.setOnClickListener(v -> presenter.register());
 
         // 获取验证码
-        binding.tvGetCodeLogin.setOnClickListener(v -> presenter.requestLoginCode());
-        binding.tvGetCodeReg.setOnClickListener(v -> presenter.requestRegisterCode());
+        getBinding().tvGetCodeLogin.setOnClickListener(v -> presenter.requestLoginCode());
+        getBinding().tvGetCodeReg.setOnClickListener(v -> presenter.requestRegisterCode());
     }
 
     /**
@@ -154,18 +164,18 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
     private void handleTabSwitch(boolean isPwdTab) {
         AutoTransition transition = new AutoTransition();
         transition.setDuration(250);
-        TransitionManager.beginDelayedTransition(binding.flFormContainer, transition);
+        TransitionManager.beginDelayedTransition(getBinding().flFormContainer, transition);
 
         // 切换字体与颜色
-        binding.tvTabPwd.setTextColor(getColor(isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
-        binding.tvTabPwd.setTypeface(null, isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
+        getBinding().tvTabPwd.setTextColor(getColor(isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
+        getBinding().tvTabPwd.setTypeface(null, isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
 
-        binding.tvTabCode.setTextColor(getColor(!isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
-        binding.tvTabCode.setTypeface(null, !isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
+        getBinding().tvTabCode.setTextColor(getColor(!isPwdTab ? R.color.amber_400 : R.color.white_alpha_40));
+        getBinding().tvTabCode.setTypeface(null, !isPwdTab ? Typeface.BOLD : Typeface.NORMAL);
 
         // 指示器平滑移动
         ConstraintSet set = new ConstraintSet();
-        set.clone(binding.clLoginView);
+        set.clone(getBinding().clLoginView);
         if (isPwdTab) {
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_pwd, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_pwd, ConstraintSet.END);
@@ -173,11 +183,11 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
             set.connect(R.id.v_tab_indicator, ConstraintSet.START, R.id.tv_tab_code, ConstraintSet.START);
             set.connect(R.id.v_tab_indicator, ConstraintSet.END, R.id.tv_tab_code, ConstraintSet.END);
         }
-        set.applyTo(binding.clLoginView);
+        set.applyTo(getBinding().clLoginView);
 
         // 表单区平滑交替
-        binding.llPwdFields.setVisibility(isPwdTab ? View.VISIBLE : View.GONE);
-        binding.llCodeFields.setVisibility(!isPwdTab ? View.VISIBLE : View.GONE);
+        getBinding().llPwdFields.setVisibility(isPwdTab ? View.VISIBLE : View.GONE);
+        getBinding().llCodeFields.setVisibility(!isPwdTab ? View.VISIBLE : View.GONE);
     }
 
     // ==================== AuthContract.View 实现 ====================
@@ -211,7 +221,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public String getLoginPhone() {
-        return binding == null ? null : binding.etLoginAccount.getText().toString();
+        return getBinding().etLoginAccount.getText().toString();
     }
 
     /**
@@ -219,7 +229,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public String getLoginPassword() {
-        return binding == null ? null : binding.etLoginPwd.getText().toString();
+        return getBinding().etLoginPwd.getText().toString();
     }
 
     /**
@@ -227,7 +237,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public String getRegisterPhone() {
-        return binding == null ? null : binding.etRegPhone.getText().toString();
+        return getBinding().etRegPhone.getText().toString();
     }
 
     /**
@@ -235,7 +245,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public String getRegisterCode() {
-        return binding == null ? null : binding.etRegCode.getText().toString();
+        return getBinding().etRegCode.getText().toString();
     }
 
     /**
@@ -243,7 +253,7 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public String getRegisterPassword() {
-        return binding == null ? null : binding.etRegPwd.getText().toString();
+        return getBinding().etRegPwd.getText().toString();
     }
 
     /**
@@ -251,26 +261,26 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
      */
     @Override
     public boolean isAgreementChecked() {
-        return binding != null && binding.cbAgreement.isChecked();
+        return getBinding().cbAgreement.isChecked();
     }
 
     private void switchToRegisterPanel() {
-        TransitionManager.beginDelayedTransition(binding.flFormContainer,
+        TransitionManager.beginDelayedTransition(getBinding().flFormContainer,
                 new ChangeBounds().setDuration(400));
 
-        binding.clRegisterView.setVisibility(View.VISIBLE);
-        binding.clRegisterView.setTranslationX(150f);
-        binding.clRegisterView.setAlpha(0f);
+        getBinding().clRegisterView.setVisibility(View.VISIBLE);
+        getBinding().clRegisterView.setTranslationX(150f);
+        getBinding().clRegisterView.setAlpha(0f);
 
-        binding.clLoginView.animate()
+        getBinding().clLoginView.animate()
                 .alpha(0f)
                 .translationX(-150f)
                 .setDuration(400)
                 .setInterpolator(new AccelerateDecelerateInterpolator())
-                .withEndAction(() -> binding.clLoginView.setVisibility(View.GONE))
+                .withEndAction(() -> getBinding().clLoginView.setVisibility(View.GONE))
                 .start();
 
-        binding.clRegisterView.animate()
+        getBinding().clRegisterView.animate()
                 .alpha(1f)
                 .translationX(0f)
                 .setDuration(400)
@@ -279,22 +289,22 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
     }
 
     private void switchToLoginPanel() {
-        TransitionManager.beginDelayedTransition(binding.flFormContainer,
+        TransitionManager.beginDelayedTransition(getBinding().flFormContainer,
                 new ChangeBounds().setDuration(400));
 
-        binding.clLoginView.setVisibility(View.VISIBLE);
-        binding.clLoginView.setTranslationX(-150f);
-        binding.clLoginView.setAlpha(0f);
+        getBinding().clLoginView.setVisibility(View.VISIBLE);
+        getBinding().clLoginView.setTranslationX(-150f);
+        getBinding().clLoginView.setAlpha(0f);
 
-        binding.clRegisterView.animate()
+        getBinding().clRegisterView.animate()
                 .alpha(0f)
                 .translationX(150f)
                 .setDuration(400)
                 .setInterpolator(new AccelerateDecelerateInterpolator())
-                .withEndAction(() -> binding.clRegisterView.setVisibility(View.GONE))
+                .withEndAction(() -> getBinding().clRegisterView.setVisibility(View.GONE))
                 .start();
 
-        binding.clLoginView.animate()
+        getBinding().clLoginView.animate()
                 .alpha(1f)
                 .translationX(0f)
                 .setDuration(400)
@@ -309,12 +319,12 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
 
     @Override
     public void showLoginCountDown() {
-        startCountdown(binding.tvGetCodeLogin, true);
+        startCountdown(getBinding().tvGetCodeLogin, true);
     }
 
     @Override
     public void showRegisterCountDown() {
-        startCountdown(binding.tvGetCodeReg, false);
+        startCountdown(getBinding().tvGetCodeReg, false);
     }
 
 
@@ -349,22 +359,14 @@ public class AuthActivity extends AppCompatActivity implements AuthContract.View
         timer.start();
     }
 
-
-
-    // ==================== 生命周期 ====================
-
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if (presenter != null) {
-            presenter.detachView();
-        }
         if (loginCodeTimer != null) {
             loginCodeTimer.cancel();
         }
         if (regCodeTimer != null) {
             regCodeTimer.cancel();
         }
-        binding = null;
+        super.onDestroy();
     }
 }

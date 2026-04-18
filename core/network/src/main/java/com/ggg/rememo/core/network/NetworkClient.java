@@ -3,6 +3,10 @@ package com.ggg.rememo.core.network;
 import androidx.annotation.NonNull;
 
 import com.ggg.rememo.core.common.util.TokenManager;
+import com.ggg.rememo.core.network.event.TokenExpiredEvent;
+import com.google.gson.Gson;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -24,15 +28,13 @@ public class NetworkClient {
     private static final String BASE_URL = "http://192.168.1.5:9090/";
 
     private static volatile NetworkClient instance;
-    private static volatile String authToken;
 
-    private final Retrofit retrofit;
     private final ApiService apiService;
 
     private NetworkClient() {
         OkHttpClient okHttpClient = buildOkHttpClient();
 
-        retrofit = new Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -60,24 +62,6 @@ public class NetworkClient {
         return BASE_URL;
     }
 
-    /**
-     * 设置全局认证 Token。
-     * 在登录/注册成功后由调用方传入，后续所有请求自动携带此 Token。
-     *
-     * @param token Bearer Token
-     */
-    public static void setAuthToken(String token) {
-        authToken = token;
-    }
-
-    /**
-     * 清除认证 Token。
-     * 在退出登录时调用。
-     */
-    public static void clearAuthToken() {
-        authToken = null;
-    }
-
     private OkHttpClient buildOkHttpClient() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -87,6 +71,7 @@ public class NetworkClient {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(120, TimeUnit.SECONDS)
                 .addInterceptor(new AuthInterceptor())
+                .addInterceptor(new ResponseInterceptor())
                 .addInterceptor(loggingInterceptor)
                 .build();
     }
@@ -104,14 +89,64 @@ public class NetworkClient {
 
             String token = TokenManager.getToken();
             if (token != null && !token.isEmpty()) {
-                android.util.Log.d("AuthInterceptor", "[Auth] Token 已注入: " + token.substring(0, Math.min(10, token.length())) + "...");
                 Request.Builder builder = original.newBuilder()
                         .header("Authorization", "Bearer " + token);
                 return chain.proceed(builder.build());
             }
 
-            android.util.Log.w("AuthInterceptor", "[Auth] Token 为空! 请求 " + original.url() + " 将不带 Authorization Header，可能导致 401");
             return chain.proceed(original);
+        }
+    }
+
+    /**
+     * 处理 HTTP 响应的拦截器。
+     */
+    private static class ResponseInterceptor implements Interceptor {
+        @NonNull
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request request = chain.request();
+            Response response = chain.proceed(request);
+
+            // HTTP 状态码非 2xx，统一处理
+            if (!response.isSuccessful()) {
+                switch (response.code()) {
+                    case 401:
+                        // Token 失效，通知登录模块
+                        EventBus.getDefault().post(new TokenExpiredEvent());
+                        break;
+                    case 403:
+                        throw new ApiException(403, "无权限访问");
+                    case 500:
+                    case 502:
+                    case 503:
+                        throw new ApiException(response.code(), "服务器异常，请稍后重试");
+                    default:
+                        throw new ApiException(response.code(), "请求失败: " + response.code());
+                }
+            }
+
+            // HTTP 2xx 情况下，检查业务 code
+            // 注意：peekBody 不会消费 body，之后读取 response.body() 时数据仍然有效
+            String bodyString = response.peekBody(Long.MAX_VALUE).string();
+            ApiResponse<?> apiResponse = new Gson().fromJson(bodyString, ApiResponse.class);
+
+            if (apiResponse != null && !apiResponse.isSuccess()) {
+                int bizCode = apiResponse.getCode();
+                String bizMsg = apiResponse.getMessage();
+
+                // 401 业务码也需要处理（如 Token 过期但 HTTP 状态码仍是 200）
+                if (bizCode == 401) {
+                    EventBus.getDefault().post(new TokenExpiredEvent());
+                    throw new ApiException(401, bizMsg != null ? bizMsg : "登录已过期");
+                }
+
+                // 业务错误，抛出异常
+                throw new ApiException(bizCode, bizMsg != null ? bizMsg : "业务处理失败");
+            }
+
+            // 业务成功，原样返回 response
+            return response;
         }
     }
 }

@@ -1,11 +1,14 @@
 package com.ggg.rememo.core.base;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewbinding.ViewBinding;
 
 /**
  * MVP 架构中 Fragment 的基类。
@@ -14,16 +17,36 @@ import androidx.fragment.app.Fragment;
  * 子类只需关注业务逻辑的实现。
  * </p>
  *
- * @param <V> View 接口类型，必须实现 {@link BaseView}
- * @param <P> Presenter 类型，必须继承 {@link BasePresenter}
+ * @param <VB> ViewBinding 类型
+ * @param <V>  View 接口类型，必须实现 {@link IBaseView}
+ * @param <P>  Presenter 类型，必须继承 {@link BasePresenter}
  */
-public abstract class BaseFragment<V extends BaseView, P extends BasePresenter<V>>
-        extends Fragment implements BaseView {
+public abstract class BaseFragment<VB extends ViewBinding, V extends IBaseView, P extends BasePresenter<V>>
+        extends Fragment implements IBaseView {
 
     /**
      * Presenter 实例，由子类通过 {@link #createPresenter()} 创建
      */
     protected P presenter;
+    private VB binding;
+
+
+    /**
+     * 子类通过此方法获取 Binding 实例，确保空安全
+     */
+    @NonNull
+    protected final VB getBinding() {
+        if (binding == null) {
+            throw new IllegalStateException("Fragment " + this + " 视图已销毁或尚未创建，禁止访问 Binding");
+        }
+        return binding;
+    }
+
+    /**
+     * 子类必须实现：提供 ViewBinding 的 inflate 逻辑
+     * 示例：return FragmentExampleBinding.inflate(inflater, container, false);
+     */
+    protected abstract VB inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
 
     /**
      * 创建 Presenter 实例。
@@ -35,37 +58,64 @@ public abstract class BaseFragment<V extends BaseView, P extends BasePresenter<V
      */
     protected abstract P createPresenter();
 
+    protected abstract V getViewContract();
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = inflateBinding(inflater, container);
+        return binding.getRoot();
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         // 创建并绑定 Presenter
-        presenter = createPresenter();
-        if (presenter != null) {
-            // 子类正确声明泛型 V 时，此类型转换是安全的
-            @SuppressWarnings("unchecked")
-            V viewImpl = (V) this;
-            presenter.attachView(viewImpl);
+        if (presenter == null) {
+            presenter = createPresenter();
         }
+        if (presenter != null) {
+            presenter.attachView(getViewContract());
+        }
+
+        initView();
+        initData();
     }
+    /** 子类初始化视图 */
+    protected void initView() {}
+    /** 子类初始化数据 */
+    protected void initData() {}
 
     @Override
     public void onDestroyView() {
-        // 解绑 Presenter，防止内存泄漏
+        // 解绑 Presenter
         if (presenter != null) {
             presenter.detachView();
-            presenter = null;
         }
+        // 释放 binding 引用
+        binding = null;
         super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        presenter = null;
     }
 
     /**
      * 检查 Presenter 是否已绑定。
-     *
-     * @return true 表示 Presenter 可用
      */
     protected boolean isPresenterAttached() {
         return presenter != null;
+    }
+
+    /**
+     * 检查 Fragment 是否处于可视状态。
+     */
+    protected final boolean isUIActive() {
+        return isAdded() && !isDetached() && getView() != null;
     }
 
     /**
@@ -91,23 +141,6 @@ public abstract class BaseFragment<V extends BaseView, P extends BasePresenter<V
         if (presenter != null) {
             callback.call(presenter);
         }
-    }
-
-    // ========== BaseView 默认实现 ==========
-
-    @Override
-    public void showLoading() {
-        // 默认空实现，子类可覆盖
-    }
-
-    @Override
-    public void hideLoading() {
-        // 默认空实现，子类可覆盖
-    }
-
-    @Override
-    public void showError(String message) {
-        // 默认空实现，子类可覆盖
     }
 
     /**

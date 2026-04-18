@@ -1,35 +1,25 @@
 package com.ggg.rememo.core.data.model.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
 
 @Entity(tableName = "users")
-public class User {
+public class User implements Parcelable {
 
     @PrimaryKey
     @NonNull
-    @SerializedName("userId")
     private String userId = "";
-
-    @SerializedName("phone")
     private String phone;
-
-    @SerializedName("nickname")
     private String nickname;
-
-    @SerializedName("avatar")
     private String avatar;
-
-    @SerializedName("gender")
     private String gender = "secret";
-
-    @SerializedName("bio")
     private String bio = "";
-
-    @SerializedName("createdAt")
     private long createdAt = 0;
 
     public User() {
@@ -91,4 +81,44 @@ public class User {
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
+
+    // ==================== Parcelable 实现 ====================
+
+    protected User(Parcel in) {
+        userId = Objects.requireNonNull(in.readString());
+        phone = in.readString();
+        nickname = in.readString();
+        avatar = in.readString();
+        gender = in.readString();
+        bio = in.readString();
+        createdAt = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(userId);
+        dest.writeString(phone);
+        dest.writeString(nickname);
+        dest.writeString(avatar);
+        dest.writeString(gender);
+        dest.writeString(bio);
+        dest.writeLong(createdAt);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 }

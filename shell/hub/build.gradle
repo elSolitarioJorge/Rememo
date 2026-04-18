@@ -89,4 +89,5 @@ dependencies {
     debugImplementation project(":feature:publish")
     debugImplementation project(":feature:profile")
     debugImplementation project(":feature:timeline")
+    debugImplementation project(":feature:detail")
 }

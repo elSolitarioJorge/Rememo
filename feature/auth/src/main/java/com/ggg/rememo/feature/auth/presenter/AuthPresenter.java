@@ -9,9 +9,8 @@ import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.model.network.response.AuthResponse;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
-import com.ggg.rememo.core.data.service.UserService;
+import com.ggg.rememo.core.data.service.IUserService;
 import com.ggg.rememo.core.network.ApiCallback;
-import com.ggg.rememo.core.network.NetworkClient;
 import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.data.AuthRepository;
 
@@ -27,14 +26,14 @@ public class AuthPresenter extends BasePresenter<AuthContract.View> implements A
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^.{6,20}$");
 
     private final AuthRepository repository;
-    private UserService userService;
+    private IUserService userService;
     private final Handler mainHandler;
 
     public AuthPresenter() {
         this.repository = new AuthRepository();
         this.mainHandler = new Handler(Looper.getMainLooper());
         // 通过 ARouter 获取 UserService，避免直接依赖 profile 模块
-        this.userService = (UserService) ARouter.getInstance()
+        this.userService = (IUserService) ARouter.getInstance()
                 .build(Routes.Profile.USER_SERVICE)
                 .navigation();
     }
@@ -173,13 +172,12 @@ public class AuthPresenter extends BasePresenter<AuthContract.View> implements A
 
     private void saveAndNotifyLoginSuccess(AuthContract.View view, AuthResponse data) {
         TokenManager.saveToken(data.getToken(), data.getExpiresAt(), data.getUserId());
-        NetworkClient.setAuthToken(data.getToken());
 
         // 登录成功后立即获取并保存用户信息到本地数据库
-        userService.getUserInfo(new UserService.UserInfoCallback() {
+        userService.getUserInfo(new IUserService.UserInfoCallback() {
             @Override
             public void onSuccess(UserInfo userInfo) {
-                userService.saveUserInfo(userInfo, new UserService.Callback() {
+                userService.saveUserInfo(userInfo, new IUserService.Callback() {
                     @Override
                     public void onSuccess() {
                         mainHandler.post(() -> view.showLoginSuccess(data.getUserId()));
@@ -201,13 +199,12 @@ public class AuthPresenter extends BasePresenter<AuthContract.View> implements A
 
     private void saveAndNotifyRegisterSuccess(AuthContract.View view, AuthResponse data) {
         TokenManager.saveToken(data.getToken(), data.getExpiresAt(), data.getUserId());
-        NetworkClient.setAuthToken(data.getToken());
 
         // 注册成功后立即获取并保存用户信息到本地数据库
-        userService.getUserInfo(new UserService.UserInfoCallback() {
+        userService.getUserInfo(new IUserService.UserInfoCallback() {
             @Override
             public void onSuccess(UserInfo userInfo) {
-                userService.saveUserInfo(userInfo, new UserService.Callback() {
+                userService.saveUserInfo(userInfo, new IUserService.Callback() {
                     @Override
                     public void onSuccess() {
                         mainHandler.post(() -> view.showRegisterSuccess(data.getUserId()));

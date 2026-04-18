@@ -56,35 +56,6 @@ public class MemoryPointRepository {
         });
     }
 
-    public void update(MemoryPoint point, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                memoryPointDao.update(point);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void delete(MemoryPoint point, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                memoryPointDao.delete(point);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
 
     public void deleteById(String pointId, Callback<Void> callback) {
         executorService.execute(() -> {
@@ -137,81 +108,6 @@ public class MemoryPointRepository {
                 List<MemoryPoint> result = memoryPointDao.getRecent(limit);
                 if (callback != null) {
                     callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void search(String keyword, Callback<List<MemoryPoint>> callback) {
-        executorService.execute(() -> {
-            try {
-                List<MemoryPoint> result = memoryPointDao.search(keyword);
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void getPointsInRange(double minLat, double maxLat, double minLng, double maxLng, Callback<List<MemoryPoint>> callback) {
-        executorService.execute(() -> {
-            try {
-                List<MemoryPoint> result = memoryPointDao.getPointsInRange(minLat, maxLat, minLng, maxLng);
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void getCount(Callback<Integer> callback) {
-        executorService.execute(() -> {
-            try {
-                int result = memoryPointDao.getCount();
-                if (callback != null) {
-                    callback.onSuccess(result);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void updateMemoryCount(String pointId, int count, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                memoryPointDao.updateMemoryCount(pointId, count);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            }
-        });
-    }
-
-    public void updateCoverImage(String pointId, String coverUrl, Callback<Void> callback) {
-        executorService.execute(() -> {
-            try {
-                memoryPointDao.updateCoverImage(pointId, coverUrl);
-                if (callback != null) {
-                    callback.onSuccess(null);
                 }
             } catch (Exception e) {
                 if (callback != null) {

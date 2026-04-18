@@ -1,9 +1,7 @@
 package com.ggg.rememo.feature.profile;
 
 import android.graphics.Color;
-import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -13,16 +11,15 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.base.BaseFragment;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
-import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.feature.profile.adapter.ProfileMemoryAdapter;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
@@ -33,34 +30,38 @@ import com.ggg.rememo.feature.profile.presenter.ProfilePresenter;
 import java.util.List;
 
 @Route(path = Routes.Profile.HOME_FRAGMENT)
-public class ProfileHomeFragment extends Fragment implements ProfileContract.View {
-
-    private FragmentProfileHomeBinding binding;
-    private ProfilePresenter presenter;
+public class ProfileHomeFragment extends BaseFragment<
+        FragmentProfileHomeBinding,
+        ProfileContract.View,
+        ProfilePresenter> implements ProfileContract.View {
     private ProfileMemoryAdapter memoryAdapter;
-    private UserInfo currentUserInfo;
+    private User currentUserInfo;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        binding = FragmentProfileHomeBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    protected FragmentProfileHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentProfileHomeBinding.inflate(inflater, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected ProfilePresenter createPresenter() {
+        return new ProfilePresenter();
+    }
 
+    @Override
+    protected ProfileContract.View getViewContract() {
+        return this;
+    }
+
+    @Override
+    protected void initView() {
         handleWindowInsets();
         initScrollEffect();
         initClickListeners();
         initRecyclerView();
+    }
 
-        presenter = new ProfilePresenter();
-        presenter.attachView(this);
-
+    @Override
+    protected void initData() {
         // 立即尝试从本地缓存加载，避免闪烁
         loadAvatarFromCache();
 
@@ -80,18 +81,16 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
                     public void onSuccess(com.ggg.rememo.core.data.model.entity.User user) {
                         if (user != null && user.getAvatar() != null && !user.getAvatar().isEmpty()) {
                             requireActivity().runOnUiThread(() -> {
-                                if (binding != null) {
-                                    // 直接用 Glide 加载，不使用 placeholder
-                                    Glide.with(ProfileHomeFragment.this)
-                                            .load(user.getAvatar())
-                                            .dontAnimate()
-                                            .into(binding.ivAvatar);
-                                    Glide.with(ProfileHomeFragment.this)
-                                            .load(user.getAvatar())
-                                            .dontAnimate()
-                                            .into(binding.ivToolbarSmallAvatar);
-                                    binding.ivAvatar.setTag(user.getAvatar());
-                                }
+                                // 直接用 Glide 加载，不使用 placeholder
+                                Glide.with(ProfileHomeFragment.this)
+                                        .load(user.getAvatar())
+                                        .dontAnimate()
+                                        .into(getBinding().ivAvatar);
+                                Glide.with(ProfileHomeFragment.this)
+                                        .load(user.getAvatar())
+                                        .dontAnimate()
+                                        .into(getBinding().ivToolbarSmallAvatar);
+                                getBinding().ivAvatar.setTag(user.getAvatar());
                             });
                         }
                     }
@@ -104,14 +103,8 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         );
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // 用户信息和记忆列表已在 onViewCreated 加载一次，编辑后由 showUserInfoDirectly 刷新，无需每次刷新
-    }
-
     private void initClickListeners() {
-        binding.btnEditProfile.setOnClickListener(v -> {
+        getBinding().btnEditProfile.setOnClickListener(v -> {
             EditProfileDialogFragment.newInstance(currentUserInfo, updatedUserInfo -> {
                 if (updatedUserInfo != null && presenter != null) {
                     // 直接使用更新后的数据刷新 UI，避免重新请求
@@ -120,7 +113,7 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
             }).show(getChildFragmentManager(), "edit_profile");
         });
 
-        binding.ivSettings.setOnClickListener(v -> {
+        getBinding().ivSettings.setOnClickListener(v -> {
             new SettingsDialogFragment().show(getChildFragmentManager(), "settings");
         });
     }
@@ -136,13 +129,10 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
         final int blue = Color.blue(baseColor);
 
         // 初始状态：Toolbar 设为透明
-        binding.toolbar.setBackgroundColor(Color.argb(0, red, green, blue));
-        binding.ivToolbarSmallAvatar.setAlpha(0f);
+        getBinding().toolbar.setBackgroundColor(Color.argb(0, red, green, blue));
+        getBinding().ivToolbarSmallAvatar.setAlpha(0f);
 
-        binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            // 判空保护，防止在 Fragment 销毁后仍回调
-            if (binding == null) return;
-
+        getBinding().appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             float absOffset = Math.abs(verticalOffset);
             float totalRange = appBarLayout.getTotalScrollRange();
 
@@ -151,22 +141,22 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
             float fraction = Math.min(absOffset / colorEndThreshold, 1.0f);
 
             int alpha = (int) (fraction * 255);
-            binding.toolbar.setBackgroundColor(Color.argb(alpha, red, green, blue));
+            getBinding().toolbar.setBackgroundColor(Color.argb(alpha, red, green, blue));
 
             // 内容区淡出
             float contentAlpha = 1.0f - fraction;
-            binding.ivAvatar.setAlpha(contentAlpha);
-            binding.tvName.setAlpha(contentAlpha);
-            binding.tvBio.setAlpha(contentAlpha);
-            binding.llTags.setAlpha(contentAlpha);
-            binding.cardStats.setAlpha(contentAlpha);
+            getBinding().ivAvatar.setAlpha(contentAlpha);
+            getBinding().tvName.setAlpha(contentAlpha);
+            getBinding().tvBio.setAlpha(contentAlpha);
+            getBinding().llTags.setAlpha(contentAlpha);
+            getBinding().cardStats.setAlpha(contentAlpha);
 
             // 小头像在中位浮现
             if (fraction > 0.75f) {
                 float avatarAlpha = (fraction - 0.75f) / 0.25f;
-                binding.ivToolbarSmallAvatar.setAlpha(avatarAlpha);
+                getBinding().ivToolbarSmallAvatar.setAlpha(avatarAlpha);
             } else {
-                binding.ivToolbarSmallAvatar.setAlpha(0f);
+                getBinding().ivToolbarSmallAvatar.setAlpha(0f);
             }
         });
     }
@@ -175,9 +165,9 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
      * 处理窗口内边距（状态栏适配）
      */
     private void handleWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            binding.toolbar.setPadding(0, insets.top, 0, 0);
+            getBinding().toolbar.setPadding(0, insets.top, 0, 0);
             return windowInsets;
         });
     }
@@ -192,54 +182,32 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
                 presenter.onMemoryClicked(post.getPostId());
             }
         });
-        binding.rvMemories.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.rvMemories.addItemDecoration(new ProfileTimelineDecoration(requireContext()));
-        binding.rvMemories.setAdapter(memoryAdapter);
-    }
-
-
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (presenter != null) {
-            presenter.detachView();
-        }
-        binding = null;
-    }
-
-    // ========== ProfileContract.View 实现 ==========
-
-    @Override
-    public void showLoading() {
+        getBinding().rvMemories.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvMemories.addItemDecoration(new ProfileTimelineDecoration(requireContext()));
+        getBinding().rvMemories.setAdapter(memoryAdapter);
     }
 
     @Override
-    public void hideLoading() {
-    }
-
-    @Override
-    public void showUserInfo(UserInfo userInfo) {
-        if (binding == null || userInfo == null) return;
-        currentUserInfo = userInfo;
-        binding.tvName.setText(userInfo.getNickname() != null ? userInfo.getNickname() : "");
-        binding.tvBio.setText(userInfo.getBio() != null ? userInfo.getBio() : "");
-        if (userInfo.getAvatar() != null && !userInfo.getAvatar().isEmpty()) {
-            binding.ivAvatar.setTag(userInfo.getAvatar());
-            // 不使用 placeholder，避免闪烁
+    public void showUserInfo(User user) {
+        if (user == null) return;
+        currentUserInfo = user;
+        getBinding().tvName.setText(user.getNickname() != null ? user.getNickname() : "");
+        getBinding().tvBio.setText(user.getBio() != null ? user.getBio() : "");
+        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+            getBinding().ivAvatar.setTag(user.getAvatar());
             Glide.with(this)
-                    .load(userInfo.getAvatar())
-                    .into(binding.ivAvatar);
+                    .load(user.getAvatar())
+                    .into(getBinding().ivAvatar);
             Glide.with(this)
-                    .load(userInfo.getAvatar())
-                    .into(binding.ivToolbarSmallAvatar);
+                    .load(user.getAvatar())
+                    .into(getBinding().ivToolbarSmallAvatar);
         } else {
             Glide.with(this)
                     .load(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
-                    .into(binding.ivAvatar);
+                    .into(getBinding().ivAvatar);
             Glide.with(this)
                     .load(com.ggg.rememo.core.ui.R.drawable.avatar_placeholder)
-                    .into(binding.ivToolbarSmallAvatar);
+                    .into(getBinding().ivToolbarSmallAvatar);
         }
     }
 
@@ -249,10 +217,10 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
     }
 
     @Override
-    public void showUpdateSuccessWithData(UserInfo userInfo) {
-        if (binding == null || userInfo == null) return;
-        currentUserInfo = userInfo;
-        showUserInfo(userInfo);
+    public void showUpdateSuccessWithData(User user) {
+        if (user == null) return;
+        currentUserInfo = user;
+        showUserInfo(user);
     }
 
     @Override
@@ -271,13 +239,13 @@ public class ProfileHomeFragment extends Fragment implements ProfileContract.Vie
 
     @Override
     public void showMemories(List<MemoryPost> posts) {
-        if (binding == null || memoryAdapter == null) return;
+        if (memoryAdapter == null) return;
         memoryAdapter.setData(posts);
     }
 
     @Override
     public void showMemoriesEmpty() {
-        if (binding == null || memoryAdapter == null) return;
+        if (memoryAdapter == null) return;
         memoryAdapter.clear();
     }
 
