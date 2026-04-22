@@ -27,6 +27,8 @@ eventbus = "3.3.1"
 camera = "1.6.0"
 guava = "33.5.0-android"
 
+leakcanary = "2.14"
+
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -56,7 +58,8 @@ camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = 
 camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
+leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-

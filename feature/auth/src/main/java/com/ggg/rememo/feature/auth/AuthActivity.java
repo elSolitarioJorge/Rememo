@@ -1,10 +1,11 @@
 package com.ggg.rememo.feature.auth;
 
+
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
@@ -16,10 +17,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
@@ -30,6 +28,8 @@ import com.ggg.rememo.feature.auth.contract.AuthContract;
 import com.ggg.rememo.feature.auth.databinding.ActivityAuthBinding;
 import com.ggg.rememo.feature.auth.presenter.AuthPresenter;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(path = Routes.Auth.LOGIN)
 public class AuthActivity extends BaseActivity<
@@ -39,6 +39,13 @@ public class AuthActivity extends BaseActivity<
         implements AuthContract.View {
     private CountDownTimer loginCodeTimer;
     private CountDownTimer regCodeTimer;
+
+    // 动画对象引用，用于在销毁时释放，防止内存泄漏
+    private AnimatorSet bgAnimSet;
+    private ObjectAnimator compassSpin;
+    private AnimatorSet pingAnim;
+    private AnimatorSet driftSet;
+    private final List<AnimatorSet> particleAnimSets = new ArrayList<>();
 
     @Override
     protected ActivityAuthBinding inflateBinding(@NonNull LayoutInflater inflater) {
@@ -68,24 +75,24 @@ public class AuthActivity extends BaseActivity<
         ObjectAnimator bgTransX = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "translationX", 0f, -30f);
         ObjectAnimator bgTransY = ObjectAnimator.ofFloat(getBinding().ivBgLayer, "translationY", 0f, -30f);
 
-        AnimatorSet bgAnimSet = new AnimatorSet();
+        bgAnimSet = new AnimatorSet();
         bgAnimSet.playTogether(bgScaleX, bgScaleY, bgTransX, bgTransY);
         bgAnimSet.setDuration(40000);
         bgAnimSet.setInterpolator(new LinearInterpolator());
-        bgScaleX.setRepeatCount(ObjectAnimator.INFINITE);
-        bgScaleX.setRepeatMode(ObjectAnimator.REVERSE);
-        bgScaleY.setRepeatCount(ObjectAnimator.INFINITE);
-        bgScaleY.setRepeatMode(ObjectAnimator.REVERSE);
-        bgTransX.setRepeatCount(ObjectAnimator.INFINITE);
-        bgTransX.setRepeatMode(ObjectAnimator.REVERSE);
-        bgTransY.setRepeatCount(ObjectAnimator.INFINITE);
-        bgTransY.setRepeatMode(ObjectAnimator.REVERSE);
+        bgScaleX.setRepeatCount(ValueAnimator.INFINITE);
+        bgScaleX.setRepeatMode(ValueAnimator.REVERSE);
+        bgScaleY.setRepeatCount(ValueAnimator.INFINITE);
+        bgScaleY.setRepeatMode(ValueAnimator.REVERSE);
+        bgTransX.setRepeatCount(ValueAnimator.INFINITE);
+        bgTransX.setRepeatMode(ValueAnimator.REVERSE);
+        bgTransY.setRepeatCount(ValueAnimator.INFINITE);
+        bgTransY.setRepeatMode(ValueAnimator.REVERSE);
         bgAnimSet.start();
 
         // 罗盘旋转雷达
-        ObjectAnimator compassSpin = ObjectAnimator.ofFloat(getBinding().ivCompassRing, "rotation", 0f, 360f);
+        compassSpin = ObjectAnimator.ofFloat(getBinding().ivCompassRing, "rotation", 0f, 360f);
         compassSpin.setDuration(120000);
-        compassSpin.setRepeatCount(ObjectAnimator.INFINITE);
+        compassSpin.setRepeatCount(ValueAnimator.INFINITE);
         compassSpin.setInterpolator(new LinearInterpolator());
         compassSpin.start();
 
@@ -94,12 +101,12 @@ public class AuthActivity extends BaseActivity<
         ObjectAnimator pingScaleY = ObjectAnimator.ofFloat(getBinding().vPingDot, "scaleY", 1f, 3f);
         ObjectAnimator pingAlpha = ObjectAnimator.ofFloat(getBinding().vPingDot, "alpha", 1f, 0f);
 
-        AnimatorSet pingAnim = new AnimatorSet();
+        pingAnim = new AnimatorSet();
         pingAnim.playTogether(pingScaleX, pingScaleY, pingAlpha);
         pingAnim.setDuration(2000);
-        pingScaleX.setRepeatCount(ObjectAnimator.INFINITE);
-        pingScaleY.setRepeatCount(ObjectAnimator.INFINITE);
-        pingAlpha.setRepeatCount(ObjectAnimator.INFINITE);
+        pingScaleX.setRepeatCount(ValueAnimator.INFINITE);
+        pingScaleY.setRepeatCount(ValueAnimator.INFINITE);
+        pingAlpha.setRepeatCount(ValueAnimator.INFINITE);
         pingAnim.start();
 
         // 岁月流沙上升特效
@@ -109,11 +116,11 @@ public class AuthActivity extends BaseActivity<
         // 悬浮玻璃卡片抖动
         ObjectAnimator driftY = ObjectAnimator.ofFloat(getBinding().vFloatingCard, "translationY", 0f, -40f);
         ObjectAnimator driftRot = ObjectAnimator.ofFloat(getBinding().vFloatingCard, "rotation", 15f, 25f);
-        driftY.setRepeatCount(ObjectAnimator.INFINITE);
-        driftY.setRepeatMode(ObjectAnimator.REVERSE);
-        driftRot.setRepeatCount(ObjectAnimator.INFINITE);
-        driftRot.setRepeatMode(ObjectAnimator.REVERSE);
-        AnimatorSet driftSet = new AnimatorSet();
+        driftY.setRepeatCount(ValueAnimator.INFINITE);
+        driftY.setRepeatMode(ValueAnimator.REVERSE);
+        driftRot.setRepeatCount(ValueAnimator.INFINITE);
+        driftRot.setRepeatMode(ValueAnimator.REVERSE);
+        driftSet = new AnimatorSet();
         driftSet.playTogether(driftY, driftRot);
         driftSet.setDuration(8000);
         driftSet.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -126,16 +133,17 @@ public class AuthActivity extends BaseActivity<
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(particle, "scaleY", 0.5f, 1.5f);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(particle, "alpha", 0f, 0.4f, 0f);
 
-        transY.setRepeatCount(ObjectAnimator.INFINITE);
-        scale.setRepeatCount(ObjectAnimator.INFINITE);
-        scaleY.setRepeatCount(ObjectAnimator.INFINITE);
-        alpha.setRepeatCount(ObjectAnimator.INFINITE);
+        transY.setRepeatCount(ValueAnimator.INFINITE);
+        scale.setRepeatCount(ValueAnimator.INFINITE);
+        scaleY.setRepeatCount(ValueAnimator.INFINITE);
+        alpha.setRepeatCount(ValueAnimator.INFINITE);
 
         AnimatorSet set = new AnimatorSet();
         set.playTogether(transY, scale, scaleY, alpha);
         set.setDuration(duration);
         set.setStartDelay(delay);
         set.start();
+        particleAnimSets.add(set);
     }
 
     private void initListeners() {
@@ -361,12 +369,20 @@ public class AuthActivity extends BaseActivity<
 
     @Override
     protected void onDestroy() {
-        if (loginCodeTimer != null) {
-            loginCodeTimer.cancel();
+        // 取消计时器
+        if (loginCodeTimer != null) loginCodeTimer.cancel();
+        if (regCodeTimer != null) regCodeTimer.cancel();
+
+        // 取消所有无限循环动画，防止内存泄漏
+        if (bgAnimSet != null) bgAnimSet.cancel();
+        if (compassSpin != null) compassSpin.cancel();
+        if (pingAnim != null) pingAnim.cancel();
+        if (driftSet != null) driftSet.cancel();
+        for (AnimatorSet set : particleAnimSets) {
+            if (set != null) set.cancel();
         }
-        if (regCodeTimer != null) {
-            regCodeTimer.cancel();
-        }
+        particleAnimSets.clear();
+
         super.onDestroy();
     }
 }
