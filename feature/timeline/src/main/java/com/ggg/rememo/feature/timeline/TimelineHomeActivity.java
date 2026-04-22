@@ -37,6 +37,7 @@ public class TimelineHomeActivity extends BaseActivity<
         implements TimelineContract.View {
 
     private TimelineYearAdapter adapter;
+    private AnimatorSet fabGlowAnimatorSet;
 
     @Override
     protected ActivityTimelineHomeBinding inflateBinding(@NonNull LayoutInflater inflater) {
@@ -123,10 +124,10 @@ public class TimelineHomeActivity extends BaseActivity<
         alpha.setRepeatCount(ValueAnimator.INFINITE);
         alpha.setRepeatMode(ValueAnimator.REVERSE);
 
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(scaleX, scaleY, alpha);
-        animatorSet.setDuration(1500);
-        animatorSet.start();
+        fabGlowAnimatorSet = new AnimatorSet();
+        fabGlowAnimatorSet.playTogether(scaleX, scaleY, alpha);
+        fabGlowAnimatorSet.setDuration(1500);
+        fabGlowAnimatorSet.start();
     }
 
     // ==================== TimelineContract.View 实现 ====================
@@ -200,5 +201,14 @@ public class TimelineHomeActivity extends BaseActivity<
                 .withString(Routes.Timeline.EXTRA_POINT_ID, presenter.getCurrentPointId())
                 .withInt(Routes.Timeline.EXTRA_YEAR, year)
                 .navigation(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (fabGlowAnimatorSet != null) {
+            fabGlowAnimatorSet.cancel();
+            fabGlowAnimatorSet = null;
+        }
+        super.onDestroy();
     }
 }

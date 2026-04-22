@@ -1,7 +1,6 @@
 package com.ggg.rememo;
 
 import android.os.Bundle;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -21,7 +20,6 @@ import com.ggg.rememo.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-
     private Fragment hereFragment;
     private Fragment exploreFragment;
     private Fragment messageFragment;
