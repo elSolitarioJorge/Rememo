@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.ar;
 
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -36,14 +37,15 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-
-
 @Route(path = Routes.Ar.TIME_LENS)
 public class TimeLensActivity extends AppCompatActivity implements SensorEventListener {
 
     private ActivityTimeLensBinding binding;
     private final int BASE_YEAR = 1900;
     private final Random random = new Random();
+
+    // CameraX 成员变量
+    private Preview preview;
 
     private final ActivityResultLauncher<String> cameraPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -74,8 +76,10 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         }
         if (rotationVectorSensor == null) {
-            binding.tvAzimuth.setText("AZ: N/A");
-            binding.tvPitch.setText("PT: N/A");
+            if (binding != null) {
+                binding.tvAzimuth.setText("AZ: N/A");
+                binding.tvPitch.setText("PT: N/A");
+            }
             Toast.makeText(this, "设备不支持方向传感器，AR 指向功能不可用", Toast.LENGTH_LONG).show();
         }
 
@@ -128,7 +132,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 // 将 0-100 的进度转换为 0.0 - 1.0 的透明度
                 float alpha = progress / 100f;
-                binding.ivOldPhotoOverlay.setAlpha(alpha);
+                if (binding != null) binding.ivOldPhotoOverlay.setAlpha(alpha);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -136,6 +140,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
+
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
@@ -143,8 +148,10 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
 
                 // 预览设置
-                Preview preview = new Preview.Builder().build();
-                preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
+                preview = new Preview.Builder().build();
+                if (binding != null) {
+                    preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
+                }
 
                 // 选择后置摄像头
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
@@ -213,8 +220,10 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             String azStr = String.format(Locale.getDefault(), "AZ: %03d°%s", (int)azimuthDeg, direction);
             String ptStr = String.format(Locale.getDefault(), "PT: %+05.1f°", pitchDeg);
 
-            binding.tvAzimuth.setText(azStr);
-            binding.tvPitch.setText(ptStr);
+            if (binding != null) {
+                binding.tvAzimuth.setText(azStr);
+                binding.tvPitch.setText(ptStr);
+            }
         }
     }
 
@@ -249,6 +258,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
 
     // 显示命中锚点的状态
     private void showAnchor(int picId, String title, String subtitle, String resonanceStr) {
+        if (binding == null) return;
         binding.tvEraStatus.setText("MEMORY_FRAGMENT DETECTED");
         binding.tvEraStatus.setTextColor(Color.parseColor("#F5A623"));
 
@@ -266,6 +276,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
 
     // 显示现代状态
     private void showModernEra() {
+        if (binding == null) return;
         binding.tvEraStatus.setText("CURRENT ERA");
         binding.tvEraStatus.setTextColor(Color.parseColor("#F5A623"));
         binding.layoutArAnchor.setVisibility(View.INVISIBLE);
@@ -277,6 +288,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
 
     // 显示搜索中状态
     private void showSearchingState(int year) {
+        if (binding == null) return;
         binding.tvEraStatus.setText("SEARCHING SPATIAL DATA...");
         binding.tvEraStatus.setTextColor(Color.parseColor("#00E5FF")); // 青色
         binding.layoutArAnchor.setVisibility(View.INVISIBLE);
@@ -289,6 +301,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
     }
 
     private void startRadarAnimation() {
+        if (binding == null) return;
         // 外圈顺时针缓慢旋转 (12秒一圈)
         RotateAnimation outerAnim = new RotateAnimation(
                 0f, 360f,
@@ -309,11 +322,11 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
         innerAnim.setDuration(8000);
         innerAnim.setRepeatCount(Animation.INFINITE);
         innerAnim.setInterpolator(new LinearInterpolator());
-        // 确保你的 XML 里给内圈 ImageView 加上了 android:id="@+id/ring_inner"
         binding.ringInner.startAnimation(innerAnim);
     }
 
     private void startScanlineAnimation() {
+        if (binding == null) return;
         // 全息扫描线从顶部扫描到底部
         android.view.animation.TranslateAnimation scanAnim = new android.view.animation.TranslateAnimation(
                 Animation.RELATIVE_TO_PARENT, 0f,
@@ -331,14 +344,17 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
      * 处理时间进度变化：更新年份文字、联动动画、触发 AR 锚点逻辑
      */
     private void onTimeProgressChanged(int progress, boolean animate) {
+        if (binding == null) return;
         int currentYear = BASE_YEAR + progress;
         binding.tvYear.setText(String.valueOf(currentYear));
 
         if (animate) {
             binding.tvYear.setTextColor(Color.parseColor("#00E5FF"));
             binding.tvYear.animate().scaleX(1.1f).scaleY(1.1f).setDuration(80).withEndAction(() -> {
-                binding.tvYear.setTextColor(Color.WHITE);
-                binding.tvYear.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                if (binding != null) {
+                    binding.tvYear.setTextColor(Color.WHITE);
+                    binding.tvYear.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                }
             }).start();
         }
 
@@ -346,38 +362,50 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
     }
 
     private void enterImmersiveMode() {
+        if (binding == null) return;
         isImmersiveMode = true;
         binding.btnExit.setText("← EXIT VISION");
 
         // 隐藏原有的所有分析工具 UI (淡出)
-        binding.centerReticle.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.centerReticle.setVisibility(View.GONE)).start();
-        binding.layoutYearDisplay.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.layoutYearDisplay.setVisibility(View.GONE)).start();
-        binding.seekbarContainer.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.seekbarContainer.setVisibility(View.GONE)).start();
-        binding.bottomHud.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.bottomHud.setVisibility(View.GONE)).start();
-        binding.layoutArAnchor.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.layoutArAnchor.setVisibility(View.GONE)).start();
+        binding.centerReticle.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.centerReticle.setVisibility(View.GONE);
+        }).start();
+        binding.layoutYearDisplay.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.layoutYearDisplay.setVisibility(View.GONE);
+        }).start();
+        binding.seekbarContainer.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.seekbarContainer.setVisibility(View.GONE);
+        }).start();
+        binding.bottomHud.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.bottomHud.setVisibility(View.GONE);
+        }).start();
+        binding.layoutArAnchor.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.layoutArAnchor.setVisibility(View.GONE);
+        }).start();
 
         // 显示老照片叠加层和融合滑块 (淡入)
         binding.ivOldPhotoOverlay.setVisibility(View.VISIBLE);
-        // 初始透明度设为 0.5 (代表虚实交错)
         binding.ivOldPhotoOverlay.animate().alpha(0.5f).setDuration(800).start();
 
         binding.layoutFusionHud.setVisibility(View.VISIBLE);
         binding.layoutFusionHud.setAlpha(0f);
         binding.layoutFusionHud.animate().alpha(1f).setDuration(800).start();
 
-        // 将融合滑块的初始值重置为 50%
         binding.seekbarFusion.setProgress(50);
     }
 
     private void exitImmersiveMode() {
+        if (binding == null) return;
         isImmersiveMode = false;
         binding.btnExit.setText("← EXIT");
 
-        // 隐藏叠加层和融合滑块
-        binding.ivOldPhotoOverlay.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.ivOldPhotoOverlay.setVisibility(View.GONE)).start();
-        binding.layoutFusionHud.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.layoutFusionHud.setVisibility(View.GONE)).start();
+        binding.ivOldPhotoOverlay.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.ivOldPhotoOverlay.setVisibility(View.GONE);
+        }).start();
+        binding.layoutFusionHud.animate().alpha(0f).setDuration(300).withEndAction(() -> {
+            if (binding != null) binding.layoutFusionHud.setVisibility(View.GONE);
+        }).start();
 
-        // 恢复原有的分析工具 UI
         binding.centerReticle.setVisibility(View.VISIBLE);
         binding.layoutYearDisplay.setVisibility(View.VISIBLE);
         binding.seekbarContainer.setVisibility(View.VISIBLE);
@@ -391,4 +419,44 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
         binding.layoutArAnchor.animate().alpha(1f).setDuration(500).start();
     }
 
+    @Override
+    protected void onDestroy() {
+        // 停止动画并清除所有 View 属性动画的引用
+        if (binding != null) {
+            binding.ringOuter.clearAnimation();
+            binding.ringInner.clearAnimation();
+            binding.scanline.clearAnimation();
+            binding.centerReticle.animate().cancel();
+            binding.layoutYearDisplay.animate().cancel();
+            binding.seekbarContainer.animate().cancel();
+            binding.bottomHud.animate().cancel();
+            binding.layoutArAnchor.animate().cancel();
+            binding.ivOldPhotoOverlay.animate().cancel();
+            binding.layoutFusionHud.animate().cancel();
+            binding.tvYear.animate().cancel();
+        }
+
+        // 强力解绑 CameraX 并物理截断引用链
+        try {
+            // 使用阻塞式 get 确保销毁前解绑执行
+            ProcessCameraProvider cameraProvider = ProcessCameraProvider.getInstance(this).get();
+            cameraProvider.unbindAll();
+        } catch (Exception e) {
+            // 忽略异常
+        }
+        
+        if (preview != null) {
+            // 手动断开 SurfaceProvider，彻底切断 Preview -> PreviewView -> Activity 的引用链
+            preview.setSurfaceProvider(null);
+            preview = null;
+        }
+
+        // 释放传感器资源
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
+
+        super.onDestroy();
+        binding = null;
+    }
 }

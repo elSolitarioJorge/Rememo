@@ -60,6 +60,7 @@ import com.ggg.rememo.feature.here.data.HereRepository;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
 import com.ggg.rememo.feature.here.presenter.HereHomePresenter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Route(path = Routes.Here.HOME_FRAGMENT)
@@ -77,6 +78,10 @@ public class HereHomeFragment extends BaseFragment<
     private OnLocationChangedListener mLocationChangedListener;
     private boolean isLocationInitialized = false;
     private LatLng latestLocation;
+
+    // 动画管理，防止内存泄漏
+    private ObjectAnimator scanAnim;
+    private final List<ValueAnimator> markerAnimators = new ArrayList<>();
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -252,8 +257,8 @@ public class HereHomeFragment extends BaseFragment<
 
     @Override
     public void showMemoryPoints(List<MemoryPoint> points) {
+        clearMarkers();
         if (aMap == null || points == null || points.isEmpty()) return;
-        aMap.clear();
         for (MemoryPoint point : points) {
             addMarkerForMemoryPoint(point);
         }
@@ -261,11 +266,19 @@ public class HereHomeFragment extends BaseFragment<
 
     @Override
     public void refreshMemoryPoints(List<MemoryPoint> points) {
+        clearMarkers();
         if (aMap == null || points == null || points.isEmpty()) return;
-        aMap.clear();
         for (MemoryPoint point : points) {
             addMarkerForMemoryPoint(point);
         }
+    }
+
+    private void clearMarkers() {
+        if (aMap != null) aMap.clear();
+        for (ValueAnimator anim : markerAnimators) {
+            anim.cancel();
+        }
+        markerAnimators.clear();
     }
 
     @Override
@@ -403,6 +416,7 @@ public class HereHomeFragment extends BaseFragment<
             });
 
             floatAnimator.start();
+            markerAnimators.add(floatAnimator);
         }
     }
 
@@ -452,8 +466,8 @@ public class HereHomeFragment extends BaseFragment<
      * 启动扫描线动画 (从上往下无限扫描)
      */
     private void startScanLineAnimation() {
-        int height = getResources().getDisplayMetrics().heightPixels;    // 剩下的动画逻辑保持不变
-        ObjectAnimator scanAnim = ObjectAnimator.ofFloat(getBinding().viewScanLine, "translationY", -100f, height + 100f);
+        int height = getResources().getDisplayMetrics().heightPixels;
+        scanAnim = ObjectAnimator.ofFloat(getBinding().viewScanLine, "translationY", -100f, height + 100f);
         scanAnim.setDuration(5000);
         scanAnim.setRepeatCount(ValueAnimator.INFINITE);
         scanAnim.start();
@@ -526,6 +540,23 @@ public class HereHomeFragment extends BaseFragment<
 
     @Override
     public void onDestroyView() {
+        // 1. 停止扫描线动画
+        if (scanAnim != null) {
+            scanAnim.cancel();
+            scanAnim = null;
+        }
+
+        // 2. 停止 AR 呼吸灯动画
+        if (getBinding() != null) {
+            getBinding().viewArGlow.clearAnimation();
+        }
+
+        // 3. 停止所有 Marker 浮动动画
+        for (ValueAnimator anim : markerAnimators) {
+            anim.cancel();
+        }
+        markerAnimators.clear();
+
         if (aMap != null) {
             aMap.setMyLocationEnabled(false);
             aMap.setLocationSource(null);
