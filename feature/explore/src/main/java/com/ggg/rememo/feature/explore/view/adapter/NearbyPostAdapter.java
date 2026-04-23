@@ -1,8 +1,10 @@
 package com.ggg.rememo.feature.explore.view.adapter;
 
+import android.content.Context;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +22,7 @@ public class NearbyPostAdapter extends RecyclerView.Adapter<NearbyPostAdapter.Ne
     private List<MemoryPost> items;
     private List<String> distances;
     private OnItemClickListener onItemClickListener;
+    private int columnWidth = 0;
 
     public interface OnItemClickListener {
         void onItemClick(MemoryPost post);
@@ -40,11 +43,24 @@ public class NearbyPostAdapter extends RecyclerView.Adapter<NearbyPostAdapter.Ne
         notifyDataSetChanged();
     }
 
+    private void calculateColumnWidth(Context context) {
+        if (columnWidth > 0) return;
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        int screenWidth = displayMetrics.widthPixels;
+        // RecyclerView paddingHorizontal="8dp" -> 16dp
+        // ItemCardView marginStart/End="3dp" -> 6dp per item -> 12dp for 2 columns
+        // Total margin = 28dp
+        float totalMarginDp = 28f;
+        int totalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, totalMarginDp, displayMetrics);
+        columnWidth = (screenWidth - totalMarginPx) / 2;
+    }
+
     @NonNull
     @Override
     public NearbyPostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        calculateColumnWidth(parent.getContext());
         ItemNearbyPostBinding binding = ItemNearbyPostBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-        return new NearbyPostViewHolder(binding);
+        return new NearbyPostViewHolder(binding, columnWidth);
     }
 
     @Override
@@ -67,9 +83,12 @@ public class NearbyPostAdapter extends RecyclerView.Adapter<NearbyPostAdapter.Ne
 
     static class NearbyPostViewHolder extends RecyclerView.ViewHolder {
         private final ItemNearbyPostBinding binding;
-        public NearbyPostViewHolder(ItemNearbyPostBinding binding) {
+        private final int columnWidth;
+
+        public NearbyPostViewHolder(ItemNearbyPostBinding binding, int columnWidth) {
             super(binding.getRoot());
             this.binding = binding;
+            this.columnWidth = columnWidth;
         }
 
         private void bind(MemoryPost item, String distance, NearbyPostAdapter adapter) {
@@ -77,9 +96,28 @@ public class NearbyPostAdapter extends RecyclerView.Adapter<NearbyPostAdapter.Ne
 
             List<MemoryPhoto> photos = item.getImages();
             if (photos != null && !photos.isEmpty()) {
-                loadImageWithAspectRatio(photos.get(0).getDisplayUrl(), binding.imgPostCover);
+                float ratio = item.getCoverImageRatio();
+                if (ratio <= 0) ratio = 1.0f; 
+                
+                int targetHeight = (int) (columnWidth / ratio);
+                
+                ViewGroup.LayoutParams params = binding.imgPostCover.getLayoutParams();
+                if (params.height != targetHeight) {
+                    params.height = targetHeight;
+                    binding.imgPostCover.setLayoutParams(params);
+                }
+
+                Glide.with(binding.imgPostCover.getContext())
+                        .load(photos.get(0).getDisplayUrl())
+                        .placeholder(com.ggg.rememo.core.ui.R.drawable.ic_no_image)
+                        .override(columnWidth, targetHeight)
+                        .centerCrop()
+                        .into(binding.imgPostCover);
             } else {
                 binding.imgPostCover.setImageResource(com.ggg.rememo.core.ui.R.drawable.ic_no_image);
+                ViewGroup.LayoutParams params = binding.imgPostCover.getLayoutParams();
+                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                binding.imgPostCover.setLayoutParams(params);
             }
 
             if (distance != null) {
@@ -88,29 +126,6 @@ public class NearbyPostAdapter extends RecyclerView.Adapter<NearbyPostAdapter.Ne
 
             binding.textPostTitle.setText(item.getTitle());
             binding.textPostContent.setText(item.getContent());
-        }
-
-        private void loadImageWithAspectRatio(String imageUrl, ImageView imageView) {
-            imageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    imageView.getViewTreeObserver().removeOnPreDrawListener(this);
-                    int measuredWidth = imageView.getMeasuredWidth();
-                    if (measuredWidth > 0) {
-                        Glide.with(imageView.getContext())
-                                .load(imageUrl)
-                                .override(measuredWidth, 0)
-                                .fitCenter()
-                                .into(imageView);
-                    } else {
-                        Glide.with(imageView.getContext())
-                                .load(imageUrl)
-                                .fitCenter()
-                                .into(imageView);
-                    }
-                    return true;
-                }
-            });
         }
     }
 }
