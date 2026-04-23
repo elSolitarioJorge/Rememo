@@ -44,6 +44,12 @@ public class MemoryPostListItemResponse {
     @SerializedName("imageCount")
     private int imageCount;
 
+    @SerializedName("coverImageWidth")
+    private int coverImageWidth;
+
+    @SerializedName("coverImageHeight")
+    private int coverImageHeight;
+
     @SerializedName("memoryYear")
     private int memoryYear;
 
@@ -132,6 +138,27 @@ public class MemoryPostListItemResponse {
 
     public void setImageCount(int imageCount) {
         this.imageCount = imageCount;
+    }
+
+    public int getCoverImageWidth() {
+        return coverImageWidth;
+    }
+
+    public void setCoverImageWidth(int coverImageWidth) {
+        this.coverImageWidth = coverImageWidth;
+    }
+
+    public int getCoverImageHeight() {
+        return coverImageHeight;
+    }
+
+    public void setCoverImageHeight(int coverImageHeight) {
+        this.coverImageHeight = coverImageHeight;
+    }
+
+    public float getCoverImageRatio() {
+        if (coverImageHeight == 0) return 1.0f;
+        return (float) coverImageWidth / coverImageHeight;
     }
 
     public int getMemoryYear() {

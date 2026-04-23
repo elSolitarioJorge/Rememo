@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.alibaba.android.arouter.launcher.ARouter;
@@ -57,8 +58,14 @@ public class NearbyFragment extends Fragment implements ExploreContract.NearbyVi
     }
 
     private void initRecyclerView() {
-        binding.exploreNearbyContentRecyclerView.setLayoutManager(
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        binding.exploreNearbyContentRecyclerView.setLayoutManager(layoutManager);
+
+        if (binding.exploreNearbyContentRecyclerView.getItemAnimator() != null) {
+            binding.exploreNearbyContentRecyclerView.getItemAnimator().setChangeDuration(0);
+        }
+
         adapter = new NearbyPostAdapter(new ArrayList<>(), new ArrayList<>());
         adapter.setOnItemClickListener(post -> {
             ARouter.getInstance()
@@ -67,6 +74,16 @@ public class NearbyFragment extends Fragment implements ExploreContract.NearbyVi
                     .navigation();
         });
         binding.exploreNearbyContentRecyclerView.setAdapter(adapter);
+
+        binding.exploreNearbyContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    layoutManager.invalidateSpanAssignments();
+                }
+            }
+        });
     }
 
     private void initRefreshClick() {

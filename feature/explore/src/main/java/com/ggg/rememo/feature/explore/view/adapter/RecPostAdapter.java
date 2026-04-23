@@ -1,10 +1,13 @@
 package com.ggg.rememo.feature.explore.view.adapter;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -27,6 +30,7 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private List<MemoryPost> items;
     private OnItemClickListener onItemClickListener;
+    private int columnWidth = 0;
 
     public interface OnItemClickListener {
         void onItemClick(MemoryPost post);
@@ -45,12 +49,25 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
+    private void calculateColumnWidth(Context context) {
+        if (columnWidth > 0) return;
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        int screenWidth = displayMetrics.widthPixels;
+        // RecyclerView paddingHorizontal="8dp" -> 16dp
+        // ItemCardView marginStart/End="3dp" -> 6dp per item -> 12dp for 2 columns
+        // Total margin = 28dp
+        float totalMarginDp = 28f;
+        int totalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, totalMarginDp, displayMetrics);
+        columnWidth = (screenWidth - totalMarginPx) / 2;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        calculateColumnWidth(parent.getContext());
         if (viewType == TYPE_PIC) {
             ItemContentPicBinding binding = ItemContentPicBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-            return new PicPostViewHolder(binding);
+            return new PicPostViewHolder(binding, columnWidth);
         } else {
             ItemContentTextBinding binding = ItemContentTextBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
             return new TextPostViewHolder(binding);
@@ -79,21 +96,20 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return items == null ? 0 : items.size();
     }
 
-    private void notifyClick(MemoryPost post) {
+    void performClick(MemoryPost post) {
         if (onItemClickListener != null) {
             onItemClickListener.onItemClick(post);
         }
     }
 
-    void performClick(MemoryPost post) {
-        notifyClick(post);
-    }
-
     static class PicPostViewHolder extends RecyclerView.ViewHolder {
         private final ItemContentPicBinding binding;
-        public PicPostViewHolder(ItemContentPicBinding binding) {
+        private final int columnWidth;
+
+        public PicPostViewHolder(ItemContentPicBinding binding, int columnWidth) {
             super(binding.getRoot());
             this.binding = binding;
+            this.columnWidth = columnWidth;
         }
 
         private void bind(MemoryPost item, RecPostAdapter adapter) {
@@ -101,9 +117,27 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             List<MemoryPhoto> photos = item.getImages();
             if (photos != null && !photos.isEmpty()) {
-                loadImageWithAspectRatio(photos.get(0).getDisplayUrl(), binding.imgCover);
+                float ratio = item.getCoverImageRatio();
+                if (ratio <= 0) ratio = 1.0f;
+                int targetHeight = (int) (columnWidth / ratio);
+
+                ViewGroup.LayoutParams params = binding.imgCover.getLayoutParams();
+                if (params.height != targetHeight) {
+                    params.height = targetHeight;
+                    binding.imgCover.setLayoutParams(params);
+                }
+
+                Glide.with(binding.imgCover.getContext())
+                        .load(photos.get(0).getDisplayUrl())
+                        .placeholder(R.drawable.ic_no_image)
+                        .override(columnWidth, targetHeight)
+                        .centerCrop()
+                        .into(binding.imgCover);
             } else {
                 binding.imgCover.setImageResource(R.drawable.ic_no_image);
+                ViewGroup.LayoutParams params = binding.imgCover.getLayoutParams();
+                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                binding.imgCover.setLayoutParams(params);
             }
 
             String season = item.getMemorySeason();
@@ -133,29 +167,6 @@ public class RecPostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 binding.iconLike.setImageResource(R.drawable.ic_gray_like);
                 binding.iconLike.setColorFilter(Color.parseColor("#64748B"));
             }
-        }
-
-        private void loadImageWithAspectRatio(String imageUrl, ImageView imageView) {
-            imageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    imageView.getViewTreeObserver().removeOnPreDrawListener(this);
-                    int measuredWidth = imageView.getMeasuredWidth();
-                    if (measuredWidth > 0) {
-                        Glide.with(imageView.getContext())
-                                .load(imageUrl)
-                                .override(measuredWidth, 0)
-                                .fitCenter()
-                                .into(imageView);
-                    } else {
-                        Glide.with(imageView.getContext())
-                                .load(imageUrl)
-                                .fitCenter()
-                                .into(imageView);
-                    }
-                    return true;
-                }
-            });
         }
     }
 

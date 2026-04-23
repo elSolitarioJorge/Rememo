@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.alibaba.android.arouter.launcher.ARouter;
@@ -66,8 +67,14 @@ public class RecFragment extends Fragment implements ExploreContract.RecView {
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.exploreRecoLocationRecyclerView.addItemDecoration(
                 new HorizontalItemDecoration(UIUtils.dpToPx(getContext(), 4)));
-        binding.exploreRecoContentRecyclerView.setLayoutManager(
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        binding.exploreRecoContentRecyclerView.setLayoutManager(layoutManager);
+
+        if (binding.exploreRecoContentRecyclerView.getItemAnimator() != null) {
+            binding.exploreRecoContentRecyclerView.getItemAnimator().setChangeDuration(0);
+        }
 
         locAdapter = new RecLocAdapter();
         postAdapter = new RecPostAdapter(new ArrayList<>());
@@ -81,6 +88,16 @@ public class RecFragment extends Fragment implements ExploreContract.RecView {
 
         binding.exploreRecoLocationRecyclerView.setAdapter(locAdapter);
         binding.exploreRecoContentRecyclerView.setAdapter(postAdapter);
+
+        binding.exploreRecoContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    layoutManager.invalidateSpanAssignments();
+                }
+            }
+        });
     }
 
     public void setPresenter(ExploreContract.Presenter presenter) {

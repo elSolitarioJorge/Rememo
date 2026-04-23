@@ -51,6 +51,7 @@ public class MemoryPostMapper {
         post.setCommentCount(r.getCommentCount());
         post.setLiked(r.getIsLiked());
         post.setCreatedTime(r.getCreatedTime());
+        post.setCoverImageRatio(r.getCoverImageRatio());
         // 列表接口返回封面图 URL，转换为单图实体
         if (r.getCoverImage() != null && !r.getCoverImage().isEmpty()) {
             List<MemoryPhoto> photos = new ArrayList<>();

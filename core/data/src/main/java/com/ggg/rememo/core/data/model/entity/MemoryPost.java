@@ -40,6 +40,7 @@ public class MemoryPost implements Parcelable {
     private int collectCount;    // 收藏数量
     private boolean isLiked;    // 当前用户是否点赞
     private boolean isCollected; // 当前用户是否收藏
+    private float coverImageRatio = 1.0f; // 封面图宽高比，默认1.0
 
     // 记录元数据
     private long createdTime;   // 记忆创建时间戳
@@ -186,6 +187,14 @@ public class MemoryPost implements Parcelable {
         this.isCollected = collected;
     }
 
+    public float getCoverImageRatio() {
+        return coverImageRatio;
+    }
+
+    public void setCoverImageRatio(float coverImageRatio) {
+        this.coverImageRatio = coverImageRatio;
+    }
+
     public long getCreatedTime() {
         return createdTime;
     }
@@ -219,6 +228,7 @@ public class MemoryPost implements Parcelable {
         dest.writeInt(collectCount);
         dest.writeInt(isLiked ? 1 : 0);
         dest.writeInt(isCollected ? 1 : 0);
+        dest.writeFloat(coverImageRatio);
         dest.writeLong(createdTime);
     }
 
@@ -239,6 +249,7 @@ public class MemoryPost implements Parcelable {
         collectCount = in.readInt();
         isLiked = in.readInt() == 1;
         isCollected = in.readInt() == 1;
+        coverImageRatio = in.readFloat();
         createdTime = in.readLong();
     }
 

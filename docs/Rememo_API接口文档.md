@@ -1,6 +1,6 @@
 # Rememo API 接口文档
 
-> 文档版本：v2.2
+> 文档版本：v2.3
 > 接口基础地址：`/api`
 
 ---
@@ -1339,6 +1339,8 @@ Authorization: Bearer {token}
             "title": "难忘的国庆节",
             "contentPreview": "这一天人山人海，红旗飘扬，我的心情无比激动...",
             "coverImage": "https://cdn.rememo.com/images/220e8400-e29b-41d4-a716-446655440002.jpg",
+            "coverImageWidth": 1080,
+            "coverImageHeight": 1920,
             "imageCount": 3,
             "memoryYear": 2019,
             "likeCount": 5,
@@ -1463,6 +1465,8 @@ Authorization: Bearer {token}
             "title": "难忘的国庆节",
             "contentPreview": "这一天人山人海，红旗飘扬，我的心情无比激动...",
             "coverImage": "https://cdn.rememo.com/images/220e8400-e29b-41d4-a716-446655440002.jpg",
+            "coverImageWidth": 1080,
+            "coverImageHeight": 1920,
             "imageCount": 3,
             "memoryYear": 2019,
             "likeCount": 5,
@@ -1670,6 +1674,8 @@ Authorization: Bearer {token}
 | title | String | 标题，1-50 字符 |
 | contentPreview | String | 正文前 100 字符摘要 |
 | coverImage | String | 封面图 URL（第一张图片），无图时为空字符串 |
+| coverImageWidth | Integer | 封面图宽度（px），无图时为 0 |
+| coverImageHeight | Integer | 封面图高度（px），无图时为 0 |
 | imageCount | Integer | 图片数量，无图时为 0 |
 | memoryYear | Integer | 记忆发生年份 |
 | memorySeason | String | 记忆发生季节（春夏秋冬） |
@@ -1751,7 +1757,7 @@ Authorization: Bearer {token}
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| v2.2 | 2026-04-07 | 列表接口仅返回 isLiked，不返回 isCollected；详情接口返回 isLiked、isCollected、collectCount（收藏数通过实时查询 user_collect 表获取） |
+| v2.3 | 2026-04-23 | MemoryPostListItem 新增 coverImageWidth、coverImageHeight 字段，用于 Android 端计算封面图宽高比，解决瀑布流图片加载跳动问题 |
 | v2.1 | 2026-04-07 | MemoryPostListItem / MemoryPostDetail 新增 isLiked、isCollected 字段（后因后端收藏数存储限制，回退为 v2.2 方案） |
 | v2.0 | 2026-04-01 | 移除"创建记忆点"独立接口，合并到发布记忆接口中；发布记忆接口新增 pointName 参数；MemoryPoint 移除 authorId 字段；MemoryPost / 发布记忆响应新增 collectCount 字段 |
 | v1.9 | 2026-03-29 | 新增互动模块：点赞/取消点赞、收藏/取消收藏、获取用户点赞/收藏列表；新增 LikeResponse、CollectResponse 数据模型 |
