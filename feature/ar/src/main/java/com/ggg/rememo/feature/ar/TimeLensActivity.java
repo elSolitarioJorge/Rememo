@@ -142,8 +142,14 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        // 使用 Application Context 避免 CameraX 初始化阶段持有 Activity
+        Context appContext = getApplicationContext();
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(appContext);
         cameraProviderFuture.addListener(() -> {
+            // 异步回调回来时，务必检查 Activity 状态
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
 
@@ -163,7 +169,7 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
-        }, ContextCompat.getMainExecutor(this));
+        }, ContextCompat.getMainExecutor(appContext));
     }
 
     @Override
@@ -421,11 +427,18 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
 
     @Override
     protected void onDestroy() {
-        // 停止动画并清除所有 View 属性动画的引用
+        // 1. 释放传感器资源
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
+
+        // 2. 停止动画并显式取消所有 View 属性动画
         if (binding != null) {
             binding.ringOuter.clearAnimation();
             binding.ringInner.clearAnimation();
             binding.scanline.clearAnimation();
+            
+            // 显式取消 ViewPropertyAnimator，防止 withEndAction 回调持有 Activity
             binding.centerReticle.animate().cancel();
             binding.layoutYearDisplay.animate().cancel();
             binding.seekbarContainer.animate().cancel();
@@ -436,27 +449,18 @@ public class TimeLensActivity extends AppCompatActivity implements SensorEventLi
             binding.tvYear.animate().cancel();
         }
 
-        // 强力解绑 CameraX 并物理截断引用链
-        try {
-            // 使用阻塞式 get 确保销毁前解绑执行
-            ProcessCameraProvider cameraProvider = ProcessCameraProvider.getInstance(this).get();
-            cameraProvider.unbindAll();
-        } catch (Exception e) {
-            // 忽略异常
-        }
-        
+        // 3. CameraX 清理
         if (preview != null) {
-            // 手动断开 SurfaceProvider，彻底切断 Preview -> PreviewView -> Activity 的引用链
+            // 切断 Preview -> PreviewView -> Activity 的引用链
             preview.setSurfaceProvider(null);
             preview = null;
         }
-
-        // 释放传感器资源
-        if (sensorManager != null) {
-            sensorManager.unregisterListener(this);
-        }
+        
+        // 注意：不建议在 onDestroy 中阻塞调用 ProcessCameraProvider.getInstance(this).get().unbindAll()，
+        // 阻塞主线程可能导致 ActivityThread 状态更新延迟。CameraX 的 bindToLifecycle 能够自动处理销毁逻辑。
 
         super.onDestroy();
+        // 4. 置空 Binding，释放对布局中所有 View 的引用
         binding = null;
     }
 }
