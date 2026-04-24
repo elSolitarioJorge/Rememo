@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.timeline;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -24,6 +25,7 @@ import com.ggg.rememo.feature.timeline.databinding.ActivityTimelineHomeBinding;
 import com.ggg.rememo.feature.timeline.data.model.TimelineYearModel;
 import com.ggg.rememo.feature.timeline.presenter.TimelinePresenter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -206,9 +208,22 @@ public class TimelineHomeActivity extends BaseActivity<
     @Override
     protected void onDestroy() {
         if (fabGlowAnimatorSet != null) {
+            // 显式停止所有子动画并移除监听
+            ArrayList<Animator> animators = fabGlowAnimatorSet.getChildAnimations();
+            if (animators != null) {
+                for (Animator animator : animators) {
+                    animator.removeAllListeners();
+                    animator.cancel();
+                }
+            }
+            fabGlowAnimatorSet.removeAllListeners();
             fabGlowAnimatorSet.cancel();
             fabGlowAnimatorSet = null;
         }
+        
+        // 彻底清除 View 关联的动画引用
+        getBinding().viewFabGlow.clearAnimation();
+
         super.onDestroy();
     }
 }
