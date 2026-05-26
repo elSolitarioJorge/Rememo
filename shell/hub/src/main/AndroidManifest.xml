@@ -28,6 +28,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".DebugFragmentContainerActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".HubShellActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">

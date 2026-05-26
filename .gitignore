@@ -46,3 +46,9 @@ output-metadata.json
 *.db-wal
 
 .vscode
+
+# GitNexus / local tool cache
+.gitnexus/
+**/.gitnexus/
+
+/docs

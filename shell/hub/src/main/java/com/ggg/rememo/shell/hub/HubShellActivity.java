@@ -1,7 +1,7 @@
 package com.ggg.rememo.shell.hub;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -25,11 +25,11 @@ public class HubShellActivity extends AppCompatActivity {
     private ActivityHubShellBinding binding;
 
     private final List<Item> items = Arrays.asList(
-            new Item("在此（地图）", Routes.Here.HOME),
-            new Item("探索", Routes.Explore.HOME),
-            new Item("时序", Routes.Timeline.HOME),
-            new Item("发布", Routes.Publish.HOME),
-            new Item("我的", Routes.Profile.HOME)
+            new Item("在此（地图）", Routes.Here.HOME_FRAGMENT, ItemType.FRAGMENT),
+            new Item("探索", Routes.Explore.HOME_FRAGMENT, ItemType.FRAGMENT),
+            new Item("时序", Routes.Timeline.HOME, ItemType.ACTIVITY),
+            new Item("发布", Routes.Publish.HOME, ItemType.ACTIVITY),
+            new Item("我的", Routes.Profile.HOME_FRAGMENT, ItemType.FRAGMENT)
     );
 
     @Override
@@ -51,13 +51,20 @@ public class HubShellActivity extends AppCompatActivity {
         setTitle("拾忆 · Hub");
     }
 
+    private enum ItemType {
+        ACTIVITY,
+        FRAGMENT
+    }
+
     static class Item {
         final String title;
         final String path;
+        final ItemType type;
 
-        Item(String title, String path) {
+        Item(String title, String path, ItemType type) {
             this.title = title;
             this.path = path;
+            this.type = type;
         }
     }
 
@@ -82,7 +89,15 @@ public class HubShellActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull VH h, int position) {
             Item it = data.get(position);
             h.tv.setText(String.format("%s\n%s", it.title, it.path));
-            h.tv.setOnClickListener(v -> ARouter.getInstance().build(it.path).navigation());
+            h.tv.setOnClickListener(v -> {
+                if (it.type == ItemType.FRAGMENT) {
+                    Intent intent = new Intent(v.getContext(), DebugFragmentContainerActivity.class);
+                    intent.putExtra(DebugFragmentContainerActivity.EXTRA_ROUTE, it.path);
+                    v.getContext().startActivity(intent);
+                } else {
+                    ARouter.getInstance().build(it.path).navigation();
+                }
+            });
         }
 
         @Override
