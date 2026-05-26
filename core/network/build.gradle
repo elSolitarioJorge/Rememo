@@ -9,6 +9,28 @@ if (localPropsFile.exists()) {
     localProps.load(localPropsFile.newDataInputStream())
 }
 
+def propertyOrDefault = { String key, String defaultValue ->
+    def value = localProps.getProperty(key)
+    return value == null || value.trim().isEmpty() ? defaultValue : value.trim()
+}
+
+def ensureTrailingSlash = { String value ->
+    return value.endsWith("/") ? value : "${value}/"
+}
+
+def buildConfigString = { String value ->
+    def escaped = value.replace("\\", "\\\\").replace("\"", "\\\"")
+    return "\"${escaped}\""
+}
+
+def debugBaseUrl = ensureTrailingSlash(propertyOrDefault(
+        'REMEMO_DEBUG_BASE_URL',
+        'http://192.168.110.225:9090/'
+))
+def releaseBaseUrl = ensureTrailingSlash(propertyOrDefault(
+        'REMEMO_RELEASE_BASE_URL',
+        'https://example.invalid/'
+))
 android {
     namespace 'com.ggg.rememo.core.network'
     compileSdk {
@@ -25,8 +47,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", buildConfigString(debugBaseUrl))
+        }
+
         release {
             minifyEnabled false
+            buildConfigField("String", "BASE_URL", buildConfigString(releaseBaseUrl))
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

@@ -25,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class NetworkClient {
 
-    private static final String BASE_URL = "http://192.168.1.3:9090/";
+    private static final String BASE_URL = BuildConfig.BASE_URL;
 
     private static volatile NetworkClient instance;
 
