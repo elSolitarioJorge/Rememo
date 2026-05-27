@@ -8,6 +8,7 @@ import com.alibaba.android.arouter.BuildConfig;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.amap.api.maps.MapsInitializer;
 import com.ggg.rememo.core.common.util.AppContext;
+import com.ggg.rememo.session.TokenExpiredHandler;
 import com.tencent.mmkv.MMKV;
 
 
@@ -30,5 +31,6 @@ public class RememoApp extends Application {
             ARouter.openDebug();
         }
         ARouter.init(this);
+        TokenExpiredHandler.init(this);
     }
 }

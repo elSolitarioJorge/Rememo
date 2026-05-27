@@ -15,6 +15,7 @@ import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.databinding.ActivityMainBinding;
+import com.ggg.rememo.session.TokenExpiredHandler;
 
 @Route(path = Routes.Main.HOME)
 public class MainActivity extends AppCompatActivity {
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+        TokenExpiredHandler.markLoginRecovered();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
