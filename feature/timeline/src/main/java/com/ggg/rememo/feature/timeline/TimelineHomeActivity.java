@@ -19,6 +19,7 @@ import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.feature.timeline.view.adapter.TimelineYearAdapter;
 import com.ggg.rememo.feature.timeline.contract.TimelineContract;
 import com.ggg.rememo.feature.timeline.databinding.ActivityTimelineHomeBinding;
@@ -175,14 +176,15 @@ public class TimelineHomeActivity extends BaseActivity<
      */
     @Override
     public void navigateToPublish(String pointId, double lat, double lng, String address, String pointName) {
-        ARouter.getInstance()
-                .build(Routes.Publish.HOME)
-                .withString(Routes.Publish.EXTRA_POINT_ID, pointId)
-                .withDouble(Routes.Publish.EXTRA_LAT, lat)
-                .withDouble(Routes.Publish.EXTRA_LNG, lng)
-                .withString(Routes.Publish.EXTRA_ADDRESS, address)
-                .withString(Routes.Publish.EXTRA_POINT_NAME, pointName)
-                .navigation(this);
+        LoginRequiredPrompt.requireLogin(this, "发布记忆", () ->
+                ARouter.getInstance()
+                        .build(Routes.Publish.HOME)
+                        .withString(Routes.Publish.EXTRA_POINT_ID, pointId)
+                        .withDouble(Routes.Publish.EXTRA_LAT, lat)
+                        .withDouble(Routes.Publish.EXTRA_LNG, lng)
+                        .withString(Routes.Publish.EXTRA_ADDRESS, address)
+                        .withString(Routes.Publish.EXTRA_POINT_NAME, pointName)
+                        .navigation(this));
     }
 
     /** 跳转分享 */

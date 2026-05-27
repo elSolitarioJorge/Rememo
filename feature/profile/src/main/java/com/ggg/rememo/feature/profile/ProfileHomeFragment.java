@@ -1,6 +1,7 @@
 package com.ggg.rememo.feature.profile;
 
 import android.graphics.Color;
+import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -18,9 +19,11 @@ import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.base.BaseFragment;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.network.ApiCallback;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.feature.profile.adapter.ProfileMemoryAdapter;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
 import com.ggg.rememo.feature.profile.databinding.FragmentProfileHomeBinding;
@@ -36,6 +39,7 @@ public class ProfileHomeFragment extends BaseFragment<
         ProfilePresenter> implements ProfileContract.View {
     private ProfileMemoryAdapter memoryAdapter;
     private User currentUserInfo;
+    private boolean userDataLoaded;
 
     @Override
     protected FragmentProfileHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -62,12 +66,47 @@ public class ProfileHomeFragment extends BaseFragment<
 
     @Override
     protected void initData() {
-        // 立即尝试从本地缓存加载，避免闪烁
-        loadAvatarFromCache();
+        renderLoginState();
+    }
 
-        // 记忆列表和用户信息只在初始化时加载一次，后续由 Glide 缓存直接命中
-        presenter.loadUserInfo();
-        presenter.loadUserMemories();
+    @Override
+    public void onResume() {
+        super.onResume();
+        renderLoginState();
+    }
+
+    private void renderLoginState() {
+        if (TokenManager.isLoggedIn()) {
+            showLoggedInState();
+            if (!userDataLoaded) {
+                // 立即尝试从本地缓存加载，避免闪烁
+                loadAvatarFromCache();
+
+                // 记忆列表和用户信息只在初始化时加载一次，后续由 Glide 缓存直接命中
+                presenter.loadUserInfo();
+                presenter.loadUserMemories();
+                userDataLoaded = true;
+            }
+        } else {
+            showGuestState();
+        }
+    }
+
+    private void showGuestState() {
+        userDataLoaded = false;
+        currentUserInfo = null;
+        getBinding().appBarLayout.setVisibility(View.GONE);
+        getBinding().rvMemories.setVisibility(View.GONE);
+        getBinding().layoutGuestProfile.setVisibility(View.VISIBLE);
+        if (memoryAdapter != null) {
+            memoryAdapter.clear();
+        }
+    }
+
+    private void showLoggedInState() {
+        getBinding().layoutGuestProfile.setVisibility(View.GONE);
+        getBinding().appBarLayout.setVisibility(View.VISIBLE);
+        getBinding().rvMemories.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -105,17 +144,21 @@ public class ProfileHomeFragment extends BaseFragment<
 
     private void initClickListeners() {
         getBinding().btnEditProfile.setOnClickListener(v -> {
-            EditProfileDialogFragment.newInstance(currentUserInfo, updatedUserInfo -> {
-                if (updatedUserInfo != null && presenter != null) {
-                    // 直接使用更新后的数据刷新 UI，避免重新请求
-                    presenter.showUserInfoDirectly(updatedUserInfo);
-                }
-            }).show(getChildFragmentManager(), "edit_profile");
+            LoginRequiredPrompt.requireLogin(requireActivity(), "编辑资料", () ->
+                    EditProfileDialogFragment.newInstance(currentUserInfo, updatedUserInfo -> {
+                        if (updatedUserInfo != null && presenter != null) {
+                            // 直接使用更新后的数据刷新 UI，避免重新请求
+                            presenter.showUserInfoDirectly(updatedUserInfo);
+                        }
+                    }).show(getChildFragmentManager(), "edit_profile"));
         });
 
         getBinding().ivSettings.setOnClickListener(v -> {
             new SettingsDialogFragment().show(getChildFragmentManager(), "settings");
         });
+
+        getBinding().btnGuestLogin.setOnClickListener(v ->
+                LoginRequiredPrompt.navigateToLogin(requireActivity()));
     }
 
     /**

@@ -32,6 +32,9 @@ android {
 }
 
 dependencies {
+    implementation project(":core:common")
+
+    implementation libs.arouter.api
     implementation libs.appcompat
     implementation libs.material
     testImplementation libs.junit

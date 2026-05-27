@@ -301,5 +301,57 @@
         android:paddingBottom="100dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <LinearLayout
+        android:id="@+id/layout_guest_profile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/brand_bg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:visibility="gone">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:padding="4dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/avatar_placeholder"
+            app:shapeAppearanceOverlay="@style/CircleImageView"
+            app:strokeColor="@color/brand_accent"
+            app:strokeWidth="2dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="登录后查看个人主页"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="同步你的记忆、收藏、评论和个人资料。游客可以继续浏览公开记忆点。"
+            android:textColor="@color/brand_text_sub"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_guest_login"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="28dp"
+            android:text="登录 / 注册"
+            android:textColor="@color/brand_bg"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/brand_accent"
+            app:cornerRadius="24dp" />
+
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

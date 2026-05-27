@@ -14,6 +14,7 @@ import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.common.util.TokenManager;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.databinding.ActivityMainBinding;
 import com.ggg.rememo.session.TokenExpiredHandler;
 
@@ -31,14 +32,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        if (!TokenManager.isLoggedIn()) {
-            ARouter.getInstance()
-                    .build(Routes.Auth.LOGIN)
-                    .navigation();
-            finish();
-            return;
+        if (TokenManager.isLoggedIn()) {
+            TokenExpiredHandler.markLoginRecovered();
         }
-        TokenExpiredHandler.markLoginRecovered();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -123,9 +119,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupFab() {
         binding.fabNavigation.setOnClickListener(v ->
-                ARouter.getInstance()
-                        .build(Routes.Publish.HOME)
-                        .navigation(this)
+                LoginRequiredPrompt.requireLogin(this, "发布记忆", () ->
+                        ARouter.getInstance()
+                                .build(Routes.Publish.HOME)
+                                .navigation(this))
         );
     }
 
