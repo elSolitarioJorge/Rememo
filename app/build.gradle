@@ -95,6 +95,7 @@ dependencies {
     implementation libs.arouter.api
     annotationProcessor libs.arouter.compiler
     implementation libs.mmkv
+    implementation libs.eventbus
 
     implementation libs.appcompat
     implementation libs.material

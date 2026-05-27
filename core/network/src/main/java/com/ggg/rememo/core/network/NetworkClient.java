@@ -2,8 +2,8 @@ package com.ggg.rememo.core.network;
 
 import androidx.annotation.NonNull;
 
+import com.ggg.rememo.core.common.event.TokenExpiredEvent;
 import com.ggg.rememo.core.common.util.TokenManager;
-import com.ggg.rememo.core.network.event.TokenExpiredEvent;
 import com.google.gson.Gson;
 
 import org.greenrobot.eventbus.EventBus;
@@ -25,6 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class NetworkClient {
 
+    private static final String AUTH_PATH_PREFIX = "/api/auth/";
     private static final String BASE_URL = BuildConfig.BASE_URL;
 
     private static volatile NetworkClient instance;
@@ -62,6 +63,24 @@ public class NetworkClient {
         return BASE_URL;
     }
 
+    private static boolean isAuthRequest(Request request) {
+        return request != null && request.url().encodedPath().startsWith(AUTH_PATH_PREFIX);
+    }
+
+    private static boolean hasAuthorization(Request request) {
+        return request != null && request.header("Authorization") != null;
+    }
+
+    private static boolean isTokenProtectedRequest(Request request) {
+        return !isAuthRequest(request) && hasAuthorization(request);
+    }
+
+    private static void postTokenExpiredIfNeeded(Request request) {
+        if (isTokenProtectedRequest(request)) {
+            EventBus.getDefault().post(new TokenExpiredEvent());
+        }
+    }
+
     private OkHttpClient buildOkHttpClient() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -86,6 +105,10 @@ public class NetworkClient {
         @Override
         public Response intercept(Chain chain) throws IOException {
             Request original = chain.request();
+
+            if (isAuthRequest(original)) {
+                return chain.proceed(original);
+            }
 
             String token = TokenManager.getToken();
             if (token != null && !token.isEmpty()) {
@@ -112,9 +135,9 @@ public class NetworkClient {
             if (!response.isSuccessful()) {
                 switch (response.code()) {
                     case 401:
-                        // Token 失效，通知登录模块
-                        EventBus.getDefault().post(new TokenExpiredEvent());
-                        break;
+                        postTokenExpiredIfNeeded(request);
+                        throw new ApiException(401,
+                                isTokenProtectedRequest(request) ? "登录已过期" : "请求未授权");
                     case 403:
                         throw new ApiException(403, "无权限访问");
                     case 500:
@@ -137,8 +160,11 @@ public class NetworkClient {
 
                 // 401 业务码也需要处理（如 Token 过期但 HTTP 状态码仍是 200）
                 if (bizCode == 401) {
-                    EventBus.getDefault().post(new TokenExpiredEvent());
-                    throw new ApiException(401, bizMsg != null ? bizMsg : "登录已过期");
+                    postTokenExpiredIfNeeded(request);
+                    String message = bizMsg != null
+                            ? bizMsg
+                            : (isTokenProtectedRequest(request) ? "登录已过期" : "认证失败");
+                    throw new ApiException(401, message);
                 }
 
                 // 业务错误，抛出异常
