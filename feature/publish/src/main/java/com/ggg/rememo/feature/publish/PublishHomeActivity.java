@@ -34,9 +34,11 @@ import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.local.ImageStorageHelper;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.map.LocationPickerActivity;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.feature.publish.adapter.PhotoThumbnailAdapter;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.databinding.ActivityPublishHomeBinding;
@@ -121,6 +123,11 @@ public class PublishHomeActivity extends BaseActivity<
 
     @Override
     protected void initData() {
+        if (!TokenManager.isLoggedIn()) {
+            LoginRequiredPrompt.requireLogin(this, "发布记忆", null, this::finish);
+            return;
+        }
+
         // ARouter 参数注入
         ARouter.getInstance().inject(this);
 
@@ -448,6 +455,11 @@ public class PublishHomeActivity extends BaseActivity<
 
     // ========== 发布相关方法 ==========
     private void handlePublish() {
+        if (!TokenManager.isLoggedIn()) {
+            LoginRequiredPrompt.requireLogin(this, "发布记忆", null);
+            return;
+        }
+
         // View 层：只负责收集 UI 数据，调用 Presenter
         String title = getBinding().etMemoryTitle.getText().toString().trim();
         String content = getBinding().etMemoryContent.getText().toString().trim();

@@ -14,7 +14,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.core.ui.Utils.UIUtils;
 import com.ggg.rememo.feature.message.adapter.MessageAdapter;
 import com.ggg.rememo.feature.message.data.ItemCommentMsg;
@@ -50,6 +52,18 @@ public class MessageHomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        binding.btnMessageGuestLogin.setOnClickListener(v ->
+                LoginRequiredPrompt.navigateToLogin(requireActivity()));
+
+        if (!TokenManager.isLoggedIn()) {
+            binding.messageContentScroll.setVisibility(View.GONE);
+            binding.layoutGuestMessage.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        binding.messageContentScroll.setVisibility(View.VISIBLE);
+        binding.layoutGuestMessage.setVisibility(View.GONE);
 
         // 初始化RecyclerView
         binding.messageRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

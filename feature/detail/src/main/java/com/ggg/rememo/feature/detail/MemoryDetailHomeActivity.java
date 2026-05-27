@@ -27,11 +27,13 @@ import com.alibaba.android.arouter.facade.annotation.Route;
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.ggg.rememo.core.base.BaseActivity;
 import com.ggg.rememo.core.common.router.Routes;
+import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.model.entity.Comment;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.bumptech.glide.Glide;
+import com.ggg.rememo.core.ui.auth.LoginRequiredPrompt;
 import com.ggg.rememo.feature.detail.adapter.CommentAdapter;
 import com.ggg.rememo.feature.detail.adapter.GalleryAdapter;
 import com.ggg.rememo.feature.detail.contract.MemoryDetailContract;
@@ -118,8 +120,10 @@ public class MemoryDetailHomeActivity extends BaseActivity<
     private void initClickListeners() {
         getBinding().btnBack.setOnClickListener(v -> finish());
         getBinding().btnShare.setOnClickListener(v -> presenter.onShareClick());
-        getBinding().iconLike.setOnClickListener(v -> presenter.onLikeClick());
-        getBinding().iconStar.setOnClickListener(v -> presenter.onStarClick());
+        getBinding().iconLike.setOnClickListener(v ->
+                LoginRequiredPrompt.requireLogin(this, "点赞", () -> presenter.onLikeClick()));
+        getBinding().iconStar.setOnClickListener(v ->
+                LoginRequiredPrompt.requireLogin(this, "收藏", () -> presenter.onStarClick()));
 
         getBinding().nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
             @Override
@@ -132,6 +136,11 @@ public class MemoryDetailHomeActivity extends BaseActivity<
 
         // 点击底部的“假”输入框（TextView），唤起真正的输入面板
         getBinding().tvCommentInput.setOnClickListener(v -> {
+            if (!TokenManager.isLoggedIn()) {
+                LoginRequiredPrompt.requireLogin(this, "评论", null);
+                return;
+            }
+
             // 显示遮罩层和真正的输入面板
             getBinding().layoutRealCommentContainer.setVisibility(View.VISIBLE);
 
@@ -188,6 +197,11 @@ public class MemoryDetailHomeActivity extends BaseActivity<
         });
 
         getBinding().btnSendComment.setOnClickListener(v -> {
+            if (!TokenManager.isLoggedIn()) {
+                LoginRequiredPrompt.requireLogin(this, "评论", null);
+                return;
+            }
+
             String content = getBinding().etRealComment.getText().toString().trim();
             if (!content.isEmpty()) {
                 presenter.onSendComment(currentPostId, content);

@@ -26,6 +26,7 @@
         app:layout_constraintTop_toBottomOf="@id/message_main_toolbar" />
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/message_content_scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/message_main_toolbar"
@@ -234,4 +235,49 @@
                 android:clipToPadding="false" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/layout_guest_message"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/message_main_toolbar">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="登录后查看消息"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="点赞、评论、收藏和系统通知会同步到你的账号。"
+            android:textColor="#94A3B8"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_message_guest_login"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="28dp"
+            android:text="登录 / 注册"
+            android:textColor="#0B0D17"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="#F5A623"
+            app:cornerRadius="24dp" />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
