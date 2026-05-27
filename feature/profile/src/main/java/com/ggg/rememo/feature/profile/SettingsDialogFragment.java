@@ -1,6 +1,5 @@
 package com.ggg.rememo.feature.profile;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.alibaba.android.arouter.launcher.ARouter;
-import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.feature.profile.contract.ProfileContract;
@@ -23,6 +20,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.List;
 
 public class SettingsDialogFragment extends BottomSheetDialogFragment implements ProfileContract.View {
+
+    public static final String REQUEST_LOGOUT = "profile_logout";
 
     private DialogSettingsBinding binding;
     private ProfilePresenter presenter;
@@ -101,13 +100,13 @@ public class SettingsDialogFragment extends BottomSheetDialogFragment implements
 
     @Override
     public void navigateToLogin() {
-        ARouter.getInstance()
-                .build(Routes.Auth.LOGIN)
-                .withFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                .navigation();
-        if (getActivity() != null) {
-            getActivity().finish();
+        if (getParentFragmentManager() != null) {
+            getParentFragmentManager().setFragmentResult(REQUEST_LOGOUT, new Bundle());
         }
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "已退出登录", Toast.LENGTH_SHORT).show();
+        }
+        dismiss();
     }
 
     @Override

@@ -143,6 +143,11 @@ public class ProfileHomeFragment extends BaseFragment<
     }
 
     private void initClickListeners() {
+        getChildFragmentManager().setFragmentResultListener(
+                SettingsDialogFragment.REQUEST_LOGOUT,
+                this,
+                (requestKey, result) -> renderLoginState());
+
         getBinding().btnEditProfile.setOnClickListener(v -> {
             LoginRequiredPrompt.requireLogin(requireActivity(), "编辑资料", () ->
                     EditProfileDialogFragment.newInstance(currentUserInfo, updatedUserInfo -> {
@@ -268,7 +273,7 @@ public class ProfileHomeFragment extends BaseFragment<
 
     @Override
     public void navigateToLogin() {
-        // 本 Fragment 不处理跳转，由 SettingsDialogFragment 处理
+        renderLoginState();
     }
 
     @Override
