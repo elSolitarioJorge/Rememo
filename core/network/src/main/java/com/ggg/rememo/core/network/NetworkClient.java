@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.ggg.rememo.core.common.event.TokenExpiredEvent;
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -133,26 +134,21 @@ public class NetworkClient {
 
             // HTTP 状态码非 2xx，统一处理
             if (!response.isSuccessful()) {
-                switch (response.code()) {
-                    case 401:
-                        postTokenExpiredIfNeeded(request);
-                        throw new ApiException(401,
-                                isTokenProtectedRequest(request) ? "登录已过期" : "请求未授权");
-                    case 403:
-                        throw new ApiException(403, "无权限访问");
-                    case 500:
-                    case 502:
-                    case 503:
-                        throw new ApiException(response.code(), "服务器异常，请稍后重试");
-                    default:
-                        throw new ApiException(response.code(), "请求失败: " + response.code());
+                if (response.code() == 401) {
+                    postTokenExpiredIfNeeded(request);
                 }
+                throw NetworkErrorMapper.fromHttpCode(response.code(), request, null);
             }
 
             // HTTP 2xx 情况下，检查业务 code
             // 注意：peekBody 不会消费 body，之后读取 response.body() 时数据仍然有效
             String bodyString = response.peekBody(Long.MAX_VALUE).string();
-            ApiResponse<?> apiResponse = new Gson().fromJson(bodyString, ApiResponse.class);
+            ApiResponse<?> apiResponse;
+            try {
+                apiResponse = new Gson().fromJson(bodyString, ApiResponse.class);
+            } catch (JsonParseException e) {
+                throw NetworkErrorMapper.fromThrowable(e, request);
+            }
 
             if (apiResponse != null && !apiResponse.isSuccess()) {
                 int bizCode = apiResponse.getCode();
@@ -161,14 +157,9 @@ public class NetworkClient {
                 // 401 业务码也需要处理（如 Token 过期但 HTTP 状态码仍是 200）
                 if (bizCode == 401) {
                     postTokenExpiredIfNeeded(request);
-                    String message = bizMsg != null
-                            ? bizMsg
-                            : (isTokenProtectedRequest(request) ? "登录已过期" : "认证失败");
-                    throw new ApiException(401, message);
                 }
 
-                // 业务错误，抛出异常
-                throw new ApiException(bizCode, bizMsg != null ? bizMsg : "业务处理失败");
+                throw NetworkErrorMapper.fromBusinessCode(bizCode, bizMsg, request);
             }
 
             // 业务成功，原样返回 response
