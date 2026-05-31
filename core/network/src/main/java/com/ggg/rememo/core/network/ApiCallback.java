@@ -29,10 +29,6 @@ public interface ApiCallback<T> {
      * @param t 异常对象
      */
     default void onFailure(Throwable t) {
-        if (t instanceof ApiException) {
-            onError(t.getMessage());
-        } else {
-            onError("网络连接失败，请检查网络");
-        }
+        onError(NetworkErrorMapper.toUserMessage(t));
     }
 }
