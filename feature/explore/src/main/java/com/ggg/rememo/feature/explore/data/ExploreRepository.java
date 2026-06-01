@@ -12,6 +12,7 @@ import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
 import com.ggg.rememo.core.network.NetworkClient;
+import com.ggg.rememo.core.network.NetworkErrorMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,14 +56,14 @@ public class ExploreRepository {
                         callback.onSuccess(new ArrayList<>());
                     }
                 } else {
-                    callback.onError("获取发现页内容失败");
+                    callback.onError(mapResponseError(response));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call,
                                   @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
@@ -91,15 +92,38 @@ public class ExploreRepository {
                         callback.onSuccess(new ArrayList<>());
                     }
                 } else {
-                    callback.onError("获取记忆点失败");
+                    callback.onError(mapResponseError(response));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<List<MemoryPointResponse>>> call,
                                   @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
+    }
+
+    private String mapResponseError(Response<? extends ApiResponse<?>> response) {
+        if (response == null) {
+            return NetworkErrorMapper.toUserMessage(null);
+        }
+
+        ApiResponse<?> body = response.body();
+        if (body != null && !body.isSuccess()) {
+            return NetworkErrorMapper
+                    .fromBusinessCode(body.getCode(), body.getMessage(), null)
+                    .getUserMessage();
+        }
+
+        if (!response.isSuccessful()) {
+            return NetworkErrorMapper
+                    .fromHttpCode(response.code(), null, null)
+                    .getUserMessage();
+        }
+
+        return NetworkErrorMapper
+                .fromHttpCode(response.code(), null, "请求失败，请稍后重试")
+                .getUserMessage();
     }
 }
