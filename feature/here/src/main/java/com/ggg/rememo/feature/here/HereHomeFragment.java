@@ -6,20 +6,17 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.TypedValue;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,18 +35,10 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
-import com.amap.api.maps.model.BitmapDescriptor;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.Marker;
-import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.ggg.rememo.core.base.BaseFragment;
 import com.ggg.rememo.core.common.router.Routes;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
@@ -58,9 +47,10 @@ import com.ggg.rememo.feature.here.chat.AiChatFragment;
 import com.ggg.rememo.feature.here.contract.HereHomeContract;
 import com.ggg.rememo.feature.here.data.HereRepository;
 import com.ggg.rememo.feature.here.databinding.FragmentHereHomeBinding;
+import com.ggg.rememo.feature.here.marker.MemoryPointMarkerRenderer;
+import com.ggg.rememo.feature.here.marker.RenderStats;
 import com.ggg.rememo.feature.here.presenter.HereHomePresenter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Route(path = Routes.Here.HOME_FRAGMENT)
@@ -81,7 +71,7 @@ public class HereHomeFragment extends BaseFragment<
 
     // 动画管理，防止内存泄漏
     private ObjectAnimator scanAnim;
-    private final List<ValueAnimator> markerAnimators = new ArrayList<>();
+    private MemoryPointMarkerRenderer markerRenderer;
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -169,6 +159,12 @@ public class HereHomeFragment extends BaseFragment<
 
         aMap.setLocationSource(this);
         aMap.moveCamera(CameraUpdateFactory.zoomTo(DEFAULT_ZOOM_LEVEL));
+        markerRenderer = new MemoryPointMarkerRenderer(
+                aMap,
+                Glide.with(this),
+                LayoutInflater.from(requireContext()),
+                getResources()
+        );
 
         aMap.setOnMapTouchListener(event -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN && presenter.isFollowing()) {
@@ -177,8 +173,12 @@ public class HereHomeFragment extends BaseFragment<
         });
 
         aMap.setOnMarkerClickListener(marker -> {
-            MemoryPoint point = (MemoryPoint) marker.getObject();
-            if (point != null) {
+            Object markerData = marker.getObject();
+            if (markerData instanceof MemoryPoint) {
+                MemoryPoint point = (MemoryPoint) markerData;
+                if (markerRenderer != null) {
+                    markerRenderer.select(marker);
+                }
                 aMap.animateCamera(CameraUpdateFactory.changeLatLng(marker.getPosition()));
                 presenter.onMarkerClicked(point);
             }
@@ -257,28 +257,20 @@ public class HereHomeFragment extends BaseFragment<
 
     @Override
     public void showMemoryPoints(List<MemoryPoint> points) {
-        clearMarkers();
-        if (aMap == null || points == null || points.isEmpty()) return;
-        for (MemoryPoint point : points) {
-            addMarkerForMemoryPoint(point);
-        }
+        renderMemoryPoints(points);
     }
 
     @Override
     public void refreshMemoryPoints(List<MemoryPoint> points) {
-        clearMarkers();
-        if (aMap == null || points == null || points.isEmpty()) return;
-        for (MemoryPoint point : points) {
-            addMarkerForMemoryPoint(point);
-        }
+        renderMemoryPoints(points);
     }
 
-    private void clearMarkers() {
-        if (aMap != null) aMap.clear();
-        for (ValueAnimator anim : markerAnimators) {
-            anim.cancel();
+    private void renderMemoryPoints(List<MemoryPoint> points) {
+        if (markerRenderer == null) {
+            return;
         }
-        markerAnimators.clear();
+        RenderStats stats = markerRenderer.render(points);
+        Log.d(TAG, stats.toLogString());
     }
 
     @Override
@@ -342,93 +334,6 @@ public class HereHomeFragment extends BaseFragment<
     @Override
     public void showError(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-    }
-
-    // ==================== Marker 渲染 ====================
-
-    private void addMarkerForMemoryPoint(MemoryPoint point) {
-        if (aMap == null || point == null) return;
-
-        LatLng position = new LatLng(point.getLatitude(), point.getLongitude());
-
-        View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_custom_marker_2, null);
-        measureViewForAMap(markerView);
-        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(markerView);
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(position)
-                .title(point.getPointName())
-                .anchor(0.5f, 1.0f)
-                .icon(descriptor)
-                .zIndex(1.0f);
-
-        Marker marker = aMap.addMarker(markerOptions);
-
-        if (marker != null) {
-            marker.setObject(point);
-            boolean existImage = point.getCoverImageUrl() != null && !point.getCoverImageUrl().isEmpty();
-            int radiusPx = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 12, getResources().getDisplayMetrics());
-
-            RequestOptions options = new RequestOptions()
-                    .transform(new CenterCrop(), new RoundedCorners(radiusPx))
-                    .override(200, 200)
-                    .disallowHardwareConfig();
-
-            Glide.with(this)
-                    .asBitmap()
-                    .load(existImage ? point.getCoverImageUrl() : R.drawable.pic_old)
-                    .apply(options)
-                    .into(new CustomTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            if (getActivity() == null || isDetached()) return;
-                            View finalMarkerView = LayoutInflater.from(getContext()).inflate(R.layout.layout_custom_marker_2, null);
-                            ImageView finalIvPic = finalMarkerView.findViewById(R.id.iv_marker_image);
-                            finalIvPic.setImageBitmap(resource);
-                            measureViewForAMap(finalMarkerView);
-
-                            BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(finalMarkerView);
-                            marker.setIcon(descriptor);
-                        }
-
-                        @Override
-                        public void onLoadCleared(@Nullable Drawable placeholder) {}
-                    });
-
-            ValueAnimator floatAnimator = ValueAnimator.ofFloat(1.0f, 1.15f);
-            floatAnimator.setDuration(1500); // 单次浮动耗时 1.5 秒
-            floatAnimator.setRepeatCount(ValueAnimator.INFINITE); // 无限循环
-            floatAnimator.setRepeatMode(ValueAnimator.REVERSE); // 反向重复，实现平滑的上下起伏
-            floatAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
-
-            floatAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(@NonNull ValueAnimator animation) {
-                    // 如果 Marker 已经被移除，或者地图被销毁，立刻停止动画
-                    if (marker.isRemoved() || aMap == null) {
-                        animation.cancel();
-                        return;
-                    }
-                    float currentAnchorY = (float) animation.getAnimatedValue();
-                    // 动态更新锚点
-                    marker.setAnchor(0.5f, currentAnchorY);
-                }
-            });
-
-            floatAnimator.start();
-            markerAnimators.add(floatAnimator);
-        }
-    }
-
-    /**
-     * 专门用于强制测量 View 宽高的工具方法
-     */
-    private void measureViewForAMap(View view) {
-        view.measure(
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        );
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
     }
 
     // ==================== AMapLocationListener ====================
@@ -519,6 +424,9 @@ public class HereHomeFragment extends BaseFragment<
     @Override
     public void onPause() {
         super.onPause();
+        if (markerRenderer != null) {
+            markerRenderer.onPause();
+        }
         presenter.pauseLocation();
         if (locationClient != null) {
             locationClient.stopLocation();
@@ -551,22 +459,25 @@ public class HereHomeFragment extends BaseFragment<
             getBinding().viewArGlow.clearAnimation();
         }
 
-        // 3. 停止所有 Marker 浮动动画
-        for (ValueAnimator anim : markerAnimators) {
-            anim.cancel();
+        // 3. 释放本页面创建的 Marker、图片请求和选中动画
+        if (markerRenderer != null) {
+            markerRenderer.clear();
+            markerRenderer = null;
         }
-        markerAnimators.clear();
 
         if (aMap != null) {
             aMap.setMyLocationEnabled(false);
             aMap.setLocationSource(null);
             aMap.setOnMapTouchListener(null);
+            aMap.setOnMarkerClickListener(null);
         }
 
         if (locationClient != null) {
             locationClient.stopLocation();
             locationClient.unRegisterLocationListener(this);
         }
+
+        aMap = null;
 
         super.onDestroyView();
     }
