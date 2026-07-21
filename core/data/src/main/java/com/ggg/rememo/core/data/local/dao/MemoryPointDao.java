@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
@@ -19,6 +20,20 @@ public interface MemoryPointDao {
     /** 批量插入记忆点 */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<MemoryPoint> points);
+    /** 删除全部记忆点 */
+    @Query("DELETE FROM memory_points")
+    void deleteAll();
+    /**
+     * 使用服务端完整快照原子替换本地记忆点。
+     * 空列表或 null 表示服务端当前没有记忆点。
+     */
+    @Transaction
+    default void replaceAll(List<MemoryPoint> points) {
+        deleteAll();
+        if (points != null && !points.isEmpty()) {
+            insertAll(points);
+        }
+    }
     /** 根据 ID 删除记忆点 */
     @Query("DELETE FROM memory_points WHERE pointId = :pointId")
     void deleteById(String pointId);

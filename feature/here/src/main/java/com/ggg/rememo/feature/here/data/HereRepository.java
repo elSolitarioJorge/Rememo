@@ -14,7 +14,6 @@ import com.ggg.rememo.core.network.ApiService;
 import com.ggg.rememo.core.network.NetworkClient;
 import com.tencent.mmkv.MMKV;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -60,26 +59,29 @@ public class HereRepository {
 
                     if (body.isSuccess()) {
                         List<MemoryPointResponse> responseList = body.getData();
-                        if (responseList != null && !responseList.isEmpty()) {
-                            Log.d(TAG, "[fetchAllMemoryPoints] 网络返回 " + responseList.size() + " 条记忆点，开始保存到本地 DB");
-                            List<MemoryPoint> points = MemoryPointMapper.toEntityList(responseList);
-                            memoryPointRepository.insertAll(points, new MemoryPointRepository.Callback<Void>() {
-                                @Override
-                                public void onSuccess(Void result) {
-                                    Log.d(TAG, "[fetchAllMemoryPoints] DB 保存成功，通知上层");
-                                    callback.onSuccess(points);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.w(TAG, "[fetchAllMemoryPoints] DB 保存失败但仍返回数据: " + e.getMessage());
-                                    callback.onSuccess(points);
-                                }
-                            });
-                        } else {
-                            Log.d(TAG, "[fetchAllMemoryPoints] 网络返回空列表 data=[]");
-                            callback.onSuccess(new ArrayList<>());
+                        if (responseList == null) {
+                            Log.e(TAG, "[fetchAllMemoryPoints] 业务成功但 data=null，保留现有缓存");
+                            callback.onError("获取记忆点失败: 响应数据为空");
+                            return;
                         }
+
+                        List<MemoryPoint> points = MemoryPointMapper.toEntityList(responseList);
+                        Log.d(TAG, "[fetchAllMemoryPoints] 网络返回 " + points.size()
+                                + " 条记忆点，开始原子替换本地快照");
+                        memoryPointRepository.replaceAll(points, new MemoryPointRepository.Callback<Void>() {
+                            @Override
+                            public void onSuccess(Void result) {
+                                Log.d(TAG, "[fetchAllMemoryPoints] DB 快照替换成功，通知上层");
+                                callback.onSuccess(points);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.w(TAG, "[fetchAllMemoryPoints] DB 快照替换失败但仍返回网络数据: "
+                                        + e.getMessage());
+                                callback.onSuccess(points);
+                            }
+                        });
                     } else {
                         Log.e(TAG, "[fetchAllMemoryPoints] 业务层失败 code=" + body.getCode()
                                 + ", message=" + body.getMessage());
@@ -115,7 +117,7 @@ public class HereRepository {
      * 缓存优先加载：先返回本地缓存，同时后台拉取网络最新数据并更新本地缓存
      * 适用于 Here 首页，用户进入页面时希望立即看到记忆点，不等待网络
      *
-     * @param cacheCallback  缓存数据回调（同步返回，无等待）
+     * @param cacheCallback  缓存数据回调（异步执行，通常先于网络返回）
      * @param networkCallback 网络最新数据回调（异步返回）
      */
     public void loadWithCacheFirst(
@@ -130,21 +132,7 @@ public class HereRepository {
                     cacheCallback.onSuccess(cachedData);
                 }
                 // 2. 后台同步网络最新数据
-                fetchAndUpdateCache(new MemoryPointRepository.Callback<List<MemoryPoint>>() {
-                    @Override
-                    public void onSuccess(List<MemoryPoint> networkData) {
-                        Log.d(TAG, "[loadWithCacheFirst] 网络数据同步完成，通知上层刷新");
-                        if (networkCallback != null) {
-                            networkCallback.onSuccess(networkData);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        // 网络失败时静默处理，缓存已展示过了
-                        Log.w(TAG, "[loadWithCacheFirst] 网络同步失败: " + e.getMessage());
-                    }
-                });
+                refreshFromNetwork(networkCallback);
             }
 
             @Override
@@ -153,23 +141,31 @@ public class HereRepository {
                 if (cacheCallback != null) {
                     cacheCallback.onError(e);
                 }
+                // 本地缓存故障不应阻断网络兜底。
+                refreshFromNetwork(networkCallback);
             }
         });
     }
 
     /**
-     * 从网络拉取最新数据并更新本地缓存（内部使用）
+     * 从网络拉取最新数据并更新本地缓存，完整转发网络终态。
      */
-    private void fetchAndUpdateCache(MemoryPointRepository.Callback<List<MemoryPoint>> callback) {
+    private void refreshFromNetwork(MemoryPointRepository.Callback<List<MemoryPoint>> callback) {
         fetchAllMemoryPoints(new ApiCallback<List<MemoryPoint>>() {
             @Override
             public void onSuccess(List<MemoryPoint> data) {
-                callback.onSuccess(data);
+                Log.d(TAG, "[loadWithCacheFirst] 网络数据同步完成，通知上层刷新");
+                if (callback != null) {
+                    callback.onSuccess(data);
+                }
             }
 
             @Override
             public void onError(String message) {
-                callback.onError(new Exception(message));
+                Log.w(TAG, "[loadWithCacheFirst] 网络同步失败: " + message);
+                if (callback != null) {
+                    callback.onError(new Exception(message));
+                }
             }
         });
     }
@@ -201,12 +197,12 @@ public class HereRepository {
      */
     public double[] getCachedLocation() {
         if (!mmkv.containsKey(PREF_LAST_LAT) || !mmkv.containsKey(PREF_LAST_LNG)) {
-            Log.d(TAG, "[getCachedLocation] 无缓存坐标");
+            // Log.d(TAG, "[getCachedLocation] 无缓存坐标");
             return null;
         }
         double lat = mmkv.decodeDouble(PREF_LAST_LAT, 0);
         double lng = mmkv.decodeDouble(PREF_LAST_LNG, 0);
-        Log.d(TAG, "[getCachedLocation] 有缓存 lat=" + lat + ", lng=" + lng);
+        // Log.d(TAG, "[getCachedLocation] 有缓存 lat=" + lat + ", lng=" + lng);
         return new double[]{lat, lng};
     }
 
@@ -214,7 +210,7 @@ public class HereRepository {
      * 保存上次定位坐标到缓存
      */
     public void saveCachedLocation(double lat, double lng) {
-        Log.v(TAG, "[saveCachedLocation] 保存坐标 lat=" + lat + ", lng=" + lng);
+        // Log.v(TAG, "[saveCachedLocation] 保存坐标 lat=" + lat + ", lng=" + lng);
         mmkv.encode(PREF_LAST_LAT, lat);
         mmkv.encode(PREF_LAST_LNG, lng);
     }
