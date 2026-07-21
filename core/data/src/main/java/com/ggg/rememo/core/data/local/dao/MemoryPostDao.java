@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import com.ggg.rememo.core.data.model.entity.MemoryPost;
 
@@ -35,6 +36,19 @@ public interface MemoryPostDao {
     /** 根据 用户ID 获取记忆列表 */
     @Query("SELECT * FROM memory_posts WHERE authorId = :authorId ORDER BY createdTime DESC")
     List<MemoryPost> getByAuthorId(String authorId);
+    /** 删除某个用户的帖子缓存 */
+    @Query("DELETE FROM memory_posts WHERE authorId = :authorId")
+    void deleteByAuthorId(String authorId);
+    /**
+     * 用服务端当前快照替换某个用户的帖子缓存，避免已删除的帖子长期残留。
+     */
+    @Transaction
+    default void replaceByAuthorId(String authorId, List<MemoryPost> posts) {
+        deleteByAuthorId(authorId);
+        if (posts != null && !posts.isEmpty()) {
+            insertAll(posts);
+        }
+    }
     /** 更新点赞数量 */
     @Query("UPDATE memory_posts SET likeCount = :count WHERE postId = :postId")
     void updateLikeCount(String postId, int count);

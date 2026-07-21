@@ -246,26 +246,40 @@ public class ProfilePresenter extends BasePresenter<ProfileContract.View>
             return;
         }
 
-        repository.getUserMemories(userId, new ApiCallback<List<MemoryPost>>() {
+        repository.getUserMemoriesCacheFirst(userId, new ApiCallback<List<MemoryPost>>() {
             @Override
             public void onSuccess(List<MemoryPost> data) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> {
-                        if (data != null && !data.isEmpty()) {
-                            view.showMemories(data);
-                        } else {
-                            view.showMemoriesEmpty();
-                        }
-                    });
-                });
+                renderMemories(data);
             }
 
             @Override
             public void onError(String message) {
-                mainHandler.post(() -> {
-                    ifViewAttached(view -> view.showMemoriesEmpty());
-                });
+                Log.e(TAG, "读取本地记忆失败: " + message);
+                mainHandler.post(() -> ifViewAttached(ProfileContract.View::showMemoriesEmpty));
             }
+        }, new ApiCallback<List<MemoryPost>>() {
+            @Override
+            public void onSuccess(List<MemoryPost> data) {
+                renderMemories(data);
+            }
+
+            @Override
+            public void onError(String message) {
+                // 本地数据已经展示，网络失败只记录，不清空缓存界面。
+                Log.w(TAG, "用户记忆网络刷新失败，继续展示本地缓存: " + message);
+            }
+        });
+    }
+
+    private void renderMemories(List<MemoryPost> data) {
+        mainHandler.post(() -> {
+            ifViewAttached(view -> {
+                if (data != null && !data.isEmpty()) {
+                    view.showMemories(data);
+                } else {
+                    view.showMemoriesEmpty();
+                }
+            });
         });
     }
 

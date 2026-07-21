@@ -6,12 +6,14 @@ import androidx.annotation.NonNull;
 import com.ggg.rememo.core.common.util.TokenManager;
 import com.ggg.rememo.core.data.mapper.MemoryPostMapper;
 import com.ggg.rememo.core.data.mapper.UserMapper;
+import com.ggg.rememo.core.data.model.entity.MemoryPost;
 import com.ggg.rememo.core.data.model.entity.User;
 import com.ggg.rememo.core.data.model.network.request.UpdateUserRequest;
 import com.ggg.rememo.core.data.model.network.response.ImageUploadResponse;
 import com.ggg.rememo.core.data.model.network.response.MemoryPostListItemResponse;
 import com.ggg.rememo.core.data.model.network.response.UserInfo;
 import com.ggg.rememo.core.data.repository.UserRepository;
+import com.ggg.rememo.core.data.repository.MemoryPostRepository;
 import com.ggg.rememo.core.network.ApiCallback;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
@@ -19,6 +21,7 @@ import com.ggg.rememo.core.network.NetworkClient;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,10 +41,12 @@ public class ProfileRepository {
     private static final String TAG = "ProfileRepository";
     private final ApiService apiService;
     private final UserRepository userRepository;
+    private final MemoryPostRepository memoryPostRepository;
 
     public ProfileRepository() {
         this.apiService = NetworkClient.getInstance().getApiService();
         this.userRepository = new UserRepository();
+        this.memoryPostRepository = new MemoryPostRepository();
     }
 
     /**
@@ -195,17 +200,34 @@ public class ProfileRepository {
     }
 
     /**
-     * 获取当前用户的记忆列表（按用户ID）。
-     *
-     * @param userId   用户ID
-     * @param callback 回调
+     * 缓存优先获取当前用户的记忆列表。
+     * 先返回 Room 快照，再请求网络；网络成功后以事务方式更新缓存并回调最新数据。
      */
-    public void getUserMemories(String userId, ApiCallback<List<com.ggg.rememo.core.data.model.entity.MemoryPost>> callback) {
+    public void getUserMemoriesCacheFirst(String userId,
+                                          ApiCallback<List<MemoryPost>> cachedCallback,
+                                          ApiCallback<List<MemoryPost>> refreshedCallback) {
+        memoryPostRepository.getByAuthorId(userId,
+                new MemoryPostRepository.Callback<List<MemoryPost>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPost> result) {
+                        cachedCallback.onSuccess(result != null ? result : new ArrayList<>());
+                        fetchUserMemories(userId, refreshedCallback);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        cachedCallback.onError("读取本地记忆失败: " + e.getMessage());
+                        fetchUserMemories(userId, refreshedCallback);
+                    }
+                });
+    }
+
+    private void fetchUserMemories(String userId, ApiCallback<List<MemoryPost>> callback) {
         apiService.getPostsByUserId(userId).enqueue(new Callback<ApiResponse<List<MemoryPostListItemResponse>>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call,
                                    @NonNull Response<ApiResponse<List<MemoryPostListItemResponse>>> response) {
-                handleMemoryListResponse(response, callback);
+                handleMemoryListResponse(userId, response, callback);
             }
 
             @Override
@@ -215,14 +237,32 @@ public class ProfileRepository {
         });
     }
 
-    private <T> void handleMemoryListResponse(Response<ApiResponse<List<MemoryPostListItemResponse>>> response,
-                                               ApiCallback<List<com.ggg.rememo.core.data.model.entity.MemoryPost>> callback) {
+    private void handleMemoryListResponse(String userId,
+                                          Response<ApiResponse<List<MemoryPostListItemResponse>>> response,
+                                          ApiCallback<List<MemoryPost>> callback) {
         if (response.isSuccessful() && response.body() != null) {
             ApiResponse<List<MemoryPostListItemResponse>> body = response.body();
-            if (body.isSuccess() && body.getData() != null) {
-                List<com.ggg.rememo.core.data.model.entity.MemoryPost> posts =
-                        MemoryPostMapper.fromListItem(body.getData());
-                callback.onSuccess(posts);
+            if (body.isSuccess()) {
+                List<MemoryPost> posts = MemoryPostMapper.fromListItem(body.getData());
+                for (MemoryPost post : posts) {
+                    if (post != null) {
+                        // 该接口已按 userId 限定，统一缓存键，避免响应缺少 authorId 时离线查询不到。
+                        post.setAuthorId(userId);
+                    }
+                }
+                memoryPostRepository.replaceByAuthorId(userId, posts,
+                        new MemoryPostRepository.Callback<Void>() {
+                            @Override
+                            public void onSuccess(Void result) {
+                                callback.onSuccess(posts);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e(TAG, "用户记忆缓存写入失败，仍展示网络数据", e);
+                                callback.onSuccess(posts);
+                            }
+                        });
             } else {
                 callback.onError(body.getMessage());
             }

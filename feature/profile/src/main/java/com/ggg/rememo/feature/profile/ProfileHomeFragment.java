@@ -40,6 +40,7 @@ public class ProfileHomeFragment extends BaseFragment<
     private ProfileMemoryAdapter memoryAdapter;
     private User currentUserInfo;
     private boolean userDataLoaded;
+    private boolean initialResumeHandled;
 
     @Override
     protected FragmentProfileHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -72,7 +73,28 @@ public class ProfileHomeFragment extends BaseFragment<
     @Override
     public void onResume() {
         super.onResume();
+        boolean wasLoaded = userDataLoaded;
         renderLoginState();
+        if (initialResumeHandled && wasLoaded && TokenManager.isLoggedIn() && !isHidden()
+                && presenter != null) {
+            // 从发布页等外部页面返回且个人主页当前可见时，重新读取 Room。
+            presenter.loadUserMemories();
+        }
+        initialResumeHandled = true;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (hidden || !isUIActive()) {
+            return;
+        }
+        boolean wasLoaded = userDataLoaded;
+        renderLoginState();
+        if (wasLoaded && TokenManager.isLoggedIn() && presenter != null) {
+            // MainActivity 通过 hide/show 复用 Fragment，重新显示时必须主动刷新缓存。
+            presenter.loadUserMemories();
+        }
     }
 
     private void renderLoginState() {
