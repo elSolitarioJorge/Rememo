@@ -41,6 +41,7 @@ public class TimelineHomeActivity extends BaseActivity<
 
     private TimelineYearAdapter adapter;
     private AnimatorSet fabGlowAnimatorSet;
+    private boolean viewInitialized;
 
     @Override
     protected ActivityTimelineHomeBinding inflateBinding(@NonNull LayoutInflater inflater) {
@@ -61,8 +62,8 @@ public class TimelineHomeActivity extends BaseActivity<
     protected void initView() {
         initRecyclerView();
         initClickListeners();
-        startAnimations();
         getBinding().tvSubtitle.setSelected(true);
+        viewInitialized = true;
     }
 
     @Override
@@ -114,7 +115,10 @@ public class TimelineHomeActivity extends BaseActivity<
         getBinding().fabAdd.setOnClickListener(v -> presenter.onAddMemoryClicked());
     }
 
-    private void startAnimations() {
+    private void startFabGlowAnimation() {
+        if (fabGlowAnimatorSet != null) {
+            return;
+        }
         View glowView = getBinding().viewFabGlow;
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(glowView, "scaleX", 0.8f, 1.1f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(glowView, "scaleY", 0.8f, 1.1f);
@@ -131,6 +135,62 @@ public class TimelineHomeActivity extends BaseActivity<
         fabGlowAnimatorSet.playTogether(scaleX, scaleY, alpha);
         fabGlowAnimatorSet.setDuration(1500);
         fabGlowAnimatorSet.start();
+    }
+
+    private void stopFabGlowAnimation() {
+        if (fabGlowAnimatorSet == null) {
+            return;
+        }
+
+        ArrayList<Animator> animators = fabGlowAnimatorSet.getChildAnimations();
+        fabGlowAnimatorSet.cancel();
+        fabGlowAnimatorSet.removeAllListeners();
+        for (Animator animator : animators) {
+            animator.cancel();
+            animator.removeAllListeners();
+            if (animator instanceof ObjectAnimator) {
+                ((ObjectAnimator) animator).setTarget(null);
+            }
+        }
+        fabGlowAnimatorSet = null;
+
+        View glowView = getBinding().viewFabGlow;
+        glowView.setScaleX(1f);
+        glowView.setScaleY(1f);
+        glowView.setAlpha(1f);
+        glowView.clearAnimation();
+    }
+
+    /**
+     * 页面只在真正位于前台且拥有窗口焦点时运行动画。
+     * 发布页覆盖时间轴时先停止，返回并完成窗口切换后再恢复。
+     */
+    private void setPageAnimationsEnabled(boolean enabled) {
+        if (!viewInitialized) {
+            return;
+        }
+        if (adapter != null) {
+            adapter.setAnimationsEnabled(enabled);
+        }
+        if (enabled) {
+            startFabGlowAnimation();
+            getBinding().timeDustView.startDustAnimation();
+        } else {
+            stopFabGlowAnimation();
+            getBinding().timeDustView.stopDustAnimation();
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        setPageAnimationsEnabled(hasFocus);
+    }
+
+    @Override
+    protected void onStop() {
+        setPageAnimationsEnabled(false);
+        super.onStop();
     }
 
     // ==================== TimelineContract.View 实现 ====================
@@ -209,22 +269,21 @@ public class TimelineHomeActivity extends BaseActivity<
 
     @Override
     protected void onDestroy() {
-        if (fabGlowAnimatorSet != null) {
-            // 显式停止所有子动画并移除监听
-            ArrayList<Animator> animators = fabGlowAnimatorSet.getChildAnimations();
-            if (animators != null) {
-                for (Animator animator : animators) {
-                    animator.removeAllListeners();
-                    animator.cancel();
-                }
-            }
-            fabGlowAnimatorSet.removeAllListeners();
-            fabGlowAnimatorSet.cancel();
-            fabGlowAnimatorSet = null;
+        setPageAnimationsEnabled(false);
+        viewInitialized = false;
+
+        if (adapter != null) {
+            adapter.release();
+            getBinding().rvTimeline.setAdapter(null);
+            adapter = null;
         }
-        
-        // 彻底清除 View 关联的动画引用
-        getBinding().viewFabGlow.clearAnimation();
+
+        getBinding().timeDustView.releaseDustAnimation();
+        getBinding().tvSubtitle.setSelected(false);
+        getBinding().btnBack.setOnClickListener(null);
+        getBinding().btnShare.setOnClickListener(null);
+        getBinding().fabAdd.setOnClickListener(null);
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), null);
 
         super.onDestroy();
     }

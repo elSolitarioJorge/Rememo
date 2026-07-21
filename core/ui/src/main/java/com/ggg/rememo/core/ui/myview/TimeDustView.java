@@ -63,8 +63,53 @@ public class TimeDustView extends View {
         for (DustParticle p : particles) {
             p.init(w, h, density, true);
         }
-        if (!animator.isRunning()) {
+        startDustAnimation();
+    }
+
+    /**
+     * 页面可见并获得焦点时启动粒子动画。
+     *
+     * <p>不能只依赖 {@link #onDetachedFromWindow()}：Activity 被另一个全屏页面覆盖时，
+     * View 可能仍处于 attached 状态，但继续逐帧计算和重绘没有意义。</p>
+     */
+    public void startDustAnimation() {
+        if (animator != null
+                && isAttachedToWindow()
+                && hasWindowFocus()
+                && getWidth() > 0
+                && getHeight() > 0
+                && !animator.isStarted()) {
             animator.start();
+        }
+    }
+
+    /** 页面不可见、失去焦点或销毁时停止逐帧刷新。 */
+    public void stopDustAnimation() {
+        if (animator != null && animator.isStarted()) {
+            animator.cancel();
+        }
+        isTouching = false;
+        touchX = -1000f;
+        touchY = -1000f;
+    }
+
+    /** Activity 销毁时解除逐帧回调对 View 的引用；调用后该实例不再恢复动画。 */
+    public void releaseDustAnimation() {
+        stopDustAnimation();
+        if (animator != null) {
+            animator.removeAllUpdateListeners();
+            animator.removeAllListeners();
+            animator = null;
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (hasWindowFocus) {
+            startDustAnimation();
+        } else {
+            stopDustAnimation();
         }
     }
 
@@ -149,8 +194,8 @@ public class TimeDustView extends View {
 
     @Override
     protected void onDetachedFromWindow() {
+        stopDustAnimation();
         super.onDetachedFromWindow();
-        if (animator != null) animator.cancel();
     }
 
     // --- 内部数据类：尘埃粒子 (分为 Bokeh 和 Spark) ---
