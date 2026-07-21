@@ -56,6 +56,25 @@ public class MemoryPointRepository {
         });
     }
 
+    /**
+     * 使用完整快照原子替换本地记忆点。
+     * 空列表或 null 会清空现有缓存。
+     */
+    public void replaceAll(List<MemoryPoint> points, Callback<Void> callback) {
+        executorService.execute(() -> {
+            try {
+                memoryPointDao.replaceAll(points);
+                if (callback != null) {
+                    callback.onSuccess(null);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
 
     public void deleteById(String pointId, Callback<Void> callback) {
         executorService.execute(() -> {
