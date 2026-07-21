@@ -3,16 +3,24 @@ package com.ggg.rememo.feature.publish.presenter;
 import android.os.Handler;
 import android.os.Looper;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.ggg.rememo.core.base.BasePresenter;
 import com.ggg.rememo.core.data.model.entity.MemoryPhoto;
 import com.ggg.rememo.core.data.model.network.response.MemoryPostResponse;
+import com.ggg.rememo.core.data.repository.MemoryPostRepository;
 import com.ggg.rememo.core.network.ApiCallback;
+import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.feature.publish.contract.PublishContract;
 import com.ggg.rememo.feature.publish.data.PublishRepository;
+import com.ggg.rememo.feature.publish.data.UploadBatchHandle;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import retrofit2.Call;
 
 /**
  * 发布模块 Presenter
@@ -27,6 +35,9 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
 
     private final PublishRepository repository;
     private final Handler mainHandler;
+    private boolean isPublishing;
+    private UploadBatchHandle activeUploadBatch;
+    private Call<ApiResponse<MemoryPostResponse>> activePublishCall;
 
     public PublishPresenter() {
         this.repository = new PublishRepository();
@@ -36,7 +47,10 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
     @Override
     public void publish(String title, String content, List<MemoryPhoto> images,
                        double lat, double lng, String pointId, String pointName) {
-
+        if (isPublishing) {
+            Log.d(TAG, "忽略重复发布点击");
+            return;
+        }
         if (pointName == null || pointName.trim().isEmpty()) {
             ifViewAttached(view -> view.showError("请为回忆之地命名"));
             return;
@@ -56,70 +70,178 @@ public class PublishPresenter extends BasePresenter<PublishContract.View>
             return;
         }
 
-        ifViewAttached(view -> {
-            String address = view.getAddress();
-            String timeDisplayText = view.getTimeDisplayText();
+        PublishContract.View view = getView();
+        if (view == null) {
+            return;
+        }
+        String address = view.getAddress();
+        ParsedTime parsedTime = parseTime(view.getTimeDisplayText());
+        if (parsedTime == null) {
+            view.showError("请选择有效的记忆发生时间");
+            return;
+        }
 
-            final int memoryYear;
-            final String season;
-            if (timeDisplayText != null && !timeDisplayText.isEmpty()
-                    && !timeDisplayText.contains("点击选择")) {
-                String[] parts = timeDisplayText.split("·");
-                if (parts.length >= 2) {
-                    memoryYear = Integer.parseInt(parts[0].trim());
-                    season = parts[1].trim();
-                } else {
-                    memoryYear = DEFAULT_YEAR;
-                    season = DEFAULT_SEASON;
-                }
-            } else {
-                ifViewAttached(v -> v.showError("请选择记忆发生时间"));
-                return;
+        List<MemoryPhoto> photosSnapshot = createPhotoSnapshot(images);
+        isPublishing = true;
+        view.setPublishingState(true);
+        if (!photosSnapshot.isEmpty()) {
+            view.showUploadProgress(0, photosSnapshot.size());
+        }
+
+        AtomicBoolean uploadTerminal = new AtomicBoolean();
+        UploadBatchHandle handle = repository.uploadPhotosControlled(
+                photosSnapshot,
+                (completed, total) -> mainHandler.post(() -> {
+                    if (isPublishing) {
+                        ifViewAttached(v -> v.showUploadProgress(completed, total));
+                    }
+                }),
+                new ApiCallback<List<MemoryPhoto>>() {
+                    @Override
+                    public void onSuccess(List<MemoryPhoto> uploadedPhotos) {
+                        uploadTerminal.set(true);
+                        mainHandler.post(() -> {
+                            if (!isPublishing) {
+                                return;
+                            }
+                            activeUploadBatch = null;
+                            publishPost(title, content, uploadedPhotos,
+                                    parsedTime.year, parsedTime.season,
+                                    lat, lng, address, pointId, pointName);
+                        });
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        uploadTerminal.set(true);
+                        mainHandler.post(() -> finishWithError("图片上传失败: " + message));
+                    }
+                });
+        if (!uploadTerminal.get() && isPublishing) {
+            activeUploadBatch = handle;
+        }
+    }
+
+    private void publishPost(String title, String content, List<MemoryPhoto> uploadedPhotos,
+                             int memoryYear, String season, double lat, double lng,
+                             String address, String pointId, String pointName) {
+        activePublishCall = repository.publishMemoryToServer(
+                title, content, uploadedPhotos, memoryYear, season,
+                lat, lng, address, pointId, pointName,
+                new ApiCallback<MemoryPostResponse>() {
+                    @Override
+                    public void onSuccess(MemoryPostResponse response) {
+                        mainHandler.post(() -> activePublishCall = null);
+                        repository.saveMemoryFromResponse(response, address,
+                                new MemoryPostRepository.Callback<Boolean>() {
+                                    @Override
+                                    public void onSuccess(Boolean result) {
+                                        mainHandler.post(PublishPresenter.this::finishWithSuccess);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e(TAG, "帖子已发布，但本地缓存写入失败，等待网络刷新同步", e);
+                                        mainHandler.post(PublishPresenter.this::finishWithSuccess);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        mainHandler.post(() -> {
+                            activePublishCall = null;
+                            finishWithError("发布失败: " + message);
+                        });
+                    }
+                });
+    }
+
+    private ParsedTime parseTime(String displayText) {
+        if (displayText == null || displayText.trim().isEmpty()
+                || displayText.contains("点击选择")) {
+            return null;
+        }
+        String[] parts = displayText.split("·");
+        if (parts.length < 2) {
+            return new ParsedTime(DEFAULT_YEAR, DEFAULT_SEASON);
+        }
+        try {
+            return new ParsedTime(Integer.parseInt(parts[0].trim()), parts[1].trim());
+        } catch (NumberFormatException e) {
+            Log.w(TAG, "记忆时间解析失败: " + displayText, e);
+            return null;
+        }
+    }
+
+    private List<MemoryPhoto> createPhotoSnapshot(List<MemoryPhoto> images) {
+        List<MemoryPhoto> snapshot = new ArrayList<>();
+        if (images == null) {
+            return snapshot;
+        }
+        for (MemoryPhoto source : images) {
+            if (source == null) {
+                snapshot.add(null);
+                continue;
             }
+            snapshot.add(new MemoryPhoto(
+                    source.getPhotoId(),
+                    source.getOriginalUrl(),
+                    source.getRestoredUrl(),
+                    source.getCurrentState()));
+        }
+        return snapshot;
+    }
 
-            // 先并行上传所有图片，获取服务器 photoId 和公网 URL
-            repository.uploadPhotosInParallel(images, new PublishRepository.UploadProgressCallback() {
-                @Override
-                public void onProgress(int completed, int total) {
-                    mainHandler.post(() -> ifViewAttached(view1 -> view1.showUploadProgress(completed, total)));
-                }
-            }, new ApiCallback<List<MemoryPhoto>>() {
-                @Override
-                public void onSuccess(List<MemoryPhoto> uploadedPhotos) {
-                    Log.d(TAG, "所有图片上传成功，开始发布记忆");
-                    // 发布记忆到服务器
-                    repository.publishMemoryToServer(title, content, uploadedPhotos, memoryYear, season,
-                            lat, lng, address, pointId, pointName,
-                            new ApiCallback<MemoryPostResponse>() {
-                                @Override
-                                public void onSuccess(MemoryPostResponse response) {
-                                    // 网络发布成功后，同步到本地数据库
-                                    repository.saveMemoryFromResponse(response, address,
-                                            new com.ggg.rememo.core.data.repository.MemoryPostRepository.Callback<Boolean>() {
-                                                @Override
-                                                public void onSuccess(Boolean result) {
-                                                    mainHandler.post(() -> ifViewAttached(PublishContract.View::showPublishSuccess));
-                                                }
-
-                                                @Override
-                                                public void onError(Exception e) {
-                                                    mainHandler.post(() -> ifViewAttached(view1 -> view1.showError("保存本地失败: " + e.getMessage())));
-                                                }
-                                            });
-                                }
-
-                                @Override
-                                public void onError(String message) {
-                                    mainHandler.post(() -> ifViewAttached(view1 -> view1.showError("发布失败: " + message)));
-                                }
-                            });
-                }
-
-                @Override
-                public void onError(String message) {
-                    mainHandler.post(() -> ifViewAttached(view1 -> view1.showError("图片上传失败: " + message)));
-                }
-            });
+    private void finishWithError(String message) {
+        if (!isPublishing) {
+            return;
+        }
+        isPublishing = false;
+        activeUploadBatch = null;
+        activePublishCall = null;
+        ifViewAttached(view -> {
+            view.setPublishingState(false);
+            view.showError(message);
         });
+    }
+
+    private void finishWithSuccess() {
+        if (!isPublishing) {
+            return;
+        }
+        isPublishing = false;
+        activeUploadBatch = null;
+        activePublishCall = null;
+        ifViewAttached(view -> {
+            view.setPublishingState(false);
+            view.showPublishSuccess();
+        });
+    }
+
+    @Override
+    protected void onViewDetached() {
+        isPublishing = false;
+        if (activeUploadBatch != null) {
+            activeUploadBatch.cancel();
+            activeUploadBatch = null;
+        }
+        if (activePublishCall != null) {
+            activePublishCall.cancel();
+            activePublishCall = null;
+        }
+        repository.release();
+        mainHandler.removeCallbacksAndMessages(null);
+        super.onViewDetached();
+    }
+
+    private static final class ParsedTime {
+        private final int year;
+        private final String season;
+
+        private ParsedTime(int year, String season) {
+            this.year = year;
+            this.season = season;
+        }
     }
 }
