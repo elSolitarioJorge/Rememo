@@ -1,5 +1,6 @@
 package com.ggg.rememo.feature.timeline.view.adapter;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -17,7 +18,10 @@ import com.ggg.rememo.feature.timeline.databinding.ItemTimelineYearBinding;
 import com.ggg.rememo.feature.timeline.data.model.TimelineYearModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 时间线年份 Adapter
@@ -30,6 +34,10 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
 
     private List<TimelineYearModel> years = new ArrayList<>();
     private OnMemoryClickListener listener;
+    private final Set<YearViewHolder> attachedHolders =
+            Collections.newSetFromMap(new IdentityHashMap<>());
+    private boolean animationsEnabled;
+    private boolean released;
 
     public interface OnMemoryClickListener {
         void onMemoryClick(MemoryPost post);
@@ -41,6 +49,9 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
     }
 
     public void setYears(List<TimelineYearModel> years) {
+        if (released) {
+            return;
+        }
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
@@ -99,13 +110,66 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
         TimelineYearModel yearModel = years.get(position);
         boolean isLast = (position == years.size() - 1);
         holder.bind(yearModel, isLast, listener);
+        if (animationsEnabled && holder.itemView.isAttachedToWindow()) {
+            holder.startAnimations();
+        }
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull YearViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        attachedHolders.add(holder);
+        if (animationsEnabled) {
+            holder.startAnimations();
+        }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull YearViewHolder holder) {
+        holder.stopAnimations();
+        attachedHolders.remove(holder);
+        super.onViewDetachedFromWindow(holder);
     }
 
     @Override
     public void onViewRecycled(@NonNull YearViewHolder holder) {
-        super.onViewRecycled(holder);
-        // 当 View 被 RecyclerView 回收时，必须停止动画以防止内存泄漏和动画错乱
         holder.stopAnimations();
+        attachedHolders.remove(holder);
+        super.onViewRecycled(holder);
+    }
+
+    /**
+     * 页面失去焦点时停止全部可见节点动画，恢复焦点后再按需启动。
+     */
+    public void setAnimationsEnabled(boolean enabled) {
+        if (released || animationsEnabled == enabled) {
+            return;
+        }
+        animationsEnabled = enabled;
+        for (YearViewHolder holder : new ArrayList<>(attachedHolders)) {
+            if (enabled) {
+                holder.startAnimations();
+            } else {
+                holder.stopAnimations();
+            }
+        }
+    }
+
+    /**
+     * Activity 销毁时的最终释放入口，不依赖 RecyclerView 是否触发回收回调。
+     */
+    public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
+        animationsEnabled = false;
+        for (YearViewHolder holder : new ArrayList<>(attachedHolders)) {
+            holder.release();
+        }
+        attachedHolders.clear();
+        listener = null;
+        years.clear();
     }
 
     @Override
@@ -124,6 +188,7 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
         // 动画对象保留引用，以便在复用时取消
         private AnimatorSet nodeAnimatorSet;
         private ValueAnimator pulseAnimator;
+        private Runnable startPulseRunnable;
 
         YearViewHolder(@NonNull ItemTimelineYearBinding binding) {
             super(binding.getRoot());
@@ -166,14 +231,15 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
             List<MemoryPost> allPosts = yearModel.getPosts();
             cardAdapter.setPosts(allPosts, yearModel.getMemoryCount(), yearModel.getYear());
 
-            // 启动特效动画
-            startAnimations();
         }
 
         /**
          * 开启节点和流光动画
          */
         private void startAnimations() {
+            if (!itemView.isAttachedToWindow()) {
+                return;
+            }
             stopAnimations(); // 确保之前的动画已停止
 
             // --- 节点心跳呼吸 ---
@@ -194,9 +260,11 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
             nodeAnimatorSet.start();
 
             // --- 能量流光自上而下穿梭 ---
-            binding.timelineAxisContainer.post(() -> {
-                // 防止 post 延时执行时，View 已经被回收
-                if (binding.timelineAxisContainer.getWindowToken() == null) return;
+            startPulseRunnable = () -> {
+                startPulseRunnable = null;
+                if (!itemView.isAttachedToWindow()) {
+                    return;
+                }
 
                 int containerHeight = binding.timelineAxisContainer.getHeight();
                 int pulseHeight = binding.timelineAxis.getHeight();
@@ -212,19 +280,35 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
                     binding.timelineAxis.setTranslationY(translationY);
                 });
                 pulseAnimator.start();
-            });
+            };
+            binding.timelineAxisContainer.post(startPulseRunnable);
         }
 
         /**
          * 停止所有动画
          */
         public void stopAnimations() {
+            if (startPulseRunnable != null) {
+                binding.timelineAxisContainer.removeCallbacks(startPulseRunnable);
+                startPulseRunnable = null;
+            }
             if (nodeAnimatorSet != null) {
+                ArrayList<Animator> childAnimations = nodeAnimatorSet.getChildAnimations();
                 nodeAnimatorSet.cancel();
+                nodeAnimatorSet.removeAllListeners();
+                for (Animator animator : childAnimations) {
+                    animator.cancel();
+                    animator.removeAllListeners();
+                    if (animator instanceof ObjectAnimator) {
+                        ((ObjectAnimator) animator).setTarget(null);
+                    }
+                }
                 nodeAnimatorSet = null;
             }
             if (pulseAnimator != null) {
+                pulseAnimator.removeAllUpdateListeners();
                 pulseAnimator.cancel();
+                pulseAnimator.removeAllListeners();
                 pulseAnimator = null;
             }
 
@@ -233,6 +317,14 @@ public class TimelineYearAdapter extends RecyclerView.Adapter<TimelineYearAdapte
             binding.timelineNode.setScaleY(1.0f);
             binding.timelineNode.setAlpha(1.0f);
             binding.timelineAxis.setTranslationY(0f);
+        }
+
+        private void release() {
+            stopAnimations();
+            binding.btnExplore.setOnClickListener(null);
+            cardAdapter.setOnCardClickListener(null);
+            cardAdapter.setOnGatewayClickListener(null);
+            binding.rvHorizontalCards.setAdapter(null);
         }
     }
 }
