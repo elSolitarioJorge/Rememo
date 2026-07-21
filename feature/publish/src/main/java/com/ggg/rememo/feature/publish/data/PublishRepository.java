@@ -610,6 +610,10 @@ public class PublishRepository {
         Log.d(TAG, "saveMemoryFromResponse: 开始保存本地, postId=" + response.getPostId());
 
         MemoryPost memoryPost = MemoryPostMapper.fromPostResponse(response, address);
+        if (memoryPost != null
+                && (memoryPost.getAuthorId() == null || memoryPost.getAuthorId().trim().isEmpty())) {
+            memoryPost.setAuthorId(TokenManager.getUserId());
+        }
         memoryPostRepository.insert(memoryPost, new MemoryPostRepository.Callback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {

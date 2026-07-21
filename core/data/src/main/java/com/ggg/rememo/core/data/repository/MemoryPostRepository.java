@@ -146,6 +146,20 @@ public class MemoryPostRepository {
         });
     }
 
+    public void replaceByAuthorId(String authorId, List<MemoryPost> posts, Callback<Void> callback) {
+        executorService.execute(() -> {
+            try {
+                memoryPostDao.replaceByAuthorId(authorId, posts);
+                if (callback != null) {
+                    callback.onSuccess(null);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
 
     public void updateLikeCount(String postId, int count, Callback<Void> callback) {
         executorService.execute(() -> {
