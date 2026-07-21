@@ -537,6 +537,7 @@ public class PublishHomeActivity extends BaseActivity<
     public void showPublishSuccess() {
         setPublishingState(false);
         Toast.makeText(this, "发布成功", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
         finish();
     }
 

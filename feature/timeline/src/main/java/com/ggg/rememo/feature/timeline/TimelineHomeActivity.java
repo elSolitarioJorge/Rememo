@@ -39,6 +39,7 @@ public class TimelineHomeActivity extends BaseActivity<
         TimelinePresenter>
         implements TimelineContract.View {
 
+    private static final int REQUEST_PUBLISH_MEMORY = 1001;
     private TimelineYearAdapter adapter;
     private AnimatorSet fabGlowAnimatorSet;
     private boolean viewInitialized;
@@ -244,7 +245,23 @@ public class TimelineHomeActivity extends BaseActivity<
                         .withDouble(Routes.Publish.EXTRA_LNG, lng)
                         .withString(Routes.Publish.EXTRA_ADDRESS, address)
                         .withString(Routes.Publish.EXTRA_POINT_NAME, pointName)
-                        .navigation(this));
+                        .navigation(this, REQUEST_PUBLISH_MEMORY));
+    }
+
+    /**
+     * 发布成功后重新执行现有的缓存优先加载：Room 中的新帖子会立即展示，
+     * 随后的网络回调继续负责校准服务器最新数据。取消发布时不做无意义刷新。
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_PUBLISH_MEMORY && resultCode == RESULT_OK
+                && presenter != null) {
+            String pointId = presenter.getCurrentPointId();
+            if (pointId != null && !pointId.trim().isEmpty()) {
+                presenter.loadTimeline(pointId);
+            }
+        }
     }
 
     /** 跳转分享 */
