@@ -28,6 +28,7 @@ public class ImageCompressUtil {
      */
     public static String compressForUpload(String originalPath) {
         Bitmap bitmap = null;
+        File temporaryFile = null;
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
@@ -51,10 +52,17 @@ public class ImageCompressUtil {
             Bitmap.CompressFormat format = getCompressFormat(mimeType);
             String extension = getExtension(mimeType);
             String parentDir = new File(originalPath).getParent();
-            String tempPath = parentDir + File.separator + "upload_" + UUID.randomUUID().toString() + extension;
+            String tempPath = parentDir + File.separator + "upload_compressed_"
+                    + UUID.randomUUID().toString() + extension;
+            temporaryFile = new File(tempPath);
 
             try (FileOutputStream fos = new FileOutputStream(tempPath)) {
-                bitmap.compress(format, COMPRESS_QUALITY, fos);
+                if (!bitmap.compress(format, COMPRESS_QUALITY, fos)) {
+                    if (temporaryFile.exists() && !temporaryFile.delete()) {
+                        Log.w(TAG, "compressForUpload: 删除无效临时文件失败 " + tempPath);
+                    }
+                    return originalPath;
+                }
             }
 
             Log.d(TAG, "compressForUpload: " + originalPath + " -> " + tempPath
@@ -62,6 +70,10 @@ public class ImageCompressUtil {
             return tempPath;
         } catch (IOException e) {
             Log.e(TAG, "compressForUpload: 写入临时文件失败", e);
+            if (temporaryFile.exists() && !temporaryFile.delete()) {
+                Log.w(TAG, "compressForUpload: 删除写入失败的临时文件失败 "
+                        + temporaryFile.getAbsolutePath());
+            }
             return originalPath;
         } finally {
             if (bitmap != null && !bitmap.isRecycled()) {

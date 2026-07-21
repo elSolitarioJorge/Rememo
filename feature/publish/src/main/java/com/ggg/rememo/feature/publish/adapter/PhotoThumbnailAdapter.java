@@ -22,6 +22,7 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
     private final List<MemoryPhoto> photos = new ArrayList<>();
     private int selectedPosition = 0; // 默认选中第一张
     private OnPhotoClickListener listener;
+    private boolean interactionEnabled = true;
 
     public interface OnPhotoClickListener {
         void onPhotoSelected(MemoryPhoto photo);
@@ -31,6 +32,10 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
 
     public void setOnPhotoClickListener(OnPhotoClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setInteractionEnabled(boolean enabled) {
+        interactionEnabled = enabled;
     }
 
     public void removePhoto(int position) {
@@ -107,6 +112,7 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
             holder.binding.cardImageContainer.setStrokeWidth(0);
 
             holder.itemView.setOnClickListener(v -> {
+                if (!interactionEnabled) return;
                 if (listener != null) listener.onAddMoreClicked();
             });
         } else {
@@ -124,6 +130,7 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
             holder.binding.cardImageContainer.setStrokeWidth(isSelected ? 4 : 0);
 
             holder.itemView.setOnClickListener(v -> {
+                if (!interactionEnabled) return;
                 int previousSelected = selectedPosition;
                 selectedPosition = holder.getBindingAdapterPosition();
                 notifyItemChanged(previousSelected);
@@ -132,6 +139,7 @@ public class PhotoThumbnailAdapter extends RecyclerView.Adapter<PhotoThumbnailAd
             });
 
             holder.binding.ivDelete.setOnClickListener(v -> {
+                if (!interactionEnabled) return;
                 int pos = holder.getBindingAdapterPosition();
                 if (pos != RecyclerView.NO_POSITION) {
                     removePhoto(pos);

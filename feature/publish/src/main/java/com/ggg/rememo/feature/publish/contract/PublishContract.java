@@ -27,6 +27,11 @@ public interface PublishContract {
         void showUploadProgress(int current, int total);
 
         /**
+         * 统一控制发布期间的页面交互状态。
+         */
+        void setPublishingState(boolean publishing);
+
+        /**
          * 获取地址 - 供 Presenter 调用
          * @return 地址字符串
          */

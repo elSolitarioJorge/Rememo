@@ -535,8 +535,7 @@ public class PublishHomeActivity extends BaseActivity<
 
     @Override
     public void showPublishSuccess() {
-        getBinding().layoutUploadProgress.setVisibility(View.GONE);
-        getBinding().btnPublish.setEnabled(true);
+        setPublishingState(false);
         Toast.makeText(this, "发布成功", Toast.LENGTH_SHORT).show();
         finish();
     }
@@ -544,10 +543,30 @@ public class PublishHomeActivity extends BaseActivity<
     @Override
     public void showUploadProgress(int current, int total) {
         getBinding().layoutUploadProgress.setVisibility(View.VISIBLE);
-        getBinding().tvUploadProgress.setText("正在上传第 " + current + "/" + total + " 张...");
+        getBinding().tvUploadProgress.setText(
+                getString(R.string.publish_upload_progress, current, total));
         getBinding().progressBarUpload.setMax(total);
         getBinding().progressBarUpload.setProgress(current);
-        getBinding().btnPublish.setEnabled(false);
+    }
+
+    @Override
+    public void setPublishingState(boolean publishing) {
+        getBinding().btnPublish.setEnabled(!publishing);
+        getBinding().layoutUploadPlaceholder.setEnabled(!publishing);
+        getBinding().cardRepairContainer.setEnabled(!publishing);
+        getBinding().rvPhotoThumbnails.setEnabled(!publishing);
+        photoAdapter.setInteractionEnabled(!publishing);
+        getBinding().btnRunAiRepair.setEnabled(!publishing);
+        getBinding().btnSwitch.setEnabled(!publishing);
+        getBinding().layoutSelectTime.setEnabled(!publishing);
+        getBinding().btnSelectLocation.setEnabled(!publishing
+                && (inputPointId == null || inputPointId.isEmpty()));
+        getBinding().etMemoryTitle.setEnabled(!publishing);
+        getBinding().etMemoryContent.setEnabled(!publishing);
+        getBinding().etAnchorName.setEnabled(!publishing);
+        if (!publishing) {
+            getBinding().layoutUploadProgress.setVisibility(View.GONE);
+        }
     }
 
     // ========== View 接口实现 - 供 Presenter 调用 ==========
@@ -565,8 +584,7 @@ public class PublishHomeActivity extends BaseActivity<
 
     @Override
     public void showError(String message) {
-        getBinding().layoutUploadProgress.setVisibility(View.GONE);
-        getBinding().btnPublish.setEnabled(true);
+        setPublishingState(false);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
