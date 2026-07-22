@@ -7,18 +7,17 @@ import com.ggg.rememo.core.data.local.database.RememoDatabase;
 import com.ggg.rememo.core.data.model.entity.MemoryPoint;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 public class MemoryPointRepository {
 
     private final MemoryPointDao memoryPointDao;
-    private final ExecutorService executorService;
+    private final Executor databaseExecutor;
 
     public MemoryPointRepository() {
         RememoDatabase database = RememoDatabase.getInstance(AppContext.get());
         this.memoryPointDao = database.memoryPointDao();
-        this.executorService = Executors.newSingleThreadExecutor();
+        this.databaseExecutor = DataTaskExecutor.get();
     }
 
     public interface Callback<T> {
@@ -27,7 +26,7 @@ public class MemoryPointRepository {
     }
 
     public void insert(MemoryPoint point, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 memoryPointDao.insert(point);
                 if (callback != null) {
@@ -42,7 +41,7 @@ public class MemoryPointRepository {
     }
 
     public void insertAll(List<MemoryPoint> points, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 memoryPointDao.insertAll(points);
                 if (callback != null) {
@@ -61,7 +60,7 @@ public class MemoryPointRepository {
      * 空列表或 null 会清空现有缓存。
      */
     public void replaceAll(List<MemoryPoint> points, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 memoryPointDao.replaceAll(points);
                 if (callback != null) {
@@ -77,7 +76,7 @@ public class MemoryPointRepository {
 
 
     public void deleteById(String pointId, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 memoryPointDao.deleteById(pointId);
                 if (callback != null) {
@@ -92,7 +91,7 @@ public class MemoryPointRepository {
     }
 
     public void getById(String pointId, Callback<MemoryPoint> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 MemoryPoint result = memoryPointDao.getById(pointId);
                 if (callback != null) {
@@ -107,7 +106,7 @@ public class MemoryPointRepository {
     }
 
     public void getAll(Callback<List<MemoryPoint>> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 List<MemoryPoint> result = memoryPointDao.getAll();
                 if (callback != null) {
@@ -122,7 +121,7 @@ public class MemoryPointRepository {
     }
 
     public void getRecent(int limit, Callback<List<MemoryPoint>> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 List<MemoryPoint> result = memoryPointDao.getRecent(limit);
                 if (callback != null) {
