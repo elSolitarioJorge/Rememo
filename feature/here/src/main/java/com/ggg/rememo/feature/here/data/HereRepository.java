@@ -101,7 +101,7 @@ public class HereRepository {
                 Log.e(TAG, "[fetchAllMemoryPoints] 网络请求失败 onFailure: " + t.getClass().getName()
                         + ", message=" + t.getMessage());
                 t.printStackTrace();
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }

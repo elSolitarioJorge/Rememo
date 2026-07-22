@@ -62,7 +62,7 @@ public class ProfileRepository {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<UserInfo>> call, @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
@@ -118,7 +118,7 @@ public class ProfileRepository {
             @Override
             public void onFailure(@NonNull Call<ApiResponse<ImageUploadResponse>> call, @NonNull Throwable t) {
                 Log.e(TAG, "uploadAvatarImage 请求异常", t);
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
@@ -148,7 +148,7 @@ public class ProfileRepository {
             @Override
             public void onFailure(@NonNull Call<ApiResponse<UserInfo>> call, @NonNull Throwable t) {
                 Log.e(TAG, "updateProfile 请求失败", t);
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
@@ -232,7 +232,7 @@ public class ProfileRepository {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<List<MemoryPostListItemResponse>>> call, @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }

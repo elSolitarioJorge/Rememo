@@ -29,6 +29,14 @@ public interface ApiCallback<T> {
      * @param t 异常对象
      */
     default void onFailure(Throwable t) {
-        onError(NetworkErrorMapper.toUserMessage(t));
+        onApiError(NetworkErrorMapper.fromThrowable(t));
+    }
+
+    /**
+     * 结构化错误入口。默认只向旧接口传递可展示文案；需要重试策略或分类埋点的调用方
+     * 可以选择覆盖此方法，而不需要重新解析 Throwable。
+     */
+    default void onApiError(ApiException error) {
+        onError(error.getUserMessage());
     }
 }

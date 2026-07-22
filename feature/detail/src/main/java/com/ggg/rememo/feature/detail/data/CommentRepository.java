@@ -7,6 +7,7 @@ import com.ggg.rememo.core.data.model.network.response.CommentResponse;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
 import com.ggg.rememo.core.network.NetworkClient;
+import com.ggg.rememo.core.network.NetworkErrorMapper;
 
 import java.util.List;
 
@@ -110,7 +111,7 @@ public class CommentRepository {
             @Override
             public void onFailure(Call<ApiResponse<CommentResponse>> call, Throwable t) {
                 if (callback != null) {
-                    callback.onError(t.getMessage());
+                    callback.onError(NetworkErrorMapper.toUserMessage(t));
                 }
             }
         });

@@ -1,6 +1,11 @@
 package com.ggg.rememo.core.network;
 
-public class ApiException extends RuntimeException {
+import java.io.IOException;
+
+/**
+ * 可由 OkHttp/Retrofit 标准失败通道传递的结构化网络异常。
+ */
+public class ApiException extends IOException {
     private final NetworkErrorType type;
     private final int code;              // HTTP 状态码 或 业务 code
     private final String userMessage;    // 给用户展示的错误信息

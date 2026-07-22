@@ -562,7 +562,7 @@ public class PublishRepository {
                     return;
                 }
                 Log.e(TAG, "publishMemoryToServer 请求异常", t);
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
         return publishCall;

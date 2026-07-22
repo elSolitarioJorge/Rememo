@@ -5,6 +5,7 @@ import com.ggg.rememo.core.data.model.network.response.LikeResponse;
 import com.ggg.rememo.core.network.ApiResponse;
 import com.ggg.rememo.core.network.ApiService;
 import com.ggg.rememo.core.network.NetworkClient;
+import com.ggg.rememo.core.network.NetworkErrorMapper;
 
 /**
  * 互动操作 Repository（点赞 / 收藏）。
@@ -46,7 +47,7 @@ public class InteractionRepository {
             @Override
             public void onFailure(retrofit2.Call<ApiResponse<LikeResponse>> call, Throwable t) {
                 if (callback != null) {
-                    callback.onError(t.getMessage());
+                    callback.onError(NetworkErrorMapper.toUserMessage(t));
                 }
             }
         });
@@ -75,7 +76,7 @@ public class InteractionRepository {
             @Override
             public void onFailure(retrofit2.Call<ApiResponse<CollectResponse>> call, Throwable t) {
                 if (callback != null) {
-                    callback.onError(t.getMessage());
+                    callback.onError(NetworkErrorMapper.toUserMessage(t));
                 }
             }
         });
@@ -103,7 +104,7 @@ public class InteractionRepository {
             @Override
             public void onFailure(retrofit2.Call<ApiResponse<LikeResponse>> call, Throwable t) {
                 if (callback != null) {
-                    callback.onError(t.getMessage());
+                    callback.onError(NetworkErrorMapper.toUserMessage(t));
                 }
             }
         });
@@ -131,7 +132,7 @@ public class InteractionRepository {
             @Override
             public void onFailure(retrofit2.Call<ApiResponse<CollectResponse>> call, Throwable t) {
                 if (callback != null) {
-                    callback.onError(t.getMessage());
+                    callback.onError(NetworkErrorMapper.toUserMessage(t));
                 }
             }
         });
