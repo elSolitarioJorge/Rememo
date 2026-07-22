@@ -15,7 +15,6 @@ import okhttp3.Request;
  */
 public final class NetworkErrorMapper {
 
-    private static final String AUTH_PATH_PREFIX = "/api/auth/";
 
     private NetworkErrorMapper() {
     }
@@ -148,9 +147,7 @@ public final class NetworkErrorMapper {
     }
 
     private static boolean isTokenProtectedRequest(Request request) {
-        return request != null
-                && request.header("Authorization") != null
-                && !request.url().encodedPath().startsWith(AUTH_PATH_PREFIX);
+        return NetworkGovernancePolicy.isTokenProtectedRequest(request);
     }
 
     private static String buildDebugMessage(String source, int code, String message, Request request) {

@@ -40,7 +40,7 @@ public class AuthRepository {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<AuthResponse>> call, @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
@@ -58,7 +58,7 @@ public class AuthRepository {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<AuthResponse>> call, @NonNull Throwable t) {
-                callback.onError("网络异常: " + t.getMessage());
+                callback.onFailure(t);
             }
         });
     }
