@@ -7,18 +7,17 @@ import com.ggg.rememo.core.data.local.database.RememoDatabase;
 import com.ggg.rememo.core.data.model.entity.Comment;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 public class CommentRepository {
 
     private final CommentDao commentDao;
-    private final ExecutorService executorService;
+    private final Executor databaseExecutor;
 
     public CommentRepository() {
         RememoDatabase database = RememoDatabase.getInstance(AppContext.get());
         this.commentDao = database.commentDao();
-        this.executorService = Executors.newSingleThreadExecutor();
+        this.databaseExecutor = DataTaskExecutor.get();
     }
 
     public interface Callback<T> {
@@ -27,7 +26,7 @@ public class CommentRepository {
     }
 
     public void insert(Comment comment, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 commentDao.insert(comment);
                 if (callback != null) {
@@ -42,7 +41,7 @@ public class CommentRepository {
     }
 
     public void insertAll(List<Comment> comments, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 commentDao.insertAll(comments);
                 if (callback != null) {
@@ -58,7 +57,7 @@ public class CommentRepository {
 
 
     public void deleteById(String commentId, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 commentDao.deleteById(commentId);
                 if (callback != null) {
@@ -74,7 +73,7 @@ public class CommentRepository {
 
 
     public void getByPostId(String postId, Callback<List<Comment>> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 List<Comment> result = commentDao.getByPostId(postId);
                 if (callback != null) {
@@ -89,7 +88,7 @@ public class CommentRepository {
     }
 
     public void getByAuthorId(String authorId, Callback<List<Comment>> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 List<Comment> result = commentDao.getByAuthorId(authorId);
                 if (callback != null) {
@@ -104,7 +103,7 @@ public class CommentRepository {
     }
 
     public void getCountByPostId(String postId, Callback<Integer> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 int result = commentDao.getCountByPostId(postId);
                 if (callback != null) {
@@ -119,7 +118,7 @@ public class CommentRepository {
     }
 
     public void deleteByPostId(String postId, Callback<Void> callback) {
-        executorService.execute(() -> {
+        databaseExecutor.execute(() -> {
             try {
                 commentDao.deleteByPostId(postId);
                 if (callback != null) {
