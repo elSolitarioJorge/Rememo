@@ -83,20 +83,6 @@ public class ProfileHomeFragment extends BaseFragment<
         initialResumeHandled = true;
     }
 
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (hidden || !isUIActive()) {
-            return;
-        }
-        boolean wasLoaded = userDataLoaded;
-        renderLoginState();
-        if (wasLoaded && TokenManager.isLoggedIn() && presenter != null) {
-            // MainActivity 通过 hide/show 复用 Fragment，重新显示时必须主动刷新缓存。
-            presenter.loadUserMemories();
-        }
-    }
-
     private void renderLoginState() {
         if (TokenManager.isLoggedIn()) {
             showLoggedInState();

@@ -434,13 +434,6 @@ public class HereHomeFragment extends BaseFragment<
     }
 
     @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        MapLifecycleHelper.onHiddenChanged(getBinding().mapView, hidden);
-
-    }
-
-    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         MapLifecycleHelper.onSaveInstanceState(getBinding().mapView, outState);
